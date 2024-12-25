@@ -5,3 +5,6 @@ export const sprintListAPI = (boardId) =>
 
 export const sprintCreateAPI = (boardId, data) =>
   client.post(`/boards/${boardId}/sprints`, data)
+
+export const sprintActivateAPI = (boardId, sprintId) =>
+  client.patch(`/boards/${boardId}/sprints/${sprintId}/activate`)

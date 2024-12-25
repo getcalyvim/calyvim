@@ -1,12 +1,13 @@
 <script setup>
 import BoardLayout from '@/components/base/board-layout.vue'
 import WorkspaceLayout from '@/components/base/workspace-layout.vue'
-import { sprintListAPI } from '@/utils/api'
-import { handleResponseError } from '@/utils/helpers'
-import { onMounted, ref, h } from 'vue'
+import { sprintListAPI, sprintActivateAPI } from '@/utils/api'
+import { handleResponseError, notify } from '@/utils/helpers'
+import { onMounted, ref, h, computed } from 'vue'
 import BaseSpinner from '../../../base/base-spinner.vue'
 import SprintAddForm from './sprint-add-form.vue'
 import { CalendarCog } from 'lucide-vue-next'
+import { useNProgress } from '@vueuse/integrations/useNProgress'
 
 import { List, ListItem, Tag, Button, Dropdown } from 'ant-design-vue'
 import {
@@ -18,16 +19,16 @@ import {
 const props = defineProps(['workspace', 'board'])
 
 const sprints = ref([])
-const loading = ref(false)
+const { isLoading } = useNProgress(null, { minimum: '0.5' })
 const fetchSprint = async () => {
   try {
-    loading.value = true
+    isLoading.value = true
     const { data } = await sprintListAPI(props.board.id)
     sprints.value = data
   } catch (error) {
     handleResponseError(error)
   } finally {
-    loading.value = false
+    isLoading.value = false
   }
 }
 
@@ -48,6 +49,36 @@ const closeSprintAddDropdown = () => {
   openSprintAddDropdown.value = false
 }
 
+const hoveredItem = ref(null)
+const setHoveredItem = (item) => {
+  hoveredItem.value = item.id
+}
+
+const clearHoveredItem = () => {
+  hoveredItem.value = null
+}
+
+const setActiveSprint = async (sprintId) => {
+  try {
+    const { data } = await sprintActivateAPI(props.board.id, sprintId)
+    sprints.value = sprints.value.map((sprint) => {
+      if (sprint.id === sprintId) {
+        sprint.isActive = true
+      } else {
+        sprint.isActive = false
+      }
+      return sprint
+    })
+    notify('ACTIVATED', data.detail)
+  } catch (error) {
+    handleResponseError(error)
+  }
+}
+
+const groupedSprints = computed(() => {
+
+})
+
 onMounted(() => {
   fetchSprint()
 })
@@ -61,7 +92,7 @@ onMounted(() => {
       page="sprints"
     >
       <template #default>
-        <div v-if="loading" class="flex justify-center items-center h-[80vh]">
+        <div v-if="isLoading" class="flex justify-center items-center h-[80vh]">
           <div class="flex items-center gap-2">
             <BaseSpinner />
             <div>Please wait while we load tasks...</div>
@@ -89,7 +120,11 @@ onMounted(() => {
           <div v-else>
             <List :dataSource="sprints">
               <template #renderItem="{ item }">
-                <ListItem>
+                <ListItem
+                  @mouseover="setHoveredItem(item)"
+                  @mouseleave="clearHoveredItem"
+                  class="px-2"
+                >
                   <div class="flex justify-between w-full">
                     <div>
                       <SyncOutlined class="mr-2" />
@@ -100,18 +135,27 @@ onMounted(() => {
                         :bordered="false"
                         >Active</Tag
                       >
+
+                      <Button
+                        type="text"
+                        size="small"
+                        v-show="hoveredItem === item.id && !item.isActive"
+                        class="ml-2 text-primary"
+                        @click="setActiveSprint(item.id)"
+                        v-else
+                        >Set as active</Button
+                      >
                     </div>
 
                     <div class="flex items-center gap-2">
+                      <Button size="small" @click="openSprintTasks(item.id)"
+                        ><span class="text-xs text-primary">View tasks</span></Button
+                      >
                       <Tag :bordered="false">
                         <span>{{ item.startDate }}</span>
                         <ArrowRightOutlined />
                         <span>{{ item.endDate }}</span>
                       </Tag>
-
-                      <Button size="small" @click="openSprintTasks(item.id)"
-                        ><span class="text-xs">View tasks</span></Button
-                      >
                     </div>
                   </div>
                 </ListItem>

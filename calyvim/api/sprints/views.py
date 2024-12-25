@@ -3,12 +3,14 @@ from rest_framework import status
 from rest_framework.viewsets import ViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.decorators import action
 
 from calyvim.models import Sprint
 from calyvim.mixins import BoardMixin
 from calyvim.api.sprints.serializers import SprintSerializer, SprintCreateSerializer
 from calyvim.permissions import BoardGenericPermission
 from calyvim.exceptions import InvalidInputException
+from calyvim.utils import get_object_or_raise_api_404
 
 
 class SprintsViewSet(BoardMixin, ViewSet):
@@ -19,6 +21,11 @@ class SprintsViewSet(BoardMixin, ViewSet):
             case "list":
                 return [IsAuthenticated(), BoardGenericPermission()]
             case "create":
+                return [
+                    IsAuthenticated(),
+                    BoardGenericPermission(allowed_roles=["admin", "maintainer"]),
+                ]
+            case "activate":
                 return [
                     IsAuthenticated(),
                     BoardGenericPermission(allowed_roles=["admin", "maintainer"]),
@@ -55,3 +62,24 @@ class SprintsViewSet(BoardMixin, ViewSet):
         sprints = Sprint.objects.filter(board=request.board).order_by("-created_at")
         serializer = SprintSerializer(sprints, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(methods=["PATCH"], detail=True)
+    def activate(self, request, *args, **kwargs):
+        sprint = get_object_or_raise_api_404(
+            Sprint, board=request.board, pk=kwargs["pk"]
+        )
+
+        with transaction.atomic():
+            Sprint.objects.filter(board=request.board, is_active=True).update(
+                is_active=False
+            )
+            sprint.is_active = True
+            sprint.save()
+
+        serializer = SprintSerializer(sprint)
+        response_data = {
+            "detail": f"The sprint '{sprint.name}' has been activated successfully.",
+            "sprint": serializer.data,
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
