@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 from calyvim.models.base import UUIDTimestampModel
 
@@ -40,3 +41,7 @@ class Sprint(UUIDTimestampModel):
 
     def __str__(self) -> str:
         return self.name
+    
+    def archive(self):
+        self.archived_at = timezone.now()
+        self.save()

@@ -1,7 +1,7 @@
 <script setup>
 import BoardLayout from '@/components/base/board-layout.vue'
 import WorkspaceLayout from '@/components/base/workspace-layout.vue'
-import { sprintListAPI, sprintActivateAPI } from '@/utils/api'
+import { sprintListAPI, sprintActivateAPI, sprintDeleteAPI, sprintArchiveAPI } from '@/utils/api'
 import { handleResponseError, notify } from '@/utils/helpers'
 import { onMounted, ref, h, computed } from 'vue'
 import BaseSpinner from '../../../base/base-spinner.vue'
@@ -9,11 +9,25 @@ import SprintAddForm from './sprint-add-form.vue'
 import { CalendarCog } from 'lucide-vue-next'
 import { useNProgress } from '@vueuse/integrations/useNProgress'
 
-import { List, ListItem, Tag, Button, Dropdown } from 'ant-design-vue'
+import {
+  List,
+  ListItem,
+  Tag,
+  Button,
+  Dropdown,
+  Menu,
+  MenuItem,
+} from 'ant-design-vue'
 import {
   ArrowRightOutlined,
   PlusOutlined,
   SyncOutlined,
+  EllipsisOutlined,
+  UnorderedListOutlined,
+  LineChartOutlined,
+  BarChartOutlined,
+  InboxOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons-vue'
 
 const props = defineProps(['workspace', 'board'])
@@ -75,9 +89,25 @@ const setActiveSprint = async (sprintId) => {
   }
 }
 
-const groupedSprints = computed(() => {
+const deleteSprint = async (sprintId) => {
+  try {
+    await sprintDeleteAPI(props.board.id, sprintId)
+    sprints.value = sprints.value.filter((sprint) => sprint.id !== sprintId)
+    notify('DELETED', 'Sprint deleted successfully')
+  } catch (error) {
+    handleResponseError(error)
+  }
+}
 
-})
+const archiveSprint = async (sprintId) => {
+  try {
+    const { data } = await sprintArchiveAPI(props.board.id, sprintId)
+    sprints.value = sprints.value.filter((sprint) => sprint.id !== sprintId)
+    notify('ARCHIVED', data.detail)
+  } catch (error) {
+    handleResponseError(error)
+  }
+}
 
 onMounted(() => {
   fetchSprint()
@@ -149,13 +179,46 @@ onMounted(() => {
 
                     <div class="flex items-center gap-2">
                       <Button size="small" @click="openSprintTasks(item.id)"
-                        ><span class="text-xs text-primary">View tasks</span></Button
+                        ><span class="text-xs text-primary"
+                          >View tasks</span
+                        ></Button
                       >
                       <Tag :bordered="false">
                         <span>{{ item.startDate }}</span>
                         <ArrowRightOutlined />
                         <span>{{ item.endDate }}</span>
                       </Tag>
+                      <Dropdown :trigger="['click']" placement="bottomRight">
+                        <Button
+                          size="small"
+                          :icon="h(EllipsisOutlined)"
+                        ></Button>
+
+                        <template #overlay>
+                          <Menu>
+                            <MenuItem @click="openSprintTasks(item.id)">
+                              <UnorderedListOutlined />
+                              <span class="ml-2">View tasks</span>
+                            </MenuItem>
+                            <MenuItem disabled>
+                              <LineChartOutlined />
+                              <span class="ml-2">View burndown chart</span>
+                            </MenuItem>
+                            <MenuItem disabled>
+                              <BarChartOutlined />
+                              <span class="ml-2">View velocity chart</span>
+                            </MenuItem>
+                            <MenuItem @click="archiveSprint(item.id)">
+                              <InboxOutlined />
+                              <span class="ml-2">Archive sprint</span>
+                            </MenuItem>
+                            <MenuItem @click="deleteSprint(item.id)">
+                              <DeleteOutlined class="text-red-400" />
+                              <span class="ml-2 text-red-400">Delete sprint</span>
+                            </MenuItem>
+                          </Menu>
+                        </template>
+                      </Dropdown>
                     </div>
                   </div>
                 </ListItem>

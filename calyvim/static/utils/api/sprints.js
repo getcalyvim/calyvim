@@ -8,3 +8,9 @@ export const sprintCreateAPI = (boardId, data) =>
 
 export const sprintActivateAPI = (boardId, sprintId) =>
   client.patch(`/boards/${boardId}/sprints/${sprintId}/activate`)
+
+export const sprintDeleteAPI = (boardId, sprintId) => 
+  client.delete(`/boards/${boardId}/sprints/${sprintId}`)
+
+export const sprintArchiveAPI = (boardId, sprintId) => 
+  client.patch(`/boards/${boardId}/sprints/${sprintId}/archive`)

@@ -42,6 +42,9 @@ export const useKanbanStore = defineStore('kanban', () => {
       sprintFilters.value = [activeSprint.id]
     }
   }
+  const removeSprint = (sprintId) => {
+    sprints.value = sprints.value.filter((sprint) => sprint.id !== sprintId)
+  }  
 
   const activeSprint = computed(() => {
     if (sprints.value.length === 0) {
@@ -170,6 +173,7 @@ export const useKanbanStore = defineStore('kanban', () => {
     setEstimates,
     sprints,
     setSprints,
+    removeSprint,
     activeSprint,
     assigneeFilters,
     taskTypes,

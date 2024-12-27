@@ -25,6 +25,16 @@ class SprintsViewSet(BoardMixin, ViewSet):
                     IsAuthenticated(),
                     BoardGenericPermission(allowed_roles=["admin", "maintainer"]),
                 ]
+            case "destroy":
+                return [
+                    IsAuthenticated(),
+                    BoardGenericPermission(allowed_roles=["admin", "maintainer"]),
+                ]
+            case "archive":
+                return [
+                    IsAuthenticated(),
+                    BoardGenericPermission(allowed_roles=["admin", "maintainer"]),
+                ]
             case "activate":
                 return [
                     IsAuthenticated(),
@@ -62,6 +72,37 @@ class SprintsViewSet(BoardMixin, ViewSet):
         sprints = Sprint.objects.filter(board=request.board).order_by("-created_at")
         serializer = SprintSerializer(sprints, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+        sprint = get_object_or_raise_api_404(
+            Sprint, board=request.board, pk=kwargs["pk"]
+        )
+        if sprint.is_active:
+            return Response(
+                {"detail": "The active sprint cannot be deleted."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        sprint.delete()
+        response_data = {
+            "detail": f"The sprint '{sprint.name}' has been deleted successfully."
+        }
+        return Response(response_data, status=status.HTTP_204_NO_CONTENT)
+
+    @action(methods=["PATCH"], detail=True)
+    def archive(self, request, *args, **kwargs):
+        sprint = get_object_or_raise_api_404(
+            Sprint, board=request.board, pk=kwargs["pk"]
+        )
+        if sprint.is_active:
+            return Response(
+                {"detail": "The active sprint cannot be archived."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        sprint.archive()
+        response_data = {
+            "detail": f"The sprint '{sprint.name}' has been archived successfully."
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
 
     @action(methods=["PATCH"], detail=True)
     def activate(self, request, *args, **kwargs):
