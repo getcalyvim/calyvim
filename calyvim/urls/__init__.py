@@ -13,7 +13,6 @@ urlpatterns = [
     path("app/accounts/", include("calyvim.urls.accounts")),
     path("app/b/<uuid:board_id>/", include("calyvim.urls.boards")),
     path("app/", include("calyvim.urls.workspaces")),
-    path("", include("calyvim.urls.home")),
 ]
 
 if settings.DEBUG:
