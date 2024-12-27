@@ -6,12 +6,15 @@ import dayjs from 'dayjs';
 import { CloseOutlined, UserAddOutlined } from '@ant-design/icons-vue';
 import AddUserModal from './add-user-modal.vue';
 import { boardPermissionUpdateAPI, boardPermissionListAPI, boardPermissionDeleteAPI } from '@/utils/api';
+import { useNProgress } from '@vueuse/integrations/useNProgress'
 
 const props = defineProps(['boardId', 'workspaceId', 'hasEditPermission'])
 
+const { isLoading } = useNProgress(null, { minimum: '0.5' })
 const permissions = ref([])
 const loadBoardPermissions = async () => {
     try {
+        isLoading.value = true
         const { data } = await boardPermissionListAPI(props.boardId)
         permissions.value = data.map(p => {
             return {
@@ -21,6 +24,8 @@ const loadBoardPermissions = async () => {
         })
     } catch (error) {
         handleResponseError(error)
+    } finally {
+        isLoading.value = false
     }
 }
 
