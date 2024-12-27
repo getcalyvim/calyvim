@@ -310,7 +310,7 @@ const closeTaskAddDrawer = () => {
                         type="text"
                       />
                       <template #overlay>
-                        <StateMenu :state="state" />
+                        <StateMenu :state="state" :board="props.board" />
                       </template>
                     </Dropdown>
                   </div>

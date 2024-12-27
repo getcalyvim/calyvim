@@ -89,6 +89,17 @@ class TasksViewSet(BoardMixin, ViewSet):
                         ]
                     ),
                 ]
+            case "state":
+                return [
+                    IsAuthenticated(),
+                    BoardGenericPermission(
+                        allowed_roles=[
+                            BoardPermissionRole.ADMIN,
+                            BoardPermissionRole.MAINTAINER,
+                            BoardPermissionRole.COLLABORATOR,
+                        ]
+                    ),
+                ]
             case _:
                 return super().get_permissions()
 
@@ -183,7 +194,6 @@ class TasksViewSet(BoardMixin, ViewSet):
     def partial_update(self, request, *args, **kwargs):
         update_serializer = TaskUpdateSerializer(data=request.data)
         if not update_serializer.is_valid():
-            print('Failed to validate', update_serializer.errors)
             raise InvalidInputException
 
         task = get_object_or_raise_api_404(
@@ -191,7 +201,6 @@ class TasksViewSet(BoardMixin, ViewSet):
         )
 
         data = update_serializer.validated_data
-        print('---> Data', data)
         task_updates = []
         assignee_ids = None
         if data.get("assignee_ids"):
@@ -351,4 +360,62 @@ class TasksViewSet(BoardMixin, ViewSet):
         task.archive()
         return Response(
             data={"detail": "Task archived successfully"}, status=status.HTTP_200_OK
+        )
+
+    @transaction.atomic
+    @action(methods=["PATCH"], detail=False)
+    def state(self, request, *args, **kwargs):
+        state_id = request.query_params.get("state_id")
+        task_ids = request.data.get("task_ids", [])
+
+        if not state_id or not task_ids:
+            return Response(
+                data={"detail": "State ID's and Task ID's are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        state = get_object_or_raise_api_404(State, board=request.board, id=state_id)
+        tasks = Task.objects.filter(board=request.board, id__in=task_ids)
+
+        # Find the last task in the new state
+        last_task_in_state = (
+            Task.objects.filter(board=request.board, state=state)
+            .order_by("-sequence")
+            .first()
+        )
+        new_sequence = (
+            last_task_in_state.sequence + 10000 if last_task_in_state else 10000
+        )
+
+        task_comments = []
+        for task in tasks:
+            task.state_id = state.id
+            task.sequence = new_sequence
+            task.save(update_fields=["state_id", "sequence"])
+            new_sequence += 10000
+
+            # Create a TaskComment for each task
+            task_comments.append(
+                TaskComment(
+                    task=task,
+                    content=f"State changed to {state.name}",
+                    comment_type="activity",
+                    author=request.user,
+                )
+            )
+
+        # Use bulk update to save all tasks at once
+        Task.objects.bulk_update(tasks, ["state_id", "sequence"])
+        TaskComment.objects.bulk_create(task_comments)
+
+        new_tasks = Task.objects.filter(board=request.board, id__in=task_ids)
+        serializer = TaskSerializer(new_tasks, many=True)
+
+        task_names = ", ".join(task.name for task in new_tasks)
+        return Response(
+            data={
+                "detail": f"Tasks ({task_names}) state changed to {state.name}",
+                "tasks": serializer.data,
+            },
+            status=status.HTTP_200_OK,
         )

@@ -26,3 +26,14 @@ export const taskAttachmentsDeleteAPI = (boardId, taskId, attachmentId) =>
   client.delete(
     `/boards/${boardId}/tasks/${taskId}/attachments/${attachmentId}`
   )
+
+export const taskBulkStateUpdateAPI = (boardId, stateId, taskIds) =>
+  client.patch(
+    `/boards/${boardId}/tasks/state`,
+    { taskIds },
+    {
+      params: {
+        stateId,
+      },
+    }
+  )
