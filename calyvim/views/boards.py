@@ -149,3 +149,25 @@ class BoardSettingsStatesView(LoginRequiredMixin, BoardPermissionMixin, View):
             }
         }
         return render(request, "boards/settings/states.html", context)
+    
+
+class BoardSettingsPrioritiesView(LoginRequiredMixin, BoardPermissionMixin, View):
+    def get(self, request, *args, **kwargs):
+        board = get_object_or_404(Board, id=kwargs.get("board_id"))
+
+        if not self.has_valid_board_permission(board, request.user):
+            raise Http404
+
+        # Check permission
+        has_edit_permission = self.has_valid_board_permission(
+            board, request.user, allowed_roles=["admin", "maintainer"]
+        )
+
+        context = {
+            "props": {
+                "workspace": WorkspaceSerializer(board.workspace).data,
+                "board": BoardSerializer(board).data,
+                "has_edit_permission": has_edit_permission,
+            }
+        }
+        return render(request, "boards/settings/priorities.html", context)

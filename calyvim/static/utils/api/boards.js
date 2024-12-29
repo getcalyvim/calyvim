@@ -26,9 +26,6 @@ export const taskUpdateAPI = (boardId, taskId, data) =>
 export const taskDetailAPI = (boardId, taskId) =>
   client.get(`/boards/${boardId}/tasks/${taskId}`)
 
-export const priorityListAPI = (boardId) =>
-  client.get(`/boards/${boardId}/priorities`)
-
 export const boardStatsAPI = (workspaceId) =>
   client.get(`/boards/stats`, {
     params: {

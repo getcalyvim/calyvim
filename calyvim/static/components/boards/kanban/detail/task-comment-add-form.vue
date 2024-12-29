@@ -1,6 +1,6 @@
 <script setup>
 import { SaveOutlined } from '@ant-design/icons-vue'
-import { Button, Form, FormItem, message, Textarea } from 'ant-design-vue'
+import { Button, Form, FormItem, message, Textarea, Input } from 'ant-design-vue'
 import { h, ref } from 'vue'
 import { handleResponseError } from '@/utils/helpers';
 import { taskCommentsCreateAPI } from '@/utils/api';
@@ -36,18 +36,12 @@ const onFinish = async (values) => {
     hide-required-mark
     ref="formRef"
   >
-    <FormItem
-      name="content"
-      :rules="[{ message: 'Comment is requuired', required: true }]"
-    >
-      <Textarea v-model:value="form.content" :rows="3" class="w-full" placeholder="Write a comment .." />
-    </FormItem>
-
-    <div class="flex justify-end">
+    <div class="flex justify-between gap-4">
+      <FormItem name="content" :rules="[{ message: 'Comment is requuired', required: true }]" class="w-full">
+        <Input v-model:value="form.content" placeholder="Add a comment.." />
+      </FormItem>
       <FormItem>
-        <Button type="primary" html-type="submit" :icon="h(SaveOutlined)"
-          >Comment</Button
-        >
+        <Button type="primary" html-type="submit" :icon="h(SaveOutlined)"> Comment</Button>
       </FormItem>
     </div>
   </Form>

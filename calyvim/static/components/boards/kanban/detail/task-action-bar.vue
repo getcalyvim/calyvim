@@ -28,7 +28,7 @@ const getAvatarSrc = (memberId) => {
 </script>
 
 <template>
-  <div class="mb-2 font-semibold">Status</div>
+  <div class="mb-2 font-semibold">State</div>
   <Select
     v-model:value="task.stateId"
     class="w-full mb-2"

@@ -469,7 +469,7 @@ watch(
               </RadioGroup>
             </div>
           </div>
-
+          
           <TaskCommentAddForm
             :boardId="props.board.id"
             :taskId="props.taskId"
