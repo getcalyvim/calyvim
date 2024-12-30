@@ -78,14 +78,15 @@ class Command(BaseCommand):
             board=board,
             sprint=sprint,
             parent=parent,
+            assignee=random.choice(members),
         )
 
         self.stdout.write(self.style.SUCCESS(f"Task {task.name} created successfully."))
-        try:
-            for _ in range(task_data["assignee_count"] + 1):
-                TaskAssignee.objects.create(task=task, user=random.choice(members))
-        except Exception as e:
-            self.stdout.write(self.style.ERROR(e))
+        # try:
+        #     for _ in range(task_data["assignee_count"] + 1):
+        #         TaskAssignee.objects.create(task=task, user=random.choice(members))
+        # except Exception as e:
+        #     self.stdout.write(self.style.ERROR(e))
 
         try:
             for _ in range(task_data["labels_count"] + 1):

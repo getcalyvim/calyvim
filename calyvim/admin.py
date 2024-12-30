@@ -204,7 +204,7 @@ class TaskCommentInlineAdmin(admin.StackedInline):
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ["name", "summary", "created_at"]
+    list_display = ["name", "summary", "sprint", "created_at"]
     inlines = [TaskAssigneeInlineAdmin, TaskCommentInlineAdmin]
 
 

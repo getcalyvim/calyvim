@@ -48,6 +48,7 @@ class BoardSerializer(serializers.ModelSerializer):
             "description",
             "is_estimate_enabled",
             "created_at",
+            "current_group_by",
         ]
 
 

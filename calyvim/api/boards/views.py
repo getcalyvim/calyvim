@@ -181,11 +181,12 @@ class BoardViewSet(ViewSet):
         members = (
             User.objects.filter(user_board_permissions__board=board)
             .distinct()
-            .order_by("first_name")
+            .order_by("display_name")
         )
 
         serializer = BoardMemberSeralizer(members, many=True)
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
+        response_data = {"results": serializer.data}
+        return Response(response_data, status=status.HTTP_200_OK)
 
     @action(methods=["GET"], detail=False, url_path="templates")
     def template(self, request, *args, **kwargs):
@@ -201,9 +202,7 @@ class BoardViewSet(ViewSet):
         template_boards = Board.template_objects.filter()
         serializer = BoardSerializer(template_boards, many=True)
 
-        response_data = {
-            "results": serializer.data
-        }
+        response_data = {"results": serializer.data}
         return Response(data=response_data, status=status.HTTP_200_OK)
 
     @action(methods=["GET"], detail=False)

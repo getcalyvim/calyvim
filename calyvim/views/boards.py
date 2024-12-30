@@ -19,7 +19,6 @@ from calyvim.mixins import BoardPermissionMixin
 # @method_decorator(cache_page(60 * 15, key_prefix="boards"), name="dispatch")
 class BoardKanbanView(LoginRequiredMixin, BoardPermissionMixin, View):
     def get(self, request, *args, **kwargs):
-        print(kwargs)
         board = get_object_or_404(Board, id=kwargs.get("board_id"))
 
         if not self.has_valid_board_permission(board, request.user):

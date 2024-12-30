@@ -26,6 +26,10 @@ from calyvim.api.tasks.serializers import (
     TaskCreateSerializer,
     TaskUpdateSerializer,
     TaskCommentSerializer,
+    StateSerializer,
+    MemberSerializer,
+    PrioritySerializer,
+    LabelSerializer
 )
 from calyvim.permissions import BoardGenericPermission
 from calyvim.exceptions import (
@@ -106,7 +110,6 @@ class TasksViewSet(BoardMixin, ViewSet):
     def create(self, request, *args, **kwargs):
         create_serializer = TaskCreateSerializer(data=request.data)
         if not create_serializer.is_valid():
-            print(create_serializer.errors)
             raise InvalidInputException
 
         data = create_serializer.validated_data
@@ -150,6 +153,8 @@ class TasksViewSet(BoardMixin, ViewSet):
         queryset = Task.objects.filter(
             board=request.board, archived_at__isnull=True, parent_id=parent_id
         )
+        view = request.query_params.get("view", "kanban")
+        group_by = request.query_params.get("group_by", None)
         if request.query_params.getlist("assignees[]"):
             # Filter for assignees
             assignees = request.query_params.getlist("assignees[]")
@@ -175,20 +180,85 @@ class TasksViewSet(BoardMixin, ViewSet):
             estimates = request.query_params.getlist("estimates[]")
             queryset = queryset.filter(estimate__in=estimates)
 
-        if request.query_params.getlist("sprints[]"):
-            # Filter for sprints
-            sprints = request.query_params.getlist("sprints[]")
-            queryset = queryset.filter(Q(sprint__in=sprints) | Q(sprint=None))
-        else:
-            queryset = queryset.filter(sprint=None)
+        # if request.query_params.getlist("sprints[]"):
+        #     # Filter for sprints
+        #     sprints = request.query_params.getlist("sprints[]")
+        #     queryset = queryset.filter(Q(sprint__in=sprints) | Q(sprint=None))
+        # else:
+        #     queryset = queryset.filter(sprint=None)
 
         tasks = (
             queryset.prefetch_related("assignees", "labels")
-            .select_related("priority", "created_by", "estimate", "sprint")
+            .select_related("priority", "created_by", "estimate", "sprint", "assignee")
             .order_by("sequence")
         )
-        serializer = TaskSerializer(tasks, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        # serializer = TaskSerializer(tasks, many=True)
+        results = []
+
+        if view == "kanban":
+            states = request.board.states.all()
+            if not group_by:
+                for state in states:
+                    state_tasks = [task for task in tasks if task.state_id == state.id]
+                    results.append(
+                        {
+                            "state": StateSerializer(state).data,
+                            "tasks": TaskSerializer(state_tasks, many=True).data,
+                        }
+                    )
+
+            elif group_by == "assignee":
+                assignees = request.board.members
+                for assignee in assignees:
+                    member_tasks = [task for task in tasks if task.assignee_id == assignee.id]
+                    states_data = []
+                    for state in states:
+                        state_tasks = [task for task in member_tasks if task.state_id == state.id]
+                        states_data.append(
+                            {
+                                **StateSerializer(state).data,
+                                "tasks": TaskSerializer(state_tasks, many=True).data,
+                            }
+                        )
+                    results.append(
+                        {
+                            "group_key": assignee.id,
+                            "states": states_data,
+                            "group_by": group_by,
+                            "assignee": MemberSerializer(assignee).data
+                        }
+                    )
+            elif group_by == "priority":
+                priorities = request.board.priorities.all()
+                for priority in priorities:
+                    priority_tasks = [task for task in tasks if task.priority_id == priority.id]
+                    states_data = []
+                    for state in states:
+                        state_tasks = [task for task in priority_tasks if task.state_id == state.id]
+                        states_data.append(
+                            {
+                                **StateSerializer(state).data,
+                                "tasks": TaskSerializer(state_tasks, many=True).data,
+                            }
+                        )
+                    results.append(
+                        {
+                            "group_key": priority.id,
+                            "states": states_data,
+                            "group_by": group_by,
+                            "priority": PrioritySerializer(priority).data
+                        }
+                    )
+
+        elif view == "table":
+            results = TaskSerializer(tasks, many=True).data    
+
+        response_data = {
+            "view": view,
+            "results": results,
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
 
     @transaction.atomic
     def partial_update(self, request, *args, **kwargs):

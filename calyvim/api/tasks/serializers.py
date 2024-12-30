@@ -1,6 +1,29 @@
 from rest_framework import serializers
 
-from calyvim.models import Task, User, Priority, Label, TaskComment, Estimate, Sprint
+from calyvim.models import Task, User, Priority, Label, TaskComment, Estimate, Sprint, State
+
+class StateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = State
+        fields = ["id", "name", "board_id", "sequence", "created_at"]
+
+
+class MemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "email", "first_name", "last_name", "avatar", "display_name"]
+
+
+class PrioritySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Priority
+        fields = ["id", "name", "created_at"]    
+
+
+class LabelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Label
+        fields = ["id", "name", "color", "created_at"]
 
 
 class AssigneeSerializer(serializers.ModelSerializer):
@@ -83,6 +106,7 @@ class TaskSerializer(serializers.ModelSerializer):
     assignee_ids = serializers.SerializerMethodField()
     label_ids = serializers.SerializerMethodField()
     task_type_display = serializers.SerializerMethodField()
+    assignee = AssigneeSerializer()
 
     class Meta:
         model = Task
@@ -100,6 +124,7 @@ class TaskSerializer(serializers.ModelSerializer):
             "summary",
             "description",
             "sequence",
+            "assignee",
             "assignees",
             "assignee_ids",
             "labels",

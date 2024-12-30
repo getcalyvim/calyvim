@@ -8,6 +8,7 @@ import {
   MinusCircleOutlined,
   SyncOutlined,
 } from '@ant-design/icons-vue'
+import { useBoardStore } from '@/stores/board'
 
 // const props = defineProps(['board', 'task'])
 const props = defineProps({
@@ -21,9 +22,11 @@ const props = defineProps({
   },
   hasCurrentSprint: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
+
+const store = useBoardStore()
 </script>
 
 <template>
@@ -49,7 +52,7 @@ const props = defineProps({
       <Tag
         :bordered="false"
         class="text-xs font-semibold"
-        v-if="!!props.task.priority"
+        v-if="!!props.task.priority && (!!store.groupBy && store.groupBy !== 'priority')"
       >
         <FlagOutlined class="text-primary" />
         <span class="text-primary">{{ props.task?.priority.name }}</span>
@@ -67,23 +70,21 @@ const props = defineProps({
       <Tag
         :bordered="false"
         class="text-xs font-semibold"
-        v-if="!props.task.sprint && props.hasCurrentSprint">
+        v-if="!props.task.sprint && props.hasCurrentSprint"
+      >
         <MinusCircleOutlined />
         <span>No sprint</span>
       </Tag>
     </div>
-    <AvatarGroup size="small">
-      <Avatar
-        v-for="assignee in props.task.assignees"
-        :key="assignee.id"
-        :size="22"
-        class="mr-1"
-        :src="
-          !!assignee.avatar
-            ? assignee.avatar
-            : generateAvatar(assignee.firstName)
-        "
-      />
-    </AvatarGroup>
+    <Avatar
+      v-if="!!props.task.assignee && (!!store.groupBy && store.groupBy !== 'assignee')"
+      :size="22"
+      class="mr-1"
+      :src="
+        !!props.task.assignee.avatar
+          ? props.task.assignee.avatar
+          : generateAvatar(props.task.assignee.displayName)
+      "
+    />
   </div>
 </template>

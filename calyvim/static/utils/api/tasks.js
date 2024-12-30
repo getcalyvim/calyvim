@@ -1,4 +1,8 @@
 import { client } from './client'
+export const taskListAPI = (boardId, filters = {}) =>
+  client.get(`/boards/${boardId}/tasks`, {
+    params: filters,
+  })
 
 export const taskArchiveApi = (boardId, taskId) =>
   client.patch(`/boards/${boardId}/tasks/${taskId}/archive`)
