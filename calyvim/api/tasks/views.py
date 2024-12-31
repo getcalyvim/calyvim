@@ -202,7 +202,7 @@ class TasksViewSet(BoardMixin, ViewSet):
                     state_tasks = [task for task in tasks if task.state_id == state.id]
                     results.append(
                         {
-                            "state": StateSerializer(state).data,
+                            **StateSerializer(state).data,
                             "tasks": TaskSerializer(state_tasks, many=True).data,
                         }
                     )

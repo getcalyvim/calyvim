@@ -13,7 +13,7 @@ import {
   labelListAPI,
   estimateListAPI,
   sprintListAPI,
-  boardUpdateAPI
+  boardUpdateAPI,
 } from '@/utils/api'
 import { VueDraggable } from 'vue-draggable-plus'
 import TaskCard from '@/components/boards/kanban/task-card.vue'
@@ -41,6 +41,8 @@ import {
   SyncOutlined,
   FlagOutlined,
   UserOutlined,
+  ArrowDownOutlined,
+  ArrowRightOutlined,
 } from '@ant-design/icons-vue'
 import { useNProgress } from '@vueuse/integrations/useNProgress'
 import WorkspaceLayout from '@/components/base/workspace-layout.vue'
@@ -72,7 +74,15 @@ const props = defineProps({
   },
 })
 
-console.log(props)
+const openedGroups = ref(new Set())
+
+const toggleGroup = (groupKey) => {
+  if (openedGroups.value.has(groupKey)) {
+    openedGroups.value.delete(groupKey)
+  } else {
+    openedGroups.value.add(groupKey)
+  }
+}
 
 const { isLoading } = useNProgress({ min: 0.5 })
 
@@ -94,8 +104,10 @@ const loadTasks = async () => {
       groupBy: store.groupBy,
     })
     store.initializeKanban(data.results)
+    data.results.forEach((item) => {
+      openedGroups.value.add(item.groupKey)
+    })
   } catch (error) {
-    console.log(error)
     handleResponseError(error)
   }
 }
@@ -123,7 +135,7 @@ onMounted(async () => {
   await loadingMembers()
 
   await store.initializeGroupBy(props.board.currentGroupBy)
-  
+
   await loadTasks()
   isLoading.value = false
 })
@@ -162,7 +174,11 @@ const loadTaskAndUpdateCurrentGroupBy = async (value) => {
           <div class="flex items-center gap-3 mx-2">
             <div class="flex items-center gap-1">
               <div class="font-semibold text-xs text-gray-500">Group by</div>
-              <Select v-model:value="store.groupBy" class="w-36" @change="loadTaskAndUpdateCurrentGroupBy">
+              <Select
+                v-model:value="store.groupBy"
+                class="w-36"
+                @change="loadTaskAndUpdateCurrentGroupBy"
+              >
                 <Select.Option :value="null">None</Select.Option>
                 <Select.Option value="assignee">
                   <UserOutlined class="text-primary" />
@@ -187,9 +203,29 @@ const loadTaskAndUpdateCurrentGroupBy = async (value) => {
                 v-if="!!store.groupBy && store.groupBy === 'assignee'"
                 class="task-list"
               >
-                <div class="w-full" v-for="item in store.kanban" :key="item.id">
-                  <template v-if="item.groupBy === 'assignee'">
+                <div
+                  class="w-full mb-1"
+                  v-for="item in store.kanban"
+                  :key="item.id"
+                >
+                  <template
+                    v-if="
+                      item.groupBy === 'assignee'
+                    "
+                  >
                     <div class="bg-gray-100 px-2 py-1 rounded">
+                      <Button type="text" size="small" class="mr-2">
+                        <ArrowRightOutlined
+                          v-if="!openedGroups.has(item.groupKey)"
+                          class="text-xs text-gray-500"
+                          @click="toggleGroup(item.groupKey)"
+                        />
+                        <ArrowDownOutlined
+                          v-else
+                          class="text-xs text-gray-500"
+                          @click="toggleGroup(item.groupKey)"
+                        />
+                      </Button>
                       <Avatar
                         :src="
                           !!item.assignee.avatar
@@ -202,6 +238,7 @@ const loadTaskAndUpdateCurrentGroupBy = async (value) => {
                     </div>
 
                     <StateTasks
+                      v-if="openedGroups.has(item.groupKey)"
                       :states="item.states"
                       :board="props.board"
                       :groupKey="item.groupKey"
@@ -216,16 +253,33 @@ const loadTaskAndUpdateCurrentGroupBy = async (value) => {
                 v-else-if="!!store.groupBy && store.groupBy === 'priority'"
                 class="task-list"
               >
-                <div class="w-full" v-for="item in store.kanban" :key="item.id">
+                <div
+                  class="w-full mb-1"
+                  v-for="item in store.kanban"
+                  :key="item.id"
+                >
                   <template v-if="item.groupBy === 'priority'">
                     <div class="bg-gray-100 px-2 py-1 rounded">
+                      <Button type="text" size="small" class="mr-2">
+                        <ArrowRightOutlined
+                          v-if="!openedGroups.has(item.groupKey)"
+                          class="text-xs text-gray-500"
+                          @click="toggleGroup(item.groupKey)"
+                        />
+                        <ArrowDownOutlined
+                          v-else
+                          class="text-xs text-gray-500"
+                          @click="toggleGroup(item.groupKey)"
+                        />
+                      </Button>
                       <FlagOutlined class="text-primary" />
-                      <span class="ml-2 font-semibold">{{
-                        item.priority.name
-                      }}</span>
+                      <span class="ml-2 font-semibold">
+                        {{ item.priority.name }}
+                      </span>
                     </div>
 
                     <StateTasks
+                      v-if="openedGroups.has(item.groupKey)"
                       :states="item.states"
                       :board="props.board"
                       :groupKey="item.groupKey"

@@ -52,7 +52,7 @@ const store = useBoardStore()
       <Tag
         :bordered="false"
         class="text-xs font-semibold"
-        v-if="!!props.task.priority && (!!store.groupBy && store.groupBy !== 'priority')"
+        v-if="!!props.task.priority && (!store.groupBy || store.groupBy !== 'priority')"
       >
         <FlagOutlined class="text-primary" />
         <span class="text-primary">{{ props.task?.priority.name }}</span>
@@ -77,7 +77,7 @@ const store = useBoardStore()
       </Tag>
     </div>
     <Avatar
-      v-if="!!props.task.assignee && (!!store.groupBy && store.groupBy !== 'assignee')"
+      v-if="props.task.assignee && (!store.groupBy || store.groupBy !== 'assignee')"
       :size="22"
       class="mr-1"
       :src="

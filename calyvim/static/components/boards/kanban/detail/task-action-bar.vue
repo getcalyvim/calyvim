@@ -2,6 +2,8 @@
 import { Avatar, Divider, Select, SelectOption, Button } from 'ant-design-vue'
 import { generateAvatar } from '@/utils/helpers'
 import { useKanbanStore } from '@/stores/kanban'
+import { useBoardStore } from '@/stores/board'
+
 import TaskTypeIcon from '../../../icons/task-type-icon.vue'
 import {
   ClockCircleOutlined,
@@ -19,11 +21,21 @@ const emit = defineEmits([
   'archive',
 ])
 
-const store = useKanbanStore()
+const store = useBoardStore()
 
 const getAvatarSrc = (memberId) => {
   const member = store.members.find((m) => m.id === memberId)
   return member ? member.avatar || generateAvatar(member.firstName) : ''
+}
+
+const updatePriority = async (taskId, priorityId) => {
+  const priority = store.priorities.find((p) => p.id === priorityId)
+  const updatedData = {
+    priorityId,
+    priority
+  }
+
+  store.updateTask(taskId, updatedData, 'priority', priorityId)
 }
 </script>
 
@@ -106,7 +118,7 @@ const getAvatarSrc = (memberId) => {
 
   <Select
     v-model:value="task.priorityId"
-    @change="(priorityId) => emit('updateProperties', { priorityId })"
+    @change="(priorityId) => updatePriority(task.id, priorityId)"
     class="w-full"
   >
     <SelectOption :value="null">-</SelectOption>
