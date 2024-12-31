@@ -72,7 +72,7 @@ const updateTaskSequence = async (event, stateId) => {
 <template>
   <div class="flex space-x-3">
     <VueDraggable
-      v-for="state in states"
+      v-for="state in props.states"
       :key="state.id"
       v-model="state.tasks"
       :group="!!props.groupKey ? props.groupKey : 'default'"
