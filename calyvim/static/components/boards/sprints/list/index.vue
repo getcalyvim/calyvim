@@ -38,7 +38,7 @@ const fetchSprint = async () => {
   try {
     isLoading.value = true
     const { data } = await sprintListAPI(props.board.id)
-    sprints.value = data
+    sprints.value = data.results
   } catch (error) {
     handleResponseError(error)
   } finally {

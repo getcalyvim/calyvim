@@ -44,7 +44,12 @@ const hasCurrentSprint = computed(() => props.currentSprint !== null)
       <Divider class="my-2 p-0" />
     </template>
 
-    <template v-if="props.board.isEstimateEnabled">
+    <template
+      v-if="
+        (!store.groupBy || store.groupBy !== 'estimate') &&
+        store.estimates.length > 0
+      "
+    >
       <div>
         <div class="font-semibold text-gray-600">Estimates</div>
         <EstimateFilters @reload="emit('reload')" />
@@ -52,7 +57,7 @@ const hasCurrentSprint = computed(() => props.currentSprint !== null)
       <Divider class="my-2 p-0" />
     </template>
 
-    <template v-if="!hasCurrentSprint">
+    <template v-if="!store.groupBy || store.groupBy !== 'sprint' && (store.sprints.length > 0 || hasCurrentSprint)">
       <div>
         <div class="font-semibold text-gray-600">Sprints</div>
         <SprintFilters @reload="emit('reload')" />
@@ -60,13 +65,13 @@ const hasCurrentSprint = computed(() => props.currentSprint !== null)
       <Divider class="my-2 p-0" />
     </template>
 
-    <div>
+    <div v-if="!store.groupBy || store.groupBy !== 'task_type'">
       <div class="font-semibold text-gray-600">Types</div>
       <TaskTypeFilters @reload="emit('reload')" />
       <Divider class="my-2 p-0" />
     </div>
 
-    <div>
+    <div v-if="store.labels.length > 0">
       <div class="font-semibold text-gray-600">Labels</div>
       <LabelFilters @reload="emit('reload')" />
     </div>

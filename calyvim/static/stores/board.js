@@ -8,6 +8,8 @@ export const useBoardStore = defineStore('board', () => {
   const members = ref([])
   const priorities = ref([])
   const sprints = ref([])
+  const estimates = ref([])
+  const labels = ref([])
 
   const groupBy = ref(null)
 
@@ -40,6 +42,14 @@ export const useBoardStore = defineStore('board', () => {
 
   const initializeSprints = (sprintsData) => {
     sprints.value = sprintsData
+  }
+
+  const initializeEstimates = (estimatesData) => {
+    estimates.value = estimatesData
+  }
+
+  const initializeLabels = (labelsData) => {
+    labels.value = labelsData
   }
 
   const updateTask = (
@@ -161,6 +171,8 @@ export const useBoardStore = defineStore('board', () => {
     priorities,
     groupBy,
     sprints,
+    estimates,
+    labels,
     assigneeFilters,
     taskTypes,
     priorityFilters,
@@ -175,6 +187,8 @@ export const useBoardStore = defineStore('board', () => {
     initializePriorities,
     initializeGroupBy,
     initializeSprints,
+    initializeEstimates,
+    initializeLabels,
     updateTask,
     updateTaskPositionByGroup,
     updateTaskPosition,
