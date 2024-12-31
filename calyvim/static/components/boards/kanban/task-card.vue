@@ -61,19 +61,10 @@ const store = useBoardStore()
       <Tag
         :bordered="false"
         class="text-xs font-semibold"
-        v-if="!!props.task.sprint && !props.hasCurrentSprint"
+        v-if="!!props.task.sprint && (!store.groupBy || store.groupBy !== 'sprint')"
       >
         <SyncOutlined />
         <span>{{ props.task?.sprint.name }}</span>
-      </Tag>
-
-      <Tag
-        :bordered="false"
-        class="text-xs font-semibold"
-        v-if="!props.task.sprint && props.hasCurrentSprint"
-      >
-        <MinusCircleOutlined />
-        <span>No sprint</span>
       </Tag>
     </div>
     <Avatar

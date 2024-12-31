@@ -3,14 +3,9 @@ import BoardLayout from '@/components/base/board-layout.vue'
 import { useBoardStore } from '@/stores/board'
 import { computed, h, onMounted, ref, watch } from 'vue'
 import {
-  taskListAPI,
   stateListAPI,
   boardMembersListAPI,
   priorityListAPI,
-  taskUpdateSequence,
-  taskCreateAPI,
-  labelListAPI,
-  estimateListAPI,
   sprintListAPI,
   boardUpdateAPI,
   taskListKanbanAPI,
@@ -20,17 +15,12 @@ import { Button, Dropdown, Avatar, Drawer, Tag, Select } from 'ant-design-vue'
 import {
   FilterOutlined,
   PlusOutlined,
-  ReloadOutlined,
-  UnorderedListOutlined,
-  BorderOutlined,
-  EllipsisOutlined,
   SyncOutlined,
   FlagOutlined,
   UserOutlined,
   ArrowDownOutlined,
   ArrowRightOutlined,
   CarryOutOutlined,
-  CheckSquareOutlined,
   BlockOutlined,
   ClockCircleOutlined,
 } from '@ant-design/icons-vue'
