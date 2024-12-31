@@ -1,4 +1,7 @@
 import { client } from './client'
+export const taskUpdateAPI = (boardId, taskId, data) =>
+  client.patch(`/boards/${boardId}/tasks/${taskId}`, data)
+
 export const taskListAPI = (boardId, filters = {}) =>
   client.get(`/boards/${boardId}/tasks`, {
     params: filters,

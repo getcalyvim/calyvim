@@ -1,7 +1,6 @@
 <script setup>
 import { Avatar, Divider, Select, SelectOption, Button } from 'ant-design-vue'
 import { generateAvatar } from '@/utils/helpers'
-import { useKanbanStore } from '@/stores/kanban'
 import { useBoardStore } from '@/stores/board'
 
 import TaskTypeIcon from '../../../icons/task-type-icon.vue'
@@ -12,30 +11,66 @@ import {
   SyncOutlined,
 } from '@ant-design/icons-vue'
 import { h } from 'vue'
+import { taskUpdateAPI } from '@/utils/api'
+import { handleResponseError, notify } from '@/utils/helpers'
 
-const props = defineProps(['task', 'board', 'isArchived'])
+const props = defineProps(['task', 'board', 'isArchived', 'groupKey'])
 const emit = defineEmits([
   'updateProperties',
   'updateState',
   'updateSprint',
   'archive',
+  'log'
 ])
 
 const store = useBoardStore()
 
-const getAvatarSrc = (memberId) => {
-  const member = store.members.find((m) => m.id === memberId)
-  return member ? member.avatar || generateAvatar(member.firstName) : ''
+const updateTask = async (taskId, updatedData) => {
+  try {
+    const { data } = await taskUpdateAPI(props.board.id, taskId, updatedData)
+    emit('log', data.log)
+    notify('UPDATED', data.log)
+  } catch (error) {
+    handleResponseError(error)
+  }
 }
 
 const updatePriority = async (taskId, priorityId) => {
   const priority = store.priorities.find((p) => p.id === priorityId)
   const updatedData = {
     priorityId,
-    priority
+    priority,
   }
 
+  updateTask(taskId, { priorityId })
   store.updateTask(taskId, updatedData, 'priority', priorityId)
+}
+
+const updateAssignee = async (taskId, assigneeId) => {
+  const assignee = store.members.find((m) => m.id === assigneeId)
+  const updatedData = {
+    assigneeId,
+    assignee,
+  }
+
+  updateTask(taskId, { assigneeId })
+  store.updateTask(taskId, updatedData, 'assignee', assigneeId)
+}
+
+const updateState = async (taskId, stateId) => {
+  const state = store.states.find((s) => s.id === stateId)
+  const updatedData = {
+    stateId,
+    state,
+  }
+
+  updateTask(taskId, { stateId })
+  await store.updateTask(taskId, updatedData, 'state', stateId)
+  if(!!props.groupKey) {
+    await store.updateTaskPositionByGroup(taskId, stateId, props.groupKey, updatedData)
+  } else {
+    await store.updateTaskPosition(taskId, stateId, updatedData)
+  }
 }
 </script>
 
@@ -44,7 +79,7 @@ const updatePriority = async (taskId, priorityId) => {
   <Select
     v-model:value="task.stateId"
     class="w-full mb-2"
-    @change="(stateId) => emit('updateState', stateId)"
+    @change="(stateId) => updateState(task.id, stateId)"
   >
     <SelectOption
       :value="state.id"
@@ -57,32 +92,25 @@ const updatePriority = async (taskId, priorityId) => {
 
   <Divider class="p-0 my-3" />
 
-  <div class="mb-2 font-semibold">Assignees</div>
+  <div class="mb-2 font-semibold">Assignee</div>
   <Select
-    v-model:value="task.assigneeIds"
-    mode="multiple"
-    optionFilterProp="label"
-    @change="(assigneeIds) => emit('updateProperties', { assigneeIds })"
+    v-model:value="task.assigneeId"
+    @change="(assigneeId) => updateAssignee(task.id, assigneeId)"
     class="w-full"
   >
-    <template #tagRender="{ value }">
-      <Avatar size="small" :src="getAvatarSrc(value)" />
-    </template>
-
+    <SelectOption :value="null">None</SelectOption>
     <SelectOption
+      :value="member.id"
       v-for="member in store.members"
       :key="member.id"
-      :label="member.firstName"
     >
-      <div class="flex items-center gap-2">
-        <Avatar
-          size="small"
-          :src="
-            !!member.avatar ? member.avatar : generateAvatar(member.displayName)
-          "
-        />
-        <div>{{ member.displayName }}</div>
-      </div>
+      <Avatar
+        :size="22"
+        :src="
+          !!member.avatar ? member.avatar : generateAvatar(member.displayName)
+        "
+      />
+      <span class="ml-2">{{ member.displayName }}</span>
     </SelectOption>
   </Select>
 

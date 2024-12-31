@@ -43,6 +43,10 @@ import {
   UserOutlined,
   ArrowDownOutlined,
   ArrowRightOutlined,
+  CarryOutOutlined,
+  CheckSquareOutlined,
+  BlockOutlined,
+  ClockCircleOutlined,
 } from '@ant-design/icons-vue'
 import { useNProgress } from '@vueuse/integrations/useNProgress'
 import WorkspaceLayout from '@/components/base/workspace-layout.vue'
@@ -141,14 +145,17 @@ onMounted(async () => {
 })
 
 const taskViewId = ref(null)
+const taskViewGroupKey = ref(null)
 const showTaskView = ref(false)
-const openTaskView = (taskId) => {
+const openTaskView = (taskId, groupKey) => {
   taskViewId.value = taskId
+  taskViewGroupKey.value = groupKey
   showTaskView.value = true
 }
 const closeTaskView = () => {
   showTaskView.value = false
   taskViewId.value = null
+  taskViewGroupKey.value = null
 }
 
 const loadTaskAndUpdateCurrentGroupBy = async (value) => {
@@ -187,6 +194,18 @@ const loadTaskAndUpdateCurrentGroupBy = async (value) => {
                 <Select.Option value="priority">
                   <FlagOutlined class="text-primary" />
                   <span class="ml-2">Priority</span>
+                </Select.Option>
+                <Select.Option value="sprint">
+                  <CarryOutOutlined class="text-primary" />
+                  <span class="ml-2">Sprint</span>
+                </Select.Option>
+                <Select.Option value="task_type">
+                  <BlockOutlined class="text-primary" />
+                  <span class="ml-2">Task type</span>
+                </Select.Option>
+                <Select.Option value="estimate">
+                  <ClockCircleOutlined class="text-primary" />
+                  <span class="ml-2">Estimate</span>
                 </Select.Option>
               </Select>
             </div>
@@ -309,7 +328,7 @@ const loadTaskAndUpdateCurrentGroupBy = async (value) => {
             :header-style="{ display: 'none' }"
             :width="920"
           >
-            <TaskView :board="props.board" :taskId="taskViewId" />
+            <TaskView :board="props.board" :taskId="taskViewId" :groupKey="taskViewGroupKey" />
           </Drawer>
         </template>
       </BoardLayout>

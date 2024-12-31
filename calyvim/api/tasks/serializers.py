@@ -125,6 +125,7 @@ class TaskSerializer(serializers.ModelSerializer):
             "description",
             "sequence",
             "assignee",
+            "assignee_id",
             "assignees",
             "assignee_ids",
             "labels",
@@ -160,11 +161,12 @@ class TaskUpdateSerializer(serializers.Serializer):
     assignee_ids = serializers.ListField(
         child=serializers.UUIDField(), allow_empty=True, required=False
     )
-    priority_id = serializers.UUIDField(required=False)
+    priority_id = serializers.UUIDField(required=False, allow_null=True)
     state_id = serializers.UUIDField(required=False)
     task_type = serializers.ChoiceField(choices=Task.TaskType, required=False)
     estimate_id = serializers.UUIDField(required=False)
     sprint_id = serializers.UUIDField(required=False, allow_null=True)
+    assignee_id = serializers.UUIDField(required=False, allow_null=True)
 
 
 class AuthorSerializer(serializers.ModelSerializer):

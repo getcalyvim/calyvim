@@ -64,7 +64,7 @@ import {
 dayjs.extend(relativeTime)
 
 // Props
-const props = defineProps(['board', 'workspace', 'taskId'])
+const props = defineProps(['board', 'workspace', 'taskId', 'groupKey'])
 
 // Store
 const store = useKanbanStore()
@@ -159,7 +159,7 @@ const updateSprint = async (sprintId) => {
 
     logComment(data.comments)
 
-    if(!store.sprintFilters.includes(sprintId)) {
+    if (!store.sprintFilters.includes(sprintId)) {
       store.removeTask(task.value.id)
     }
   } catch (error) {
@@ -325,13 +325,13 @@ onMounted(() => {
   loadTaskDetails()
 })
 
-// Watchers
-watch(
-  () => store.selectedTask,
-  () => {
-    loadTaskDetails()
-  }
-)
+// // Watchers
+// watch(
+//   () => store.selectedTask,
+//   () => {
+//     loadTaskDetails()
+//   }
+// )
 </script>
 
 <template>
@@ -469,7 +469,7 @@ watch(
               </RadioGroup>
             </div>
           </div>
-          
+
           <TaskCommentAddForm
             :boardId="props.board.id"
             :taskId="props.taskId"
@@ -489,6 +489,7 @@ watch(
           :isArchived="isArchived"
           :task="task"
           :board="props.board"
+          :groupKey="props.groupKey"
           @updateProperties="updateTask"
           @updateState="updateState"
           @updateSprint="updateSprint"

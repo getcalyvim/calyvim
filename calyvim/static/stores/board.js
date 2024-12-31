@@ -42,7 +42,10 @@ export const useBoardStore = defineStore('board', () => {
     groupByPropertyId = null
   ) => {
     if (groupBy.value) {
-      if (groupByProperty && groupByProperty !== groupBy.value) {
+      if (
+        (groupByProperty && groupByProperty !== groupBy.value) ||
+        (!groupByProperty && !groupByPropertyId)
+      ) {
         kanban.value.forEach((item) => {
           item.states.forEach((state) => {
             const task = state.tasks.find((task) => task.id === taskId)
@@ -87,6 +90,49 @@ export const useBoardStore = defineStore('board', () => {
     }
   }
 
+  const updateTaskPositionByGroup = (
+    taskId,
+    stateId,
+    groupKey,
+    updatedData
+  ) => {
+    kanban.value.forEach((item) => {
+      item.states.forEach((state) => {
+        const taskIndex = state.tasks.findIndex((task) => task.id === taskId)
+        if (taskIndex !== -1) {
+          const taskToMove = state.tasks.splice(taskIndex, 1)[0]
+          console.log(taskToMove)
+          kanban.value.forEach((item) => {
+            if (item.groupKey === groupKey) {
+              item.states.forEach((state) => {
+                if (state.id === stateId) {
+                  state.tasks.push({ ...taskToMove, ...updatedData })
+                  state.tasks.sort((a, b) => a.sequence - b.sequence)
+                }
+              })
+            }
+          })
+        }
+      })
+    })
+  }
+
+  const updateTaskPosition = (taskId, stateId, updatedData) => {
+    kanban.value.forEach((item) => {
+      const taskIndex = item.tasks.findIndex((task) => task.id === taskId)
+      if (taskIndex !== -1) {
+        const taskToMove = item.tasks.splice(taskIndex, 1)[0]
+
+        kanban.value.forEach((item) => {
+          if (item.id === stateId) {
+            item.tasks.push({ ...taskToMove, ...updatedData })
+            item.tasks.sort((a, b) => a.sequence - b.sequence)
+          }
+        })
+      }
+    })
+  }
+
   return {
     // State
     kanban,
@@ -104,5 +150,7 @@ export const useBoardStore = defineStore('board', () => {
     initializeGroupBy,
     initializeSprints,
     updateTask,
+    updateTaskPositionByGroup,
+    updateTaskPosition,
   }
 })

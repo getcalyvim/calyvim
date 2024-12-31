@@ -52,12 +52,12 @@ const switchTab = (key) => {
         </template>
       </TabPane>
 
-      <TabPane key="table">
+      <!-- <TabPane key="table">
         <template #tab>
           <TableOutlined />
           Table
         </template>
-      </TabPane>
+      </TabPane> -->
 
       <TabPane key="timeline" disabled>
         <template #tab>

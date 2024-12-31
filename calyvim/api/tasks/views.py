@@ -29,7 +29,7 @@ from calyvim.api.tasks.serializers import (
     StateSerializer,
     MemberSerializer,
     PrioritySerializer,
-    LabelSerializer
+    LabelSerializer,
 )
 from calyvim.permissions import BoardGenericPermission
 from calyvim.exceptions import (
@@ -210,10 +210,14 @@ class TasksViewSet(BoardMixin, ViewSet):
             elif group_by == "assignee":
                 assignees = request.board.members
                 for assignee in assignees:
-                    member_tasks = [task for task in tasks if task.assignee_id == assignee.id]
+                    member_tasks = [
+                        task for task in tasks if task.assignee_id == assignee.id
+                    ]
                     states_data = []
                     for state in states:
-                        state_tasks = [task for task in member_tasks if task.state_id == state.id]
+                        state_tasks = [
+                            task for task in member_tasks if task.state_id == state.id
+                        ]
                         states_data.append(
                             {
                                 **StateSerializer(state).data,
@@ -225,16 +229,20 @@ class TasksViewSet(BoardMixin, ViewSet):
                             "group_key": assignee.id,
                             "states": states_data,
                             "group_by": group_by,
-                            "assignee": MemberSerializer(assignee).data
+                            "assignee": MemberSerializer(assignee).data,
                         }
                     )
             elif group_by == "priority":
                 priorities = request.board.priorities.all()
                 for priority in priorities:
-                    priority_tasks = [task for task in tasks if task.priority_id == priority.id]
+                    priority_tasks = [
+                        task for task in tasks if task.priority_id == priority.id
+                    ]
                     states_data = []
                     for state in states:
-                        state_tasks = [task for task in priority_tasks if task.state_id == state.id]
+                        state_tasks = [
+                            task for task in priority_tasks if task.state_id == state.id
+                        ]
                         states_data.append(
                             {
                                 **StateSerializer(state).data,
@@ -246,12 +254,12 @@ class TasksViewSet(BoardMixin, ViewSet):
                             "group_key": priority.id,
                             "states": states_data,
                             "group_by": group_by,
-                            "priority": PrioritySerializer(priority).data
+                            "priority": PrioritySerializer(priority).data,
                         }
                     )
 
         elif view == "table":
-            results = TaskSerializer(tasks, many=True).data    
+            results = TaskSerializer(tasks, many=True).data
 
         response_data = {
             "view": view,
@@ -287,15 +295,30 @@ class TasksViewSet(BoardMixin, ViewSet):
                 else:
                     task_updates.append(f"has set estimate as {estimate.value}")
             if key == "priority_id":
-                priority = get_object_or_raise_api_404(
-                    Priority, board=request.board, id=value
-                )
-                if task.priority:
-                    task_updates.append(
-                        f"changed priority from {task.priority.name} to {priority.name}."
-                    )
+                if not value:
+                    task_updates.append(f"removed priority {task.priority.name}.")
                 else:
-                    task_updates.append(f"has set task priority as {priority.name}")
+                    priority = get_object_or_raise_api_404(
+                        Priority, board=request.board, id=value
+                    )
+                    if task.priority:
+                        task_updates.append(
+                            f"changed priority from {task.priority.name} to {priority.name}."
+                        )
+                    else:
+                        task_updates.append(f"has set task priority as {priority.name}")
+
+            if key == "assignee_id":
+                if not value:
+                    task_updates.append(f"removed assignee {task.assignee.display_name}.")
+                else:
+                    assignee = request.board.members.filter(id=value).first()
+                    if task.assignee:
+                        task_updates.append(
+                            f"changed assignee from {task.assignee.display_name} to {assignee.display_name}."
+                        )
+                    else:
+                        task_updates.append(f"assigned to {assignee.display_name}.")
 
             if key == "task_type":
                 task_updates.append(
@@ -361,23 +384,16 @@ class TasksViewSet(BoardMixin, ViewSet):
                     task_updates.append(f"removed assignees: {removed_names}")
 
         if task_updates:
-            comments = TaskComment.objects.bulk_create(
-                [
-                    TaskComment(
-                        task=task,
-                        content=update,
-                        author=request.user,
-                        comment_type=TaskComment.CommentType.ACTIVITY,
-                    )
-                    for update in task_updates
-                ],
+            TaskComment.objects.create(
+                task=task,
+                content=", ".join(task_updates),
+                author=request.user,
+                comment_type=TaskComment.CommentType.ACTIVITY,
             )
-        task_serializer = TaskSerializer(task)
-        comments_serializer = TaskCommentSerializer(comments, many=True)
+        # task_serializer = TaskSerializer(task)
         response_data = {
-            "task": task_serializer.data,
-            "comments": comments_serializer.data,
             "detail": "Task updated successfully.",
+            "log": ", ".join(task_updates),
         }
         return Response(
             data=response_data,
