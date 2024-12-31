@@ -7,6 +7,11 @@ export const taskListAPI = (boardId, filters = {}) =>
     params: filters,
   })
 
+export const taskListKanbanAPI = (boardId, filters = {}) =>
+  client.get(`/boards/${boardId}/tasks/kanban`, {
+    params: filters,
+  })
+
 export const taskArchiveApi = (boardId, taskId) =>
   client.patch(`/boards/${boardId}/tasks/${taskId}/archive`)
 

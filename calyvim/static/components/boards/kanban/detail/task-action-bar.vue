@@ -1,7 +1,6 @@
 <script setup>
 import { Avatar, Divider, Select, SelectOption, Button } from 'ant-design-vue'
 import { generateAvatar } from '@/utils/helpers'
-import { useBoardStore } from '@/stores/board'
 
 import TaskTypeIcon from '../../../icons/task-type-icon.vue'
 import {
@@ -11,67 +10,45 @@ import {
   SyncOutlined,
 } from '@ant-design/icons-vue'
 import { h } from 'vue'
-import { taskUpdateAPI } from '@/utils/api'
-import { handleResponseError, notify } from '@/utils/helpers'
 
-const props = defineProps(['task', 'board', 'isArchived', 'groupKey'])
+const props = defineProps({
+  task: {
+    type: Object,
+    required: true,
+  },
+  board: {
+    type: Object,
+    required: true,
+  },
+  isArchived: {
+    type: Boolean,
+    default: false,
+  },
+  members: {
+    type: Array,
+    default: () => [],
+  },
+  priorities: {
+    type: Array,
+    default: () => [],
+  },
+  states: {
+    type: Array,
+    default: () => [],
+  },
+  estimates: {
+    type: Array,
+    default: () => [],
+  },
+  sprints: {
+    type: Array,
+    default: () => [],
+  },
+})
+
 const emit = defineEmits([
-  'updateProperties',
-  'updateState',
-  'updateSprint',
-  'archive',
-  'log'
+  'update'
 ])
-
-const store = useBoardStore()
-
-const updateTask = async (taskId, updatedData) => {
-  try {
-    const { data } = await taskUpdateAPI(props.board.id, taskId, updatedData)
-    emit('log', data.log)
-    notify('UPDATED', data.log)
-  } catch (error) {
-    handleResponseError(error)
-  }
-}
-
-const updatePriority = async (taskId, priorityId) => {
-  const priority = store.priorities.find((p) => p.id === priorityId)
-  const updatedData = {
-    priorityId,
-    priority,
-  }
-
-  updateTask(taskId, { priorityId })
-  store.updateTask(taskId, updatedData, 'priority', priorityId)
-}
-
-const updateAssignee = async (taskId, assigneeId) => {
-  const assignee = store.members.find((m) => m.id === assigneeId)
-  const updatedData = {
-    assigneeId,
-    assignee,
-  }
-
-  updateTask(taskId, { assigneeId })
-  store.updateTask(taskId, updatedData, 'assignee', assigneeId)
-}
-
-const updateState = async (taskId, stateId) => {
-  const state = store.states.find((s) => s.id === stateId)
-  const updatedData = {
-    stateId,
-    state,
-  }
-
-  updateTask(taskId, { stateId })
-  await store.updateTask(taskId, updatedData, 'state', stateId)
-  if(!!props.groupKey) {
-    await store.updateTaskPositionByGroup(taskId, stateId, props.groupKey, updatedData)
-  } else {
-    await store.updateTaskPosition(taskId, stateId, updatedData)
-  }
-}
 </script>
 
 <template>
@@ -79,11 +56,11 @@ const updateState = async (taskId, stateId) => {
   <Select
     v-model:value="task.stateId"
     class="w-full mb-2"
-    @change="(stateId) => updateState(task.id, stateId)"
+    @change="(stateId) => emit('update', { stateId })"
   >
     <SelectOption
       :value="state.id"
-      v-for="state in store.states"
+      v-for="state in props.states"
       :key="state.id"
     >
       <span class="ml-1">{{ state.name }}</span>
@@ -95,13 +72,13 @@ const updateState = async (taskId, stateId) => {
   <div class="mb-2 font-semibold">Assignee</div>
   <Select
     v-model:value="task.assigneeId"
-    @change="(assigneeId) => updateAssignee(task.id, assigneeId)"
+    @change="(assigneeId) => emit('update', { assigneeId })"
     class="w-full"
   >
     <SelectOption :value="null">None</SelectOption>
     <SelectOption
       :value="member.id"
-      v-for="member in store.members"
+      v-for="member in props.members"
       :key="member.id"
     >
       <Avatar
@@ -120,7 +97,7 @@ const updateState = async (taskId, stateId) => {
   <Select
     v-model:value="task.taskType"
     class="w-full"
-    @change="(taskType) => emit('updateProperties', { taskType })"
+    @change="(taskType) => emit('update', { taskType })"
   >
     <SelectOption value="issue">
       <TaskTypeIcon taskType="issue" />
@@ -146,13 +123,13 @@ const updateState = async (taskId, stateId) => {
 
   <Select
     v-model:value="task.priorityId"
-    @change="(priorityId) => updatePriority(task.id, priorityId)"
+    @change="(priorityId) => emit('update', { priorityId })"
     class="w-full"
   >
     <SelectOption :value="null">-</SelectOption>
     <SelectOption
       :value="priority.id"
-      v-for="priority in store.priorities"
+      v-for="priority in props.priorities"
       :key="priority.id"
     >
       <FlagOutlined />
@@ -166,13 +143,13 @@ const updateState = async (taskId, stateId) => {
     <div class="mb-2 font-semibold">Estimate</div>
     <Select
       v-model:value="task.estimateId"
-      @change="(estimateId) => emit('updateProperties', { estimateId })"
+      @change="(estimateId) => emit('update', { priorityId })"
       class="w-full"
     >
       <SelectOption :value="null">-</SelectOption>
       <SelectOption
         :value="estimate.id"
-        v-for="estimate in store.estimates"
+        v-for="estimate in props.estimates"
         :key="estimate.id"
       >
         <ClockCircleOutlined class="text-xs" />
@@ -181,19 +158,19 @@ const updateState = async (taskId, stateId) => {
     </Select>
   </template>
 
-  <template v-if="store.sprints.length > 0">
+  <template v-if="props.sprints.length > 0">
     <Divider class="p-0 my-3" />
 
     <div class="mb-2 font-semibold">Sprint</div>
     <Select
       v-model:value="task.sprintId"
-      @change="(sprintId) => emit('updateSprint', sprintId)"
+      @change="(sprintId) => emit('update', { priorityId })"
       class="w-full"
     >
       <SelectOption :value="null">-</SelectOption>
       <SelectOption
         :value="sprint.id"
-        v-for="sprint in store.sprints"
+        v-for="sprint in props.sprints"
         :key="sprint.id"
       >
         <SyncOutlined />

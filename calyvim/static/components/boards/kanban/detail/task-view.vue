@@ -33,7 +33,6 @@ import {
   notify,
   uploadRequestHandler,
 } from '@/utils/helpers'
-import { useKanbanStore } from '@/stores/kanban'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import debounce from 'lodash/debounce'
@@ -50,7 +49,6 @@ import SubTaskList from './sub-task-list.vue'
 // API imports
 import {
   taskCommentsAPI,
-  taskCommentsLastAPI,
   taskAttachmentsDeleteAPI,
   taskDetailAPI,
   taskUpdateAPI,
@@ -64,10 +62,30 @@ import {
 dayjs.extend(relativeTime)
 
 // Props
-const props = defineProps(['board', 'workspace', 'taskId', 'groupKey'])
+const props = defineProps({
+  board: {
+    type: Object,
+    required: true,
+  },
+  taskId: {
+    type: String,
+    required: true,
+  },
+  members: {
+    type: Array,
+    default: () => [],
+  },
+  priorities: {
+    type: Array,
+    default: () => [],
+  },
+  states: {
+    type: Array,
+    default: () => [],
+  },
+})
 
-// Store
-const store = useKanbanStore()
+const emit = defineEmits(['update'])
 
 // State
 const loading = ref(false)
@@ -94,80 +112,80 @@ const loadTask = async () => {
   }
 }
 
-const updateTask = async (updatedData) => {
-  try {
-    updateLoading.value = true
-    const { data } = await taskUpdateAPI(
-      props.board.id,
-      props.taskId,
-      updatedData
-    )
-    store.updateTask(data.task)
-    task.value = data.task
-    logComment(data.comments)
-    return data
-  } catch (error) {
-    handleResponseError(error)
-  } finally {
-    updateLoading.value = false
-  }
-}
+// const updateTask = async (updatedData) => {
+//   try {
+//     updateLoading.value = true
+//     const { data } = await taskUpdateAPI(
+//       props.board.id,
+//       props.taskId,
+//       updatedData
+//     )
+//     // store.updateTask(data.task)
+//     task.value = data.task
+//     logComment(data.comments)
+//     return data
+//   } catch (error) {
+//     handleResponseError(error)
+//   } finally {
+//     updateLoading.value = false
+//   }
+// }
 
-const archiveTask = async () => {
-  try {
-    const { data } = await taskArchiveApi(props.board.id, props.taskId)
-    isArchived.value = true
-    notify('ARCHIVED', data.detail, 'info')
-    store.removeTask(props.taskId)
-  } catch (error) {
-    handleResponseError(error)
-  }
-}
+// const archiveTask = async () => {
+//   try {
+//     const { data } = await taskArchiveApi(props.board.id, props.taskId)
+//     isArchived.value = true
+//     notify('ARCHIVED', data.detail, 'info')
+//     // store.removeTask(props.taskId)
+//   } catch (error) {
+//     handleResponseError(error)
+//   }
+// }
 
-const updateState = async (stateId) => {
-  try {
-    updateLoading.value = true
-    const { data } = await taskUpdateAPI(props.board.id, props.taskId, {
-      stateId,
-    })
-    store.updateTaskState(task.value.oldStateId, data.task)
-    task.value = {
-      ...data.task,
-      oldStateId: data.task.stateId,
-    }
+// const updateState = async (stateId) => {
+//   try {
+//     updateLoading.value = true
+//     const { data } = await taskUpdateAPI(props.board.id, props.taskId, {
+//       stateId,
+//     })
+//     // store.updateTaskState(task.value.oldStateId, data.task)
+//     task.value = {
+//       ...data.task,
+//       oldStateId: data.task.stateId,
+//     }
 
-    const lastCommentResponse = await taskCommentsLastAPI(
-      props.board.id,
-      props.taskId
-    )
-    comments.value.push(lastCommentResponse.data)
-  } catch (error) {
-    handleResponseError(error)
-  } finally {
-    updateLoading.value = false
-  }
-}
+//     const lastCommentResponse = await taskCommentsLastAPI(
+//       props.board.id,
+//       props.taskId
+//     )
+//     comments.value.push(lastCommentResponse.data)
+//   } catch (error) {
+//     handleResponseError(error)
+//   } finally {
+//     updateLoading.value = false
+//   }
+// }
 
-const updateSprint = async (sprintId) => {
-  try {
-    updateLoading.value = true
-    const { data } = await taskUpdateAPI(props.board.id, props.taskId, {
-      sprintId,
-    })
-    store.updateTask(data.task)
-    task.value = data.task
+// const updateSprint = async (sprintId) => {
+//   try {
+//     updateLoading.value = true
+//     const { data } = await taskUpdateAPI(props.board.id, props.taskId, {
+//       sprintId,
+//     })
+//     // store.updateTask(data.task)
+//     task.value = data.task
 
-    logComment(data.comments)
+//     logComment(data.comments)
 
-    if (!store.sprintFilters.includes(sprintId)) {
-      store.removeTask(task.value.id)
-    }
-  } catch (error) {
-    handleResponseError(error)
-  } finally {
-    updateLoading.value = false
-  }
-}
+//     // if (!store.sprintFilters.includes(sprintId)) {
+//     //   store.removeTask(task.value.id)
+//     // }
+//   } catch (error) {
+//     handleResponseError(error)
+//   } finally {
+//     updateLoading.value = false
+//   }
+// }
 
 // Comments Management
 const loadComments = async () => {
@@ -186,12 +204,12 @@ const loadComments = async () => {
   }
 }
 
-const logComment = (commentsData) => {
+const logComment = (commentLog) => {
   if (
     selectedCommentType.value === 'activity' ||
     selectedCommentType.value === 'all'
   ) {
-    comments.value.unshift(...commentsData)
+    comments.value.unshift(commentLog)
   }
 }
 
@@ -241,7 +259,7 @@ const createAttachment = async (options) => {
     })
     notify('ADDED', data.detail)
     // message.success(`You have added an attachment to ${task.value.name}`)
-    logComment([data.comment])
+    logComment(data.comment)
   } catch (error) {
     handleResponseError(error)
   }
@@ -258,7 +276,7 @@ const deleteAttachment = async (attachmentId) => {
       (attachment) => attachment.id !== attachmentId
     )
     notify('REMOVED', data.detail)
-    logComment([data.comment])
+    logComment(data.comment)
   } catch (error) {
     handleResponseError(error)
   }
@@ -274,13 +292,13 @@ const closeDescriptionActionButton = () => {
 }
 
 const updateDescription = () => {
-  updateTask({ description: task.value.description })
+  updateTaskItem({ description: task.value.description })
   closeDescriptionActionButton()
 }
 
 // Summary Management
 const updateSummary = (event) => {
-  updateTask({ summary: event.target.innerText })
+  updateTaskItem({ summary: event.target.innerText })
 }
 
 const debouncedUpdateSummary = debounce(updateSummary, 1000)
@@ -332,6 +350,21 @@ onMounted(() => {
 //     loadTaskDetails()
 //   }
 // )
+
+const updateTaskv2 = async (updatedData) => {
+  try {
+    const { data } = await taskUpdateAPI(props.board.id, props.taskId, updatedData)
+    notify('UPDATED', data.log)
+    logComment(data.log)
+  } catch (error) {
+    handleResponseError(error)
+  }
+}
+
+const updateTaskItem = async (updatedData) => {
+  await updateTaskv2(updatedData)
+  await emit('update', props.taskId, updatedData)
+}
 </script>
 
 <template>
@@ -489,11 +522,10 @@ onMounted(() => {
           :isArchived="isArchived"
           :task="task"
           :board="props.board"
-          :groupKey="props.groupKey"
-          @updateProperties="updateTask"
-          @updateState="updateState"
-          @updateSprint="updateSprint"
-          @archive="archiveTask"
+          :members="props.members"
+          :priorities="props.priorities"
+          :states="props.states"
+          @update="updateTaskItem"
         />
       </div>
     </div>

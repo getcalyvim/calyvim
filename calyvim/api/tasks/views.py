@@ -147,13 +147,29 @@ class TasksViewSet(BoardMixin, ViewSet):
 
         serializer = TaskSerializer(task)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
-
+    
     def list(self, request, *args, **kwargs):
         parent_id = request.query_params.get("parent_id", None)
         queryset = Task.objects.filter(
             board=request.board, archived_at__isnull=True, parent_id=parent_id
         )
-        view = request.query_params.get("view", "kanban")
+        tasks = (
+            queryset.prefetch_related("assignees", "labels")
+            .select_related("priority", "created_by", "estimate", "sprint", "assignee")
+            .order_by("sequence")
+        )
+        serializer = TaskSerializer(tasks, many=True)
+        response_data = {
+            "results": serializer.data,
+        }
+        return Response(data=response_data, status=status.HTTP_200_OK)
+
+    @action(methods=["GET"], detail=False)
+    def kanban(self, request, *args, **kwargs):
+        parent_id = request.query_params.get("parent_id", None)
+        queryset = Task.objects.filter(
+            board=request.board, archived_at__isnull=True, parent_id=parent_id
+        )
         group_by = request.query_params.get("group_by", None)
         if request.query_params.getlist("assignees[]"):
             # Filter for assignees
@@ -192,77 +208,95 @@ class TasksViewSet(BoardMixin, ViewSet):
             .select_related("priority", "created_by", "estimate", "sprint", "assignee")
             .order_by("sequence")
         )
-        # serializer = TaskSerializer(tasks, many=True)
         results = []
 
-        if view == "kanban":
-            states = request.board.states.all()
-            if not group_by:
+        states = request.board.states.all()
+        if not group_by:
+            for state in states:
+                state_tasks = [task for task in tasks if task.state_id == state.id]
+                results.append(
+                    {
+                        **StateSerializer(state).data,
+                        "tasks": TaskSerializer(state_tasks, many=True).data,
+                    }
+                )
+
+        elif group_by == "assignee":
+            assignees = request.board.members
+            for assignee in assignees:
+                member_tasks = [
+                    task for task in tasks if task.assignee_id == assignee.id
+                ]
+                states_data = []
                 for state in states:
-                    state_tasks = [task for task in tasks if task.state_id == state.id]
-                    results.append(
+                    state_tasks = [
+                        task for task in member_tasks if task.state_id == state.id
+                    ]
+                    states_data.append(
                         {
                             **StateSerializer(state).data,
                             "tasks": TaskSerializer(state_tasks, many=True).data,
                         }
                     )
-
-            elif group_by == "assignee":
-                assignees = request.board.members
-                for assignee in assignees:
-                    member_tasks = [
-                        task for task in tasks if task.assignee_id == assignee.id
+                results.append(
+                    {
+                        "group_key": assignee.id,
+                        "states": states_data,
+                        "group_by": group_by,
+                        "assignee": MemberSerializer(assignee).data,
+                    }
+                )
+        elif group_by == "priority":
+            priorities = request.board.priorities.all()
+            for priority in priorities:
+                priority_tasks = [
+                    task for task in tasks if task.priority_id == priority.id
+                ]
+                states_data = []
+                for state in states:
+                    state_tasks = [
+                        task for task in priority_tasks if task.state_id == state.id
                     ]
-                    states_data = []
-                    for state in states:
-                        state_tasks = [
-                            task for task in member_tasks if task.state_id == state.id
-                        ]
-                        states_data.append(
-                            {
-                                **StateSerializer(state).data,
-                                "tasks": TaskSerializer(state_tasks, many=True).data,
-                            }
-                        )
-                    results.append(
+                    states_data.append(
                         {
-                            "group_key": assignee.id,
-                            "states": states_data,
-                            "group_by": group_by,
-                            "assignee": MemberSerializer(assignee).data,
+                            **StateSerializer(state).data,
+                            "tasks": TaskSerializer(state_tasks, many=True).data,
                         }
                     )
-            elif group_by == "priority":
-                priorities = request.board.priorities.all()
-                for priority in priorities:
-                    priority_tasks = [
-                        task for task in tasks if task.priority_id == priority.id
+                results.append(
+                    {
+                        "group_key": priority.id,
+                        "states": states_data,
+                        "group_by": group_by,
+                        "priority": PrioritySerializer(priority).data,
+                    }
+                )
+
+        elif group_by == "task_type":
+            task_types = [choice[0] for choice in Task.TaskType.choices]
+            for task_type in task_types:
+                task_type_tasks = [task for task in tasks if task.task_type == task_type]
+                states_data = []
+                for state in states:
+                    state_tasks = [
+                        task for task in task_type_tasks if task.state_id == state.id
                     ]
-                    states_data = []
-                    for state in states:
-                        state_tasks = [
-                            task for task in priority_tasks if task.state_id == state.id
-                        ]
-                        states_data.append(
-                            {
-                                **StateSerializer(state).data,
-                                "tasks": TaskSerializer(state_tasks, many=True).data,
-                            }
-                        )
-                    results.append(
+                    states_data.append(
                         {
-                            "group_key": priority.id,
-                            "states": states_data,
-                            "group_by": group_by,
-                            "priority": PrioritySerializer(priority).data,
+                            **StateSerializer(state).data,
+                            "tasks": TaskSerializer(state_tasks, many=True).data,
                         }
                     )
-
-        elif view == "table":
-            results = TaskSerializer(tasks, many=True).data
+                results.append(
+                    {
+                        "group_key": task_type,
+                        "states": states_data,
+                        "group_by": group_by,
+                        "task_type": dict(Task.TaskType.choices).get(task_type),
+                    }
+                )
 
         response_data = {
-            "view": view,
             "results": results,
         }
 

@@ -14,6 +14,7 @@ import {
   estimateListAPI,
   sprintListAPI,
   boardUpdateAPI,
+  taskListKanbanAPI,
 } from '@/utils/api'
 import { VueDraggable } from 'vue-draggable-plus'
 import TaskCard from '@/components/boards/kanban/task-card.vue'
@@ -103,8 +104,7 @@ const loadStates = async () => {
 
 const loadTasks = async () => {
   try {
-    const { data } = await taskListAPI(props.board.id, {
-      view: 'kanban',
+    const { data } = await taskListKanbanAPI(props.board.id, {
       groupBy: store.groupBy,
     })
     store.initializeKanban(data.results)
@@ -167,6 +167,52 @@ const loadTaskAndUpdateCurrentGroupBy = async (value) => {
     currentGroupBy: value,
   })
 }
+
+const updateTask = async (taskId, updatedData) => {
+  for (const [key, value] of Object.entries(updatedData)) {
+    switch (key) {
+      case 'priorityId':
+        const priority = store.priorities.find((p) => p.id === value)
+        updatedData['priority'] = priority
+
+        store.updateTask(taskId, updatedData, 'priority', value)
+        break;
+
+      case 'stateId':
+        const state = store.states.find((s) => s.id === value)
+        updatedData['state'] = state
+
+        store.updateTask(taskId, updatedData)
+        if (!!taskViewGroupKey.value) {
+          store.updateTaskPositionByGroup(
+            taskId,
+            value,
+            taskViewGroupKey.value,
+            updatedData
+          )
+        } else {
+          store.updateTaskPosition(taskId, value, updatedData)
+        }
+        break;
+
+      case 'assigneeId':
+        const assignee = store.members.find((m) => m.id === value)
+
+        updatedData['assignee'] = assignee
+        store.updateTask(taskId, updatedData, 'assignee', value)
+
+        break;
+
+      case 'taskType':
+        store.updateTask(taskId, updatedData, 'task_type', value)
+        break;
+
+      default:
+        store.updateTask(taskId, updatedData)
+        break;
+    }
+  }
+}
 </script>
 
 <template>
@@ -227,11 +273,7 @@ const loadTaskAndUpdateCurrentGroupBy = async (value) => {
                   v-for="item in store.kanban"
                   :key="item.id"
                 >
-                  <template
-                    v-if="
-                      item.groupBy === 'assignee'
-                    "
-                  >
+                  <template v-if="item.groupBy === 'assignee'">
                     <div class="bg-gray-100 px-2 py-1 rounded">
                       <Button type="text" size="small" class="mr-2">
                         <ArrowRightOutlined
@@ -308,6 +350,47 @@ const loadTaskAndUpdateCurrentGroupBy = async (value) => {
                 </div>
               </div>
 
+              <!-- For Group By - Task Type -->
+              <div
+                v-else-if="!!store.groupBy && store.groupBy === 'task_type'"
+                class="task-list"
+              >
+                <div
+                  class="w-full mb-1"
+                  v-for="item in store.kanban"
+                  :key="item.id"
+                >
+                  <template v-if="item.groupBy === 'task_type'">
+                    <div class="bg-gray-100 px-2 py-1 rounded">
+                      <Button type="text" size="small" class="mr-2">
+                        <ArrowRightOutlined
+                          v-if="!openedGroups.has(item.groupKey)"
+                          class="text-xs text-gray-500"
+                          @click="toggleGroup(item.groupKey)"
+                        />
+                        <ArrowDownOutlined
+                          v-else
+                          class="text-xs text-gray-500"
+                          @click="toggleGroup(item.groupKey)"
+                        />
+                      </Button>
+                      <BlockOutlined class="text-primary" />
+                      <span class="ml-2 font-semibold">
+                        {{ item.taskType }}
+                      </span>
+                    </div>
+
+                    <StateTasks
+                      v-if="openedGroups.has(item.groupKey)"
+                      :states="item.states"
+                      :board="props.board"
+                      :groupKey="item.groupKey"
+                      @open="openTaskView"
+                    />
+                  </template>
+                </div>
+              </div>
+
               <!-- For Group By - None (Normal Board) -->
               <div v-else class="task-list">
                 <StateTasks
@@ -328,7 +411,14 @@ const loadTaskAndUpdateCurrentGroupBy = async (value) => {
             :header-style="{ display: 'none' }"
             :width="920"
           >
-            <TaskView :board="props.board" :taskId="taskViewId" :groupKey="taskViewGroupKey" />
+            <TaskView
+              :board="props.board"
+              :taskId="taskViewId"
+              :members="store.members"
+              :priorities="store.priorities"
+              :states="store.states"
+              @update="updateTask"
+            />
           </Drawer>
         </template>
       </BoardLayout>
