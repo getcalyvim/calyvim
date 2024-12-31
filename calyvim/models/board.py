@@ -22,6 +22,8 @@ class Board(UUIDTimestampModel):
         ASSIGNEE = ("assignee", "Assignee")
         PRIORITY = ("priority", "Priority")
         SPRINT = ("sprint", "Sprint")
+        TASK_TYPE = ("task_type", "Task Type")
+        ESTIMATE = ("estimate", "Estimate")
 
     workspace = models.ForeignKey(
         "Workspace", on_delete=models.CASCADE, related_name="boards"

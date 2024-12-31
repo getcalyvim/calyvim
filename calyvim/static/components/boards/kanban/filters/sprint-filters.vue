@@ -1,10 +1,10 @@
 <script setup>
 import { Checkbox, CheckboxGroup, Tag } from 'ant-design-vue'
-import { useKanbanStore } from '@/stores/kanban'
+import { useBoardStore } from '@/stores/board'
 import { SyncOutlined } from '@ant-design/icons-vue'
 
 const emit = defineEmits(['reload'])
-const store = useKanbanStore()
+const store = useBoardStore()
 </script>
 
 <template>

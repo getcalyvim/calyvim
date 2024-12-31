@@ -109,8 +109,6 @@ const loadTasks = async (filters = {}) => {
       ...filters,
     })
 
-    console.log('Filtered Call', data.results)
-
     store.initializeKanban(data.results)
     data.results.forEach((item) => {
       openedGroups.value.add(item.groupKey)
@@ -136,11 +134,21 @@ const loadingMembers = async () => {
   } catch (error) {}
 }
 
+const loadSprints = async () => {
+  try {
+    const { data } = await sprintListAPI(props.board.id)
+    store.initializeSprints(data.results)
+  } catch (error) {
+    handleResponseError(error)
+  }
+}
+
 onMounted(async () => {
   isLoading.value = true
   await loadStates()
   await loadPriorities()
   await loadingMembers()
+  await loadSprints()
 
   await store.initializeGroupBy(props.board.currentGroupBy)
 
@@ -164,7 +172,7 @@ const closeTaskView = () => {
 
 const loadTaskAndUpdateCurrentGroupBy = async (value) => {
   isLoading.value = true
-  
+
   await store.clearFilters()
   await loadTasks()
 
@@ -220,29 +228,6 @@ const updateTask = async (taskId, updatedData) => {
     }
   }
 }
-
-// watch(
-//   () => [
-//     store.assigneeFilters,
-//     store.taskTypes,
-//     store.priorityFilters,
-//     store.labelFilters,
-//     store.estimateFilters,
-//     store.sprintFilters,
-//   ],
-//   async () => {
-//     isLoading.value = true
-//     await loadTasks({
-//       assignees: store.assigneeFilters,
-//       taskTypes: store.taskTypes,
-//       priorities: store.priorityFilters,
-//       labels: store.labelFilters,
-//       estimates: store.estimateFilters,
-//       sprints: store.sprintFilters,
-//     })
-//     isLoading.value = false
-//   }
-// )
 
 const reloadTasks = async () => {
   isLoading.value = true
@@ -430,6 +415,48 @@ const reloadTasks = async () => {
                       <span class="ml-2 font-semibold">
                         {{ item.taskType }}
                       </span>
+                    </div>
+
+                    <StateTasks
+                      v-if="openedGroups.has(item.groupKey)"
+                      :states="item.states"
+                      :board="props.board"
+                      :groupKey="item.groupKey"
+                      @open="openTaskView"
+                    />
+                  </template>
+                </div>
+              </div>
+
+              <!-- Group By - Sprint -->
+              <div
+                v-else-if="!!store.groupBy && store.groupBy === 'sprint'"
+                class="task-list"
+              >
+                <div
+                  class="w-full mb-1"
+                  v-for="item in store.kanban"
+                  :key="item.id"
+                >
+                  <template v-if="item.groupBy === 'sprint'">
+                    <div class="bg-gray-100 px-2 py-1 rounded flex items-center">
+                      <Button type="text" size="small" class="mr-2">
+                        <ArrowRightOutlined
+                          v-if="!openedGroups.has(item.groupKey)"
+                          class="text-xs text-gray-500"
+                          @click="toggleGroup(item.groupKey)"
+                        />
+                        <ArrowDownOutlined
+                          v-else
+                          class="text-xs text-gray-500"
+                          @click="toggleGroup(item.groupKey)"
+                        />
+                      </Button>
+                      <SyncOutlined class="text-primary" />
+                      <div class="ml-2 font-semibold">
+                        {{ item.sprint.name }}
+                      </div>
+                      <Tag v-if="item.sprint.isActive" :bordered="false" class="ml-1 text-primary">Active</Tag>
                     </div>
 
                     <StateTasks

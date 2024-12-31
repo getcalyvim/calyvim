@@ -42,15 +42,6 @@ export const useBoardStore = defineStore('board', () => {
     sprints.value = sprintsData
   }
 
-  const clearFilters = () => {
-    assigneeFilters.value = []
-    taskTypes.value = []
-    priorityFilters.value = []
-    labelFilters.value = []
-    estimateFilters.value = []
-    sprintFilters.value = []
-  }
-
   const updateTask = (
     taskId,
     updatedData,
@@ -149,6 +140,19 @@ export const useBoardStore = defineStore('board', () => {
     })
   }
 
+  const setActiveSprint = (sprintId) => {
+    sprintFilters.value = [sprintId]
+  }
+
+  const clearFilters = () => {
+    assigneeFilters.value = []
+    taskTypes.value = []
+    priorityFilters.value = []
+    labelFilters.value = []
+    estimateFilters.value = []
+    sprintFilters.value = []
+  }
+
   return {
     // State
     kanban,
@@ -174,6 +178,7 @@ export const useBoardStore = defineStore('board', () => {
     updateTask,
     updateTaskPositionByGroup,
     updateTaskPosition,
-    clearFilters
+    clearFilters,
+    setActiveSprint
   }
 })
