@@ -3,11 +3,12 @@ import { Checkbox, CheckboxGroup, Tag } from 'ant-design-vue'
 import { useKanbanStore } from '@/stores/kanban'
 import { SyncOutlined } from '@ant-design/icons-vue'
 
+const emit = defineEmits(['reload'])
 const store = useKanbanStore()
 </script>
 
 <template>
-  <CheckboxGroup v-model:value="store.sprintFilters" class="">
+  <CheckboxGroup v-model:value="store.sprintFilters" class="" @change="emit('reload')">
     <div class="flex flex-col gap-1">
       <div
         class="flex items-center gap-2"

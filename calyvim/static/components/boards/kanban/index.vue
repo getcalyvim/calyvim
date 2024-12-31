@@ -1,6 +1,5 @@
 <script setup>
 import BoardLayout from '@/components/base/board-layout.vue'
-import { useKanbanStore } from '@/stores/kanban'
 import { useBoardStore } from '@/stores/board'
 import { computed, h, onMounted, ref, watch } from 'vue'
 import {
@@ -79,6 +78,7 @@ const props = defineProps({
   },
 })
 
+const openFilterDropdown = ref(false)
 const openedGroups = ref(new Set())
 
 const toggleGroup = (groupKey) => {
@@ -102,11 +102,15 @@ const loadStates = async () => {
   }
 }
 
-const loadTasks = async () => {
+const loadTasks = async (filters = {}) => {
   try {
     const { data } = await taskListKanbanAPI(props.board.id, {
       groupBy: store.groupBy,
+      ...filters,
     })
+
+    console.log('Filtered Call', data.results)
+
     store.initializeKanban(data.results)
     data.results.forEach((item) => {
       openedGroups.value.add(item.groupKey)
@@ -160,7 +164,10 @@ const closeTaskView = () => {
 
 const loadTaskAndUpdateCurrentGroupBy = async (value) => {
   isLoading.value = true
+  
+  await store.clearFilters()
   await loadTasks()
+
   isLoading.value = false
 
   boardUpdateAPI(props.board.id, {
@@ -176,7 +183,7 @@ const updateTask = async (taskId, updatedData) => {
         updatedData['priority'] = priority
 
         store.updateTask(taskId, updatedData, 'priority', value)
-        break;
+        break
 
       case 'stateId':
         const state = store.states.find((s) => s.id === value)
@@ -193,7 +200,7 @@ const updateTask = async (taskId, updatedData) => {
         } else {
           store.updateTaskPosition(taskId, value, updatedData)
         }
-        break;
+        break
 
       case 'assigneeId':
         const assignee = store.members.find((m) => m.id === value)
@@ -201,17 +208,53 @@ const updateTask = async (taskId, updatedData) => {
         updatedData['assignee'] = assignee
         store.updateTask(taskId, updatedData, 'assignee', value)
 
-        break;
+        break
 
       case 'taskType':
         store.updateTask(taskId, updatedData, 'task_type', value)
-        break;
+        break
 
       default:
         store.updateTask(taskId, updatedData)
-        break;
+        break
     }
   }
+}
+
+// watch(
+//   () => [
+//     store.assigneeFilters,
+//     store.taskTypes,
+//     store.priorityFilters,
+//     store.labelFilters,
+//     store.estimateFilters,
+//     store.sprintFilters,
+//   ],
+//   async () => {
+//     isLoading.value = true
+//     await loadTasks({
+//       assignees: store.assigneeFilters,
+//       taskTypes: store.taskTypes,
+//       priorities: store.priorityFilters,
+//       labels: store.labelFilters,
+//       estimates: store.estimateFilters,
+//       sprints: store.sprintFilters,
+//     })
+//     isLoading.value = false
+//   }
+// )
+
+const reloadTasks = async () => {
+  isLoading.value = true
+  await loadTasks({
+    assignees: store.assigneeFilters,
+    taskTypes: store.taskTypes,
+    priorities: store.priorityFilters,
+    labels: store.labelFilters,
+    estimates: store.estimateFilters,
+    sprints: store.sprintFilters,
+  })
+  isLoading.value = false
 }
 </script>
 
@@ -255,7 +298,16 @@ const updateTask = async (taskId, updatedData) => {
                 </Select.Option>
               </Select>
             </div>
-            <Button :icon="h(FilterOutlined)">Filters</Button>
+            <Dropdown
+              :trigger="['click']"
+              placement="bottomRight"
+              v-model:open="openFilterDropdown"
+            >
+              <Button :icon="h(FilterOutlined)">Filters</Button>
+              <template #overlay>
+                <FilterList :board="props.board" @reload="reloadTasks" />
+              </template>
+            </Dropdown>
             <Button type="primary" :icon="h(PlusOutlined)">Add task</Button>
           </div>
         </template>

@@ -147,7 +147,7 @@ class TasksViewSet(BoardMixin, ViewSet):
 
         serializer = TaskSerializer(task)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
-    
+
     def list(self, request, *args, **kwargs):
         parent_id = request.query_params.get("parent_id", None)
         queryset = Task.objects.filter(
@@ -174,7 +174,7 @@ class TasksViewSet(BoardMixin, ViewSet):
         if request.query_params.getlist("assignees[]"):
             # Filter for assignees
             assignees = request.query_params.getlist("assignees[]")
-            queryset = queryset.filter(assignees__in=assignees)
+            queryset = queryset.filter(assignee__in=assignees)
 
         if request.query_params.getlist("task_types[]"):
             # Filter for task type
@@ -203,11 +203,9 @@ class TasksViewSet(BoardMixin, ViewSet):
         # else:
         #     queryset = queryset.filter(sprint=None)
 
-        tasks = (
-            queryset.prefetch_related("assignees", "labels")
-            .select_related("priority", "created_by", "estimate", "sprint", "assignee")
-            .order_by("sequence")
-        )
+        tasks = queryset.select_related(
+            "priority", "created_by", "estimate", "sprint", "assignee"
+        ).order_by("sequence")
         results = []
 
         states = request.board.states.all()
@@ -275,7 +273,9 @@ class TasksViewSet(BoardMixin, ViewSet):
         elif group_by == "task_type":
             task_types = [choice[0] for choice in Task.TaskType.choices]
             for task_type in task_types:
-                task_type_tasks = [task for task in tasks if task.task_type == task_type]
+                task_type_tasks = [
+                    task for task in tasks if task.task_type == task_type
+                ]
                 states_data = []
                 for state in states:
                     state_tasks = [
@@ -344,7 +344,9 @@ class TasksViewSet(BoardMixin, ViewSet):
 
             if key == "assignee_id":
                 if not value:
-                    task_updates.append(f"removed assignee {task.assignee.display_name}.")
+                    task_updates.append(
+                        f"removed assignee {task.assignee.display_name}."
+                    )
                 else:
                     assignee = request.board.members.filter(id=value).first()
                     if task.assignee:

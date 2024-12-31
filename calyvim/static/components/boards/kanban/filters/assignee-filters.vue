@@ -1,10 +1,12 @@
 <script setup>
 import { Avatar, Checkbox, CheckboxGroup } from 'ant-design-vue';
-import { useKanbanStore } from '@/stores/kanban';
+import { useBoardStore } from '@/stores/board';
 import { computed, ref } from 'vue';
 import { generateAvatar } from '@/utils/helpers';
 
-const store = useKanbanStore()
+const emit = defineEmits(['reload'])
+
+const store = useBoardStore()
 const showAllMembers = ref(false)
 
 const visibleMembers = computed(() => {
@@ -17,7 +19,7 @@ const toggleMemberVisibility = () => {
 </script>
 
 <template>
-    <CheckboxGroup v-model:value="store.assigneeFilters" class="">
+    <CheckboxGroup v-model:value="store.assigneeFilters" class="" @change="emit('reload')">
         <div class="flex flex-col gap-1">
             <div v-for="member in visibleMembers" :key="member.id" class="flex items-center gap-1">
                 <Checkbox :value="member.id"></Checkbox>
