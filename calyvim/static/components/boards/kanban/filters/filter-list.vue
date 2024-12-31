@@ -57,7 +57,14 @@ const hasCurrentSprint = computed(() => props.currentSprint !== null)
       <Divider class="my-2 p-0" />
     </template>
 
-    <template v-if="!store.groupBy || store.groupBy !== 'sprint' && (store.sprints.length > 0 || hasCurrentSprint)">
+    <template
+      v-if="
+        !store.groupBy ||
+        (store.groupBy !== 'sprint' &&
+          (store.sprints.length > 0 || hasCurrentSprint) &&
+          !props.currentSprint)
+      "
+    >
       <div>
         <div class="font-semibold text-gray-600">Sprints</div>
         <SprintFilters @reload="emit('reload')" />

@@ -73,6 +73,11 @@ class BoardSprintsDetailView(LoginRequiredMixin, BoardPermissionMixin, View):
 
         if not self.has_valid_board_permission(board, request.user):
             raise Http404
+        
+        # If the board's current grouping is by "sprint", it resets the grouping to None and updates the board.
+        if board.current_group_by == "sprint":
+            board.current_group_by = None
+            board.save(update_fields=["current_group_by"])
 
         context = {
             "props": {
@@ -148,7 +153,7 @@ class BoardSettingsStatesView(LoginRequiredMixin, BoardPermissionMixin, View):
             }
         }
         return render(request, "boards/settings/states.html", context)
-    
+
 
 class BoardSettingsPrioritiesView(LoginRequiredMixin, BoardPermissionMixin, View):
     def get(self, request, *args, **kwargs):

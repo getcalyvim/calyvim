@@ -15,22 +15,8 @@ import {
   boardUpdateAPI,
   taskListKanbanAPI,
 } from '@/utils/api'
-import { VueDraggable } from 'vue-draggable-plus'
-import TaskCard from '@/components/boards/kanban/task-card.vue'
 import { handleResponseError, generateAvatar } from '@/utils/helpers'
-import {
-  Button,
-  Dropdown,
-  Card,
-  Input,
-  AvatarGroup,
-  Avatar,
-  Drawer,
-  Breadcrumb,
-  BreadcrumbItem,
-  Tag,
-  Select,
-} from 'ant-design-vue'
+import { Button, Dropdown, Avatar, Drawer, Tag, Select } from 'ant-design-vue'
 import {
   FilterOutlined,
   PlusOutlined,
@@ -80,6 +66,9 @@ const props = defineProps({
 
 const openFilterDropdown = ref(false)
 const openedGroups = ref(new Set())
+const defaultFilters = {
+  sprints: props.currentSprint ? [props.currentSprint.id] : [],
+}
 
 const toggleGroup = (groupKey) => {
   if (openedGroups.value.has(groupKey)) {
@@ -107,6 +96,7 @@ const loadTasks = async (filters = {}) => {
     const { data } = await taskListKanbanAPI(props.board.id, {
       groupBy: store.groupBy,
       ...filters,
+      ...defaultFilters,
     })
 
     store.initializeKanban(data.results)
@@ -269,7 +259,7 @@ const reloadTasks = async () => {
                   <FlagOutlined class="text-primary" />
                   <span class="ml-2">Priority</span>
                 </Select.Option>
-                <Select.Option value="sprint">
+                <Select.Option value="sprint" :disabled="!!props.currentSprint">
                   <CarryOutOutlined class="text-primary" />
                   <span class="ml-2">Sprint</span>
                 </Select.Option>
@@ -290,7 +280,11 @@ const reloadTasks = async () => {
             >
               <Button :icon="h(FilterOutlined)">Filters</Button>
               <template #overlay>
-                <FilterList :board="props.board" @reload="reloadTasks" />
+                <FilterList
+                  :board="props.board"
+                  @reload="reloadTasks"
+                  :currentSprint="props.currentSprint"
+                />
               </template>
             </Dropdown>
             <Button type="primary" :icon="h(PlusOutlined)">Add task</Button>
@@ -439,7 +433,9 @@ const reloadTasks = async () => {
                   :key="item.id"
                 >
                   <template v-if="item.groupBy === 'sprint'">
-                    <div class="bg-gray-100 px-2 py-1 rounded flex items-center">
+                    <div
+                      class="bg-gray-100 px-2 py-1 rounded flex items-center"
+                    >
                       <Button type="text" size="small" class="mr-2">
                         <ArrowRightOutlined
                           v-if="!openedGroups.has(item.groupKey)"
@@ -456,7 +452,12 @@ const reloadTasks = async () => {
                       <div class="ml-2 font-semibold">
                         {{ item.sprint.name }}
                       </div>
-                      <Tag v-if="item.sprint.isActive" :bordered="false" class="ml-1 text-primary">Active</Tag>
+                      <Tag
+                        v-if="item.sprint.isActive"
+                        :bordered="false"
+                        class="ml-1 text-primary"
+                        >Active</Tag
+                      >
                     </div>
 
                     <StateTasks
