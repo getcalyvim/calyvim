@@ -22,6 +22,7 @@ import {
   LogoutOutlined,
   PlusOutlined,
   SaveOutlined,
+  EditOutlined,
 } from '@ant-design/icons-vue'
 import { generateAvatar, uploadRequestHandler } from '@/utils/helpers'
 import { handleResponseError } from '@/utils/helpers'
@@ -37,6 +38,8 @@ const boardForm = ref({
   description: '',
   cover: null,
   coverSrc: null,
+  logo: null,
+  logoSrc: null,
   taskPrefix: '',
   slug: '',
 })
@@ -59,9 +62,25 @@ const handleCoverUpload = async (options) => {
   boardForm.value.cover = fileKey
   boardForm.value.coverSrc = fileSrc
 }
+
+const handleLogoUpload = async (options) => {
+  const { fileKey, fileSrc } = await uploadRequestHandler(
+    options,
+    'Board',
+    'logo'
+  )
+  boardForm.value.logo = fileKey
+  boardForm.value.logoSrc = fileSrc
+}
+
 const removeCover = () => {
   boardForm.value.cover = null
   boardForm.value.coverSrc = null
+}
+
+const removeLogo = () => {
+  boardForm.value.logo = null
+  boardForm.value.logoSrc = null
 }
 
 const fetchBoard = async () => {
@@ -73,6 +92,8 @@ const fetchBoard = async () => {
     coverSrc: data.coverSrc,
     taskPrefix: data.taskPrefix,
     slug: data.slug,
+    logo: data.logo,
+    logoSrc: data.logoSrc,
   }
 }
 
@@ -106,38 +127,93 @@ onMounted(() => {
             @finish="onFinish"
             :disabled="!props.hasEditPermission"
           >
-            <FormItem name="cover">
-              <div class="flex flex-col items-start gap-2">
-                <Upload
-                  :multiple="false"
-                  name="file"
-                  :customRequest="handleCoverUpload"
-                  :show-upload-list="false"
-                >
-                  <Avatar
-                    shape="square"
-                    :size="80"
-                    :src="
-                      !!boardForm.cover
-                        ? boardForm.coverSrc
-                        : generateAvatar(board.name, 10)
-                    "
-                  >
-                    <template #icon>
-                      <PlusOutlined />
-                    </template>
-                  </Avatar>
-                </Upload>
+            <div class="relative w-full mb-4">
+              <div
+                class="w-full h-32 md:h-40 lg:h-48 bg-gray-100 overflow-hidden rounded-lg"
+              >
                 <div
-                  class="flex items-center space-x-2 cursor-pointer text-xs"
-                  @click="removeCover"
-                  v-if="!!boardForm.coverSrc"
+                  class="w-full h-full bg-gradient-to-r from-gray-400 to-primary"
                 >
-                  <CloseOutlined />
-                  <span>Remove</span>
+                  <img
+                    v-if="!!boardForm.coverSrc"
+                    :src="boardForm.coverSrc"
+                    class="w-full h-full object-cover"
+                    alt="Banner"
+                  />
                 </div>
               </div>
-            </FormItem>
+
+              <div class="absolute bottom-4 left-4 z-10">
+                <div
+                  class="w-20 h-20 rounded-lg shadow-lg flex items-center justify-center relative"
+                >
+                  <Avatar
+                    :src="
+                      !!boardForm.logoSrc
+                        ? boardForm.logoSrc
+                        : generateAvatar(boardForm.name, 12)
+                    "
+                    shape="square"
+                    :size="84"
+                  />
+
+                  <div
+                    class="absolute inset-0 flex items-center justify-center gap-1 opacity-0 hover:opacity-100 bg-white/20 transition-opacity duration-200"
+                  >
+                    <FormItem name="logo" class="p-0 m-0">
+                      <Upload
+                        :multiple="false"
+                        name="file"
+                        :customRequest="handleLogoUpload"
+                        :show-upload-list="false"
+                      >
+                        <Button
+                          type="text"
+                          class="flex items-center justify-center"
+                        >
+                          <template #icon><EditOutlined /></template>
+                        </Button>
+                      </Upload>
+                    </FormItem>
+                    <Button
+                      type="text"
+                      class="flex items-center justify-center"
+                      @click="removeLogo"
+                    >
+                      <template #icon><DeleteOutlined /></template>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="absolute bottom-4 right-4 z-10 flex space-x-0">
+                <div>
+                  <FormItem name="cover" class="p-0 m-0">
+                    <Upload
+                      :multiple="false"
+                      name="file"
+                      :customRequest="handleCoverUpload"
+                      :show-upload-list="false"
+                    >
+                      <Button
+                        type="text"
+                        class="flex items-center justify-center"
+                      >
+                        <template #icon><EditOutlined /></template>
+                      </Button>
+                    </Upload>
+                  </FormItem>
+                </div>
+
+                <Button
+                  type="text"
+                  class="flex items-center justify-center"
+                  @click="removeCover"
+                >
+                  <template #icon><DeleteOutlined /></template>
+                </Button>
+              </div>
+            </div>
 
             <div class="grid grid-cols-2 gap-4">
               <FormItem label="Name" name="name">

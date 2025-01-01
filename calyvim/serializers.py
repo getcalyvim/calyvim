@@ -45,6 +45,7 @@ class BoardSerializer(serializers.ModelSerializer):
             "name",
             "slug",
             "cover",
+            "logo",
             "description",
             "is_estimate_enabled",
             "created_at",
