@@ -27,7 +27,7 @@ const columns = [
                     <div>
                         <TaskTypeIcon :taskType="record.taskType" />
                     </div>
-                    <div>
+                    <div class="whitespace-nowrap overflow-hidden text-ellipsis">
                         {{ record.name }}
                     </div>
                 </div>
@@ -38,7 +38,9 @@ const columns = [
             </template>
 
             <template v-else-if="column.key === 'summary'">
-                <div>{{ record.summary }}</div>
+                <div class="whitespace-nowrap overflow-hidden text-ellipsis">
+                    {{ record.summary }}
+                </div>
             </template>
         </template>
     </Table>

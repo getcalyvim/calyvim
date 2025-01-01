@@ -248,28 +248,28 @@ class BoardViewSet(ViewSet):
 
         # Recent Task Assigned
         recent_tasks_assigned = Task.objects.filter(
-            board__in=boards, task_assignees__user=request.user
+            board__in=boards, assignee=request.user
         ).select_related("board")[:5]
 
         # Task Contributions
-        task_countributions_count = (
-            TaskAssignee.objects.filter(
-                user=request.user, created_at__year=2024, task__board__in=boards
-            )
-            .annotate(day=TruncDate("created_at"))
-            .values("day")
-            .annotate(task_count=Count("task_id"))
-            .order_by("day")
-        )
+        # task_countributions_count = (
+        #     TaskAssignee.objects.filter(
+        #         user=request.user, created_at__year=2024, task__board__in=boards
+        #     )
+        #     .annotate(day=TruncDate("created_at"))
+        #     .values("day")
+        #     .annotate(task_count=Count("task_id"))
+        #     .order_by("day")
+        # )
 
-        # Format the day field using strftime after retrieving the queryset
-        formatted_task_contributions_count = [
-            {
-                "day": entry["day"].strftime("%Y-%m-%d"),
-                "task_count": entry["task_count"],
-            }
-            for entry in task_countributions_count
-        ]
+        # # Format the day field using strftime after retrieving the queryset
+        # formatted_task_contributions_count = [
+        #     {
+        #         "day": entry["day"].strftime("%Y-%m-%d"),
+        #         "task_count": entry["task_count"],
+        #     }
+        #     for entry in task_countributions_count
+        # ]
 
         data = {
             "created_tasks_count": created_tasks_count,
@@ -280,6 +280,6 @@ class BoardViewSet(ViewSet):
             "recent_tasks_assigned": TaskSerializer(
                 recent_tasks_assigned, many=True
             ).data,
-            "task_contributions": formatted_task_contributions_count,
+            # "task_contributions": formatted_task_contributions_count,
         }
         return Response(data=data, status=status.HTTP_200_OK)

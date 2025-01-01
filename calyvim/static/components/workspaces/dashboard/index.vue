@@ -43,12 +43,11 @@ const loadStats = async () => {
         stats.value.recentTasksAssigned = data.recentTasksAssigned.map(item => ({ ...item, key: item.id }))
         stats.value.recentTasksCreated = data.recentTasksCreated.map(item => ({ ...item, key: item.id }))
 
-        const taskContributions = {}
-        data.taskContributions.forEach(c => {
-            taskContributions[c.day] = c.taskCount
-        })
-        stats.value.taskContributions = taskContributions
-        // stats.value.taskContributions = data.taskContributions
+        // const taskContributions = {}
+        // data.taskContributions.forEach(c => {
+        //     taskContributions[c.day] = c.taskCount
+        // })
+        // stats.value.taskContributions = taskContributions
     } catch (error) {
         handleResponseError(error)
     }
@@ -103,7 +102,7 @@ onMounted(() => {
                 </div>
             </div>
 
-            <div class="flex items-center justify-between">
+            <!-- <div class="flex items-center justify-between">
                 <div class="flex gap-4">
                     <Statistic title="Tasks assigned" :value="stats.assignedTasksCount" />
                     <Statistic title="Tasks created" :value="stats.createdTasksCount" />
@@ -112,18 +111,18 @@ onMounted(() => {
                     <div class="text-lg">Task Contributions</div>
                     <TasksHeatmap :data="stats.taskContributions" v-if="!!stats.taskContributions" />
                 </div>
-            </div>
+            </div> -->
 
-
-            <div class="grid grid-cols-2 mt-5 gap-5" v-if="!!stats">
+            <div class="text-xl font-semibold mt-5">Boards</div>
+            <div class="grid grid-cols-2 mt-2 gap-5" v-if="!!stats">
                 <Card>
-                    <div>Recently assigned tasks</div>
+                    <div class="font-semibold text-primary mb-2 text-base">Recently assigned tasks</div>
                     <TaskList :tasks="stats.recentTasksAssigned" />
                 </Card>
 
                 <Card>
 
-                    <div>Recently created tasks</div>
+                    <div class="font-semibold text-primary mb-2 text-base">Recently created tasks</div>
                     <TaskList :tasks="stats.recentTasksCreated" />
                 </Card>
             </div>
