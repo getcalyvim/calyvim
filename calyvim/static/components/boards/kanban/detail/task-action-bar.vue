@@ -1,7 +1,7 @@
 <script setup>
 import { Avatar, Divider, Select, SelectOption, Button } from 'ant-design-vue'
 import { generateAvatar } from '@/utils/helpers'
-import { useKanbanStore } from '@/stores/kanban'
+
 import TaskTypeIcon from '../../../icons/task-type-icon.vue'
 import {
   ClockCircleOutlined,
@@ -11,20 +11,44 @@ import {
 } from '@ant-design/icons-vue'
 import { h } from 'vue'
 
-const props = defineProps(['task', 'board', 'isArchived'])
+const props = defineProps({
+  task: {
+    type: Object,
+    required: true,
+  },
+  board: {
+    type: Object,
+    required: true,
+  },
+  isArchived: {
+    type: Boolean,
+    default: false,
+  },
+  members: {
+    type: Array,
+    default: () => [],
+  },
+  priorities: {
+    type: Array,
+    default: () => [],
+  },
+  states: {
+    type: Array,
+    default: () => [],
+  },
+  estimates: {
+    type: Array,
+    default: () => [],
+  },
+  sprints: {
+    type: Array,
+    default: () => [],
+  },
+})
+
 const emit = defineEmits([
-  'updateProperties',
-  'updateState',
-  'updateSprint',
-  'archive',
+  'update'
 ])
-
-const store = useKanbanStore()
-
-const getAvatarSrc = (memberId) => {
-  const member = store.members.find((m) => m.id === memberId)
-  return member ? member.avatar || generateAvatar(member.firstName) : ''
-}
 </script>
 
 <template>
@@ -32,11 +56,11 @@ const getAvatarSrc = (memberId) => {
   <Select
     v-model:value="task.stateId"
     class="w-full mb-2"
-    @change="(stateId) => emit('updateState', stateId)"
+    @change="(stateId) => emit('update', { stateId })"
   >
     <SelectOption
       :value="state.id"
-      v-for="state in store.states"
+      v-for="state in props.states"
       :key="state.id"
     >
       <span class="ml-1">{{ state.name }}</span>
@@ -45,32 +69,25 @@ const getAvatarSrc = (memberId) => {
 
   <Divider class="p-0 my-3" />
 
-  <div class="mb-2 font-semibold">Assignees</div>
+  <div class="mb-2 font-semibold">Assignee</div>
   <Select
-    v-model:value="task.assigneeIds"
-    mode="multiple"
-    optionFilterProp="label"
-    @change="(assigneeIds) => emit('updateProperties', { assigneeIds })"
+    v-model:value="task.assigneeId"
+    @change="(assigneeId) => emit('update', { assigneeId })"
     class="w-full"
   >
-    <template #tagRender="{ value }">
-      <Avatar size="small" :src="getAvatarSrc(value)" />
-    </template>
-
+    <SelectOption :value="null">None</SelectOption>
     <SelectOption
-      v-for="member in store.members"
+      :value="member.id"
+      v-for="member in props.members"
       :key="member.id"
-      :label="member.firstName"
     >
-      <div class="flex items-center gap-2">
-        <Avatar
-          size="small"
-          :src="
-            !!member.avatar ? member.avatar : generateAvatar(member.displayName)
-          "
-        />
-        <div>{{ member.displayName }}</div>
-      </div>
+      <Avatar
+        :size="22"
+        :src="
+          !!member.avatar ? member.avatar : generateAvatar(member.displayName)
+        "
+      />
+      <span class="ml-2">{{ member.displayName }}</span>
     </SelectOption>
   </Select>
 
@@ -80,7 +97,7 @@ const getAvatarSrc = (memberId) => {
   <Select
     v-model:value="task.taskType"
     class="w-full"
-    @change="(taskType) => emit('updateProperties', { taskType })"
+    @change="(taskType) => emit('update', { taskType })"
   >
     <SelectOption value="issue">
       <TaskTypeIcon taskType="issue" />
@@ -106,13 +123,13 @@ const getAvatarSrc = (memberId) => {
 
   <Select
     v-model:value="task.priorityId"
-    @change="(priorityId) => emit('updateProperties', { priorityId })"
+    @change="(priorityId) => emit('update', { priorityId })"
     class="w-full"
   >
     <SelectOption :value="null">-</SelectOption>
     <SelectOption
       :value="priority.id"
-      v-for="priority in store.priorities"
+      v-for="priority in props.priorities"
       :key="priority.id"
     >
       <FlagOutlined />
@@ -126,13 +143,13 @@ const getAvatarSrc = (memberId) => {
     <div class="mb-2 font-semibold">Estimate</div>
     <Select
       v-model:value="task.estimateId"
-      @change="(estimateId) => emit('updateProperties', { estimateId })"
+      @change="(estimateId) => emit('update', { priorityId })"
       class="w-full"
     >
       <SelectOption :value="null">-</SelectOption>
       <SelectOption
         :value="estimate.id"
-        v-for="estimate in store.estimates"
+        v-for="estimate in props.estimates"
         :key="estimate.id"
       >
         <ClockCircleOutlined class="text-xs" />
@@ -141,19 +158,19 @@ const getAvatarSrc = (memberId) => {
     </Select>
   </template>
 
-  <template v-if="store.sprints.length > 0">
+  <template v-if="props.sprints.length > 0">
     <Divider class="p-0 my-3" />
 
     <div class="mb-2 font-semibold">Sprint</div>
     <Select
       v-model:value="task.sprintId"
-      @change="(sprintId) => emit('updateSprint', sprintId)"
+      @change="(sprintId) => emit('update', { priorityId })"
       class="w-full"
     >
       <SelectOption :value="null">-</SelectOption>
       <SelectOption
         :value="sprint.id"
-        v-for="sprint in store.sprints"
+        v-for="sprint in props.sprints"
         :key="sprint.id"
       >
         <SyncOutlined />

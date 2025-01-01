@@ -39,6 +39,13 @@ class Task(UUIDTimestampModel):
         related_name="sprint_tasks",
         blank=True,
     )
+    assignee = models.ForeignKey(
+        "User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assignee_tasks",
+    )
     task_type = models.CharField(
         max_length=10, choices=TaskType.choices, default=TaskType.ISSUE
     )
@@ -52,8 +59,8 @@ class Task(UUIDTimestampModel):
     sequence = models.FloatField(default=50000, blank=True)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)
-    links = ArrayField(base_field=models.TextField(), default=list)
-    checklists = ArrayField(base_field=models.JSONField(), default=list)
+    links = ArrayField(base_field=models.TextField(), default=list, blank=True)
+    checklists = ArrayField(base_field=models.JSONField(), default=list, blank=True)
     estimate = models.ForeignKey(
         "Estimate",
         on_delete=models.SET_NULL,

@@ -15,19 +15,11 @@ import { generateAvatar } from '@/utils/helpers'
 const props = defineProps(['board', 'workspace', 'page'])
 
 const activeKey = ref(props.page)
-
-const switchTab = (key) => {
-  if (key === 'kanban') {
-    window.location.href = `/app/b/${props.board.id}/`
-  } else {
-    window.location.href = `/app/b/${props.board.id}/${key}/`
-  }
-}
 </script>
 
 <template>
   <BaseLayout>
-    <Tabs v-model:active-key="activeKey" class="pl-5" @change="switchTab">
+    <Tabs v-model:active-key="activeKey" class="pl-5">
       <template #leftExtra>
         <div class="flex items-center ml-2 mr-5">
           <Avatar
@@ -45,19 +37,27 @@ const switchTab = (key) => {
       </template>
       <TabPane key="kanban">
         <template #tab>
-          <span>
-            <AppstoreOutlined />
-            Kanban
-          </span>
+          <a
+            :href="`/app/b/${props.board.id}/`"
+            class="no-underline text-inherit hover:no-underline hover:text-inherit"
+            :class="{
+              'text-primary hover:text-primary': activeKey === 'kanban',
+            }"
+          >
+            <span>
+              <AppstoreOutlined />
+              Kanban
+            </span>
+          </a>
         </template>
       </TabPane>
 
-      <TabPane key="table">
+      <!-- <TabPane key="table">
         <template #tab>
           <TableOutlined />
           Table
         </template>
-      </TabPane>
+      </TabPane> -->
 
       <TabPane key="timeline" disabled>
         <template #tab>
@@ -68,15 +68,31 @@ const switchTab = (key) => {
 
       <TabPane key="sprints">
         <template #tab>
-          <CarryOutOutlined />
-          Sprints
+          <a
+            :href="`/app/b/${props.board.id}/sprints/`"
+            class="no-underline text-inherit hover:no-underline hover:text-inherit"
+            :class="{
+              'text-primary hover:text-primary': activeKey === 'kanban',
+            }"
+          >
+            <CarryOutOutlined />
+            Sprints
+          </a>
         </template>
       </TabPane>
 
       <TabPane key="settings">
         <template #tab>
-          <SettingOutlined />
-          Settings
+          <a
+            :href="`/app/b/${props.board.id}/settings/`"
+            class="no-underline text-inherit hover:no-underline hover:text-inherit"
+            :class="{
+              'text-primary hover:text-primary': activeKey === 'kanban',
+            }"
+          >
+            <SettingOutlined />
+            Settings
+          </a>
         </template>
       </TabPane>
 

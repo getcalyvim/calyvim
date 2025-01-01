@@ -26,6 +26,11 @@ from calyvim.api.tasks.serializers import (
     TaskCreateSerializer,
     TaskUpdateSerializer,
     TaskCommentSerializer,
+    StateSerializer,
+    MemberSerializer,
+    PrioritySerializer,
+    LabelSerializer,
+    SprintSerializer
 )
 from calyvim.permissions import BoardGenericPermission
 from calyvim.exceptions import (
@@ -106,7 +111,6 @@ class TasksViewSet(BoardMixin, ViewSet):
     def create(self, request, *args, **kwargs):
         create_serializer = TaskCreateSerializer(data=request.data)
         if not create_serializer.is_valid():
-            print(create_serializer.errors)
             raise InvalidInputException
 
         data = create_serializer.validated_data
@@ -124,11 +128,8 @@ class TasksViewSet(BoardMixin, ViewSet):
         ):
             raise PriorityNotFoundException
 
-        assignees = data.pop("assignees")
         task = Task(**data, created_by=request.user, board=request.board)
         task.save()
-        if assignees:
-            task.assignees.set(assignees)
 
         serializer = TaskSerializer(task)
         response_data = {
@@ -150,10 +151,28 @@ class TasksViewSet(BoardMixin, ViewSet):
         queryset = Task.objects.filter(
             board=request.board, archived_at__isnull=True, parent_id=parent_id
         )
+        tasks = (
+            queryset.prefetch_related("assignees", "labels")
+            .select_related("priority", "created_by", "estimate", "sprint", "assignee")
+            .order_by("sequence")
+        )
+        serializer = TaskSerializer(tasks, many=True)
+        response_data = {
+            "results": serializer.data,
+        }
+        return Response(data=response_data, status=status.HTTP_200_OK)
+
+    @action(methods=["GET"], detail=False)
+    def kanban(self, request, *args, **kwargs):
+        parent_id = request.query_params.get("parent_id", None)
+        queryset = Task.objects.filter(
+            board=request.board, archived_at__isnull=True, parent_id=parent_id
+        )
+        group_by = request.query_params.get("group_by", None)
         if request.query_params.getlist("assignees[]"):
             # Filter for assignees
             assignees = request.query_params.getlist("assignees[]")
-            queryset = queryset.filter(assignees__in=assignees)
+            queryset = queryset.filter(assignee__in=assignees)
 
         if request.query_params.getlist("task_types[]"):
             # Filter for task type
@@ -178,17 +197,130 @@ class TasksViewSet(BoardMixin, ViewSet):
         if request.query_params.getlist("sprints[]"):
             # Filter for sprints
             sprints = request.query_params.getlist("sprints[]")
-            queryset = queryset.filter(Q(sprint__in=sprints) | Q(sprint=None))
-        else:
-            queryset = queryset.filter(sprint=None)
+            queryset = queryset.filter(sprint__in=sprints)
 
-        tasks = (
-            queryset.prefetch_related("assignees", "labels")
-            .select_related("priority", "created_by", "estimate", "sprint")
-            .order_by("sequence")
-        )
-        serializer = TaskSerializer(tasks, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        tasks = queryset.select_related(
+            "priority", "created_by", "estimate", "sprint", "assignee"
+        ).order_by("sequence")
+        results = []
+
+        states = request.board.states.all()
+        if not group_by:
+            for state in states:
+                state_tasks = [task for task in tasks if task.state_id == state.id]
+                results.append(
+                    {
+                        **StateSerializer(state).data,
+                        "tasks": TaskSerializer(state_tasks, many=True).data,
+                    }
+                )
+
+        elif group_by == "assignee":
+            assignees = request.board.members
+            for assignee in assignees:
+                member_tasks = [
+                    task for task in tasks if task.assignee_id == assignee.id
+                ]
+                states_data = []
+                for state in states:
+                    state_tasks = [
+                        task for task in member_tasks if task.state_id == state.id
+                    ]
+                    states_data.append(
+                        {
+                            **StateSerializer(state).data,
+                            "tasks": TaskSerializer(state_tasks, many=True).data,
+                        }
+                    )
+                results.append(
+                    {
+                        "group_key": assignee.id,
+                        "states": states_data,
+                        "group_by": group_by,
+                        "assignee": MemberSerializer(assignee).data,
+                    }
+                )
+        elif group_by == "priority":
+            priorities = request.board.priorities.all()
+            for priority in priorities:
+                priority_tasks = [
+                    task for task in tasks if task.priority_id == priority.id
+                ]
+                states_data = []
+                for state in states:
+                    state_tasks = [
+                        task for task in priority_tasks if task.state_id == state.id
+                    ]
+                    states_data.append(
+                        {
+                            **StateSerializer(state).data,
+                            "tasks": TaskSerializer(state_tasks, many=True).data,
+                        }
+                    )
+                results.append(
+                    {
+                        "group_key": priority.id,
+                        "states": states_data,
+                        "group_by": group_by,
+                        "priority": PrioritySerializer(priority).data,
+                    }
+                )
+
+        elif group_by == "task_type":
+            task_types = [choice[0] for choice in Task.TaskType.choices]
+            for task_type in task_types:
+                task_type_tasks = [
+                    task for task in tasks if task.task_type == task_type
+                ]
+                states_data = []
+                for state in states:
+                    state_tasks = [
+                        task for task in task_type_tasks if task.state_id == state.id
+                    ]
+                    states_data.append(
+                        {
+                            **StateSerializer(state).data,
+                            "tasks": TaskSerializer(state_tasks, many=True).data,
+                        }
+                    )
+                results.append(
+                    {
+                        "group_key": task_type,
+                        "states": states_data,
+                        "group_by": group_by,
+                        "task_type": dict(Task.TaskType.choices).get(task_type),
+                    }
+                )
+
+        elif group_by == "sprint":
+            sprints = request.board.sprints.all().order_by("-created_at")
+            for sprint in sprints:
+                sprint_tasks = [task for task in tasks if task.sprint_id == sprint.id]
+                states_data = []
+                for state in states:
+                    state_tasks = [
+                        task for task in sprint_tasks if task.state_id == state.id
+                    ]
+                    states_data.append(
+                        {
+                            **StateSerializer(state).data,
+                            "tasks": TaskSerializer(state_tasks, many=True).data,
+                        }
+                    )
+                results.append(
+                    {
+                        "group_key": sprint.id,
+                        "states": states_data,
+                        "group_by": group_by,
+                        "sprint": SprintSerializer(sprint).data,
+                    }
+                )
+
+        response_data = {
+            "results": results,
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
 
     @transaction.atomic
     def partial_update(self, request, *args, **kwargs):
@@ -217,15 +349,32 @@ class TasksViewSet(BoardMixin, ViewSet):
                 else:
                     task_updates.append(f"has set estimate as {estimate.value}")
             if key == "priority_id":
-                priority = get_object_or_raise_api_404(
-                    Priority, board=request.board, id=value
-                )
-                if task.priority:
+                if not value:
+                    task_updates.append(f"removed priority {task.priority.name}.")
+                else:
+                    priority = get_object_or_raise_api_404(
+                        Priority, board=request.board, id=value
+                    )
+                    if task.priority:
+                        task_updates.append(
+                            f"changed priority from {task.priority.name} to {priority.name}."
+                        )
+                    else:
+                        task_updates.append(f"has set task priority as {priority.name}")
+
+            if key == "assignee_id":
+                if not value:
                     task_updates.append(
-                        f"changed priority from {task.priority.name} to {priority.name}."
+                        f"removed assignee {task.assignee.display_name}."
                     )
                 else:
-                    task_updates.append(f"has set task priority as {priority.name}")
+                    assignee = request.board.members.filter(id=value).first()
+                    if task.assignee:
+                        task_updates.append(
+                            f"changed assignee from {task.assignee.display_name} to {assignee.display_name}."
+                        )
+                    else:
+                        task_updates.append(f"assigned to {assignee.display_name}.")
 
             if key == "task_type":
                 task_updates.append(
@@ -291,23 +440,16 @@ class TasksViewSet(BoardMixin, ViewSet):
                     task_updates.append(f"removed assignees: {removed_names}")
 
         if task_updates:
-            comments = TaskComment.objects.bulk_create(
-                [
-                    TaskComment(
-                        task=task,
-                        content=update,
-                        author=request.user,
-                        comment_type=TaskComment.CommentType.ACTIVITY,
-                    )
-                    for update in task_updates
-                ],
+            TaskComment.objects.create(
+                task=task,
+                content=", ".join(task_updates),
+                author=request.user,
+                comment_type=TaskComment.CommentType.ACTIVITY,
             )
-        task_serializer = TaskSerializer(task)
-        comments_serializer = TaskCommentSerializer(comments, many=True)
+        # task_serializer = TaskSerializer(task)
         response_data = {
-            "task": task_serializer.data,
-            "comments": comments_serializer.data,
             "detail": "Task updated successfully.",
+            "log": ", ".join(task_updates),
         }
         return Response(
             data=response_data,

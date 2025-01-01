@@ -1,6 +1,7 @@
 <script setup>
 import { Card, Divider } from 'ant-design-vue'
 
+import { useBoardStore } from '@/stores/board'
 import TaskTypeFilters from './task-type-filters.vue'
 import AssigneeFilters from './assignee-filters.vue'
 import PriorityFilters from './priority-filters.vue'
@@ -9,7 +10,9 @@ import EstimateFilters from './estimate-filters.vue'
 import SprintFilters from './sprint-filters.vue'
 import { computed } from 'vue'
 
-// const props = defineProps(['board'])
+const store = useBoardStore()
+
+const emit = defineEmits(['reload'])
 const props = defineProps({
   board: {
     type: Object,
@@ -27,46 +30,57 @@ const hasCurrentSprint = computed(() => props.currentSprint !== null)
 
 <template>
   <Card class="w-80 max-h-[45rem] overflow-y-auto" title="Filters" size="small">
-    <div>
+    <div v-if="!store.groupBy || store.groupBy !== 'priority'">
       <div class="font-semibold text-gray-600">Priorities</div>
-      <PriorityFilters />
-    </div>
-
-    <Divider class="my-2 p-0" />
-
-    <div>
-      <div class="font-semibold text-gray-600">Assignees</div>
-      <AssigneeFilters />
-    </div>
-
-    <template v-if="props.board.isEstimateEnabled">
+      <PriorityFilters @reload="emit('reload')" />
       <Divider class="my-2 p-0" />
+    </div>
+
+    <template v-if="!store.groupBy || store.groupBy !== 'assignee'">
+      <div>
+        <div class="font-semibold text-gray-600">Assignees</div>
+        <AssigneeFilters @reload="emit('reload')" />
+      </div>
+      <Divider class="my-2 p-0" />
+    </template>
+
+    <template
+      v-if="
+        (!store.groupBy || store.groupBy !== 'estimate') &&
+        store.estimates.length > 0
+      "
+    >
       <div>
         <div class="font-semibold text-gray-600">Estimates</div>
-        <EstimateFilters />
+        <EstimateFilters @reload="emit('reload')" />
       </div>
+      <Divider class="my-2 p-0" />
     </template>
 
-    <template v-if="!hasCurrentSprint">
-      <Divider class="my-2 p-0" />
+    <template
+      v-if="
+        !store.groupBy ||
+        (store.groupBy !== 'sprint' &&
+          (store.sprints.length > 0 || hasCurrentSprint) &&
+          !props.currentSprint)
+      "
+    >
       <div>
         <div class="font-semibold text-gray-600">Sprints</div>
-        <SprintFilters />
+        <SprintFilters @reload="emit('reload')" />
       </div>
+      <Divider class="my-2 p-0" />
     </template>
 
-    <Divider class="my-2 p-0" />
-
-    <div>
+    <div v-if="!store.groupBy || store.groupBy !== 'task_type'">
       <div class="font-semibold text-gray-600">Types</div>
-      <TaskTypeFilters />
+      <TaskTypeFilters @reload="emit('reload')" />
+      <Divider class="my-2 p-0" />
     </div>
 
-    <Divider class="my-2 p-0" />
-
-    <div>
+    <div v-if="store.labels.length > 0">
       <div class="font-semibold text-gray-600">Labels</div>
-      <LabelFilters />
+      <LabelFilters @reload="emit('reload')" />
     </div>
   </Card>
 </template>

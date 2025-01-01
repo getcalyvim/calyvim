@@ -18,6 +18,13 @@ class Board(UUIDTimestampModel):
         CATEGORY = ("category", "Category")
         TIME = ("time", "Time")
 
+    class GroupBy(models.TextChoices):
+        ASSIGNEE = ("assignee", "Assignee")
+        PRIORITY = ("priority", "Priority")
+        SPRINT = ("sprint", "Sprint")
+        TASK_TYPE = ("task_type", "Task Type")
+        ESTIMATE = ("estimate", "Estimate")
+
     workspace = models.ForeignKey(
         "Workspace", on_delete=models.CASCADE, related_name="boards"
     )
@@ -38,6 +45,9 @@ class Board(UUIDTimestampModel):
         max_length=10, choices=EstimateType.choices, default=EstimateType.TIME
     )
     archived_at = models.DateTimeField(blank=True, null=True)
+    current_group_by = models.CharField(
+        max_length=20, blank=True, null=True, choices=GroupBy.choices
+    )
 
     # Template Related Settings
     is_template = models.BooleanField(

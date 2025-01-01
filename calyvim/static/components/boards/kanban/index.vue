@@ -1,41 +1,28 @@
 <script setup>
 import BoardLayout from '@/components/base/board-layout.vue'
-import { useKanbanStore } from '@/stores/kanban'
-import { computed, h, onMounted, ref, watch } from 'vue'
+import { useBoardStore } from '@/stores/board'
+import { h, onMounted, ref } from 'vue'
 import {
-  taskListAPI,
   stateListAPI,
   boardMembersListAPI,
   priorityListAPI,
-  taskUpdateSequence,
-  taskCreateAPI,
-  labelListAPI,
-  estimateListAPI,
   sprintListAPI,
+  boardUpdateAPI,
+  taskListKanbanAPI,
 } from '@/utils/api'
-import { VueDraggable } from 'vue-draggable-plus'
-import TaskCard from '@/components/boards/kanban/task-card.vue'
 import { handleResponseError, generateAvatar } from '@/utils/helpers'
-import {
-  Button,
-  Dropdown,
-  Card,
-  Input,
-  AvatarGroup,
-  Avatar,
-  Drawer,
-  Breadcrumb,
-  BreadcrumbItem,
-  Tag,
-} from 'ant-design-vue'
+import { Button, Dropdown, Avatar, Drawer, Tag, Select } from 'ant-design-vue'
 import {
   FilterOutlined,
   PlusOutlined,
-  ReloadOutlined,
-  UnorderedListOutlined,
-  BorderOutlined,
-  EllipsisOutlined,
   SyncOutlined,
+  FlagOutlined,
+  UserOutlined,
+  ArrowDownOutlined,
+  ArrowRightOutlined,
+  CarryOutOutlined,
+  BlockOutlined,
+  ClockCircleOutlined,
 } from '@ant-design/icons-vue'
 import { useNProgress } from '@vueuse/integrations/useNProgress'
 import WorkspaceLayout from '@/components/base/workspace-layout.vue'
@@ -43,9 +30,10 @@ import FilterList from '@/components/boards/kanban/filters/filter-list.vue'
 import TaskAddForm from '@/components/boards/kanban/task-add-form.vue'
 import TaskView from '@/components/boards/kanban/detail/task-view.vue'
 import StateMenu from './state-menu.vue'
-import BaseSpinner from '../../base/base-spinner.vue'
+import StateTaskSkeletonLoader from './state-task-skeleton-loader.vue'
+import StateList from './state-list.vue'
+import StateTasks from './state-tasks.vue'
 
-// const props = defineProps(['workspace', 'board'])
 const props = defineProps({
   workspace: {
     type: Object,
@@ -66,27 +54,49 @@ const props = defineProps({
   },
 })
 
-const hasCurrentSprint = computed(() => !!props.currentSprint)
-const store = useKanbanStore()
+const openFilterDropdown = ref(false)
+const openTaskAddDropdown = ref(false)
 
-const isInitializing = ref(true)
+const openedGroups = ref(new Set())
+const defaultFilters = {
+  sprints: props.currentSprint ? [props.currentSprint.id] : [],
+}
+
+const toggleGroup = (groupKey) => {
+  if (openedGroups.value.has(groupKey)) {
+    openedGroups.value.delete(groupKey)
+  } else {
+    openedGroups.value.add(groupKey)
+  }
+}
+
 const { isLoading } = useNProgress(null, { minimum: '0.5' })
 const taskLoading = ref(false)
 
-const fetchStates = async () => {
+const store = useBoardStore()
+
+const loadStates = async () => {
   try {
     const { data } = await stateListAPI(props.board.id)
-    store.setStates(data)
+    store.initializeStates(data.results)
   } catch (error) {
     handleResponseError(error)
   }
 }
 
-const fetchTasks = async (filters = {}) => {
+const loadTasks = async (filters = {}) => {
   try {
     taskLoading.value = true
-    const { data } = await taskListAPI(props.board.id, filters)
-    store.setTasks(data)
+    const { data } = await taskListKanbanAPI(props.board.id, {
+      groupBy: store.groupBy,
+      ...filters,
+      ...defaultFilters,
+    })
+
+    store.initializeKanban(data.results)
+    data.results.forEach((item) => {
+      openedGroups.value.add(item.groupKey)
+    })
   } catch (error) {
     handleResponseError(error)
   } finally {
@@ -94,178 +104,133 @@ const fetchTasks = async (filters = {}) => {
   }
 }
 
-const fetchMembers = async () => {
-  try {
-    const { data } = await boardMembersListAPI(props.board.id)
-    store.setMembers(data)
-  } catch (error) {
-    handleResponseError(error)
-  }
-}
-
-const fetchPriorities = async () => {
+const loadPriorities = async () => {
   try {
     const { data } = await priorityListAPI(props.board.id)
-    store.setPriorities(data)
+    store.initializePriorities(data.results)
   } catch (error) {
     handleResponseError(error)
   }
 }
 
-const fetchLabels = async () => {
+const loadingMembers = async () => {
   try {
-    const { data } = await labelListAPI(props.board.id)
-    store.setLabels(data)
-  } catch (error) {
-    handleResponseError(error)
-  }
+    const { data } = await boardMembersListAPI(props.board.id)
+    store.initializeMembers(data.results)
+  } catch (error) {}
 }
 
-const fetchEstimates = async () => {
-  try {
-    const { data } = await estimateListAPI(props.board.id)
-    store.setEstimates(data)
-  } catch (error) {
-    handleResponseError(error)
-  }
-}
-
-const fetchSprints = async () => {
+const loadSprints = async () => {
   try {
     const { data } = await sprintListAPI(props.board.id)
-    await store.setSprints(data)
+    store.initializeSprints(data.results)
   } catch (error) {
     handleResponseError(error)
   }
 }
 
-const loadKanban = async () => {
-  try {
-    isLoading.value = true
-    await fetchStates()
+onMounted(async () => {
+  isLoading.value = true
+  await loadStates()
+  await loadPriorities()
+  await loadingMembers()
+  await loadSprints()
 
-    if (hasCurrentSprint.value) {
-      await store.setSprintFilters([props.currentSprint.id])
-    } else {
-      await fetchSprints()
-    }
+  await store.initializeGroupBy(props.board.currentGroupBy)
 
-    isInitializing.value = false
-    isLoading.value = false
-
-    await fetchTasks({ sprints: store.sprintFilters })
-    await store.setupKanban()
-
-    fetchMembers()
-    fetchPriorities()
-    fetchLabels()
-    fetchEstimates()
-  } catch (error) {
-    handleResponseError(error)
-  }
-}
-
-const updateTaskSequence = async (event, stateId) => {
-  const updatedData = {
-    stateId,
-  }
-  try {
-    const state = store.kanban.find((state) => state.id === stateId)
-    const task = state.tasks[event.newIndex]
-
-    if (event.newIndex === 0 && state.tasks.length === 1) {
-      // Empty
-    } else if (event.newIndex === 0) {
-      updatedData['nextTask'] = state.tasks[event.newIndex + 1].id
-    } else if (event.newIndex === state.tasks.length - 1) {
-      updatedData['previousTask'] = state.tasks[event.newIndex - 1].id
-    } else {
-      updatedData['nextTask'] = state.tasks[event.newIndex + 1].id
-      updatedData['previousTask'] = state.tasks[event.newIndex - 1].id
-    }
-
-    const { data } = await taskUpdateSequence(
-      props.board.id,
-      task.id,
-      updatedData
-    )
-    task.sequence = data.newSequence
-    task.stateId = stateId
-  } catch (error) {
-    handleResponseError(error)
-  }
-}
-
-const openAddTaskDropdown = ref(false)
-const addTaskAndCloseAddTaskDropdown = (newTask) => {
-  store.addNewTask(newTask)
-  openAddTaskDropdown.value = false
-}
-
-onMounted(() => {
-  loadKanban()
+  await loadTasks()
+  isLoading.value = false
 })
 
-const openFilterDropdown = ref(false)
+const taskViewId = ref(null)
+const taskViewGroupKey = ref(null)
+const showTaskView = ref(false)
+const openTaskView = (taskId, groupKey) => {
+  taskViewId.value = taskId
+  taskViewGroupKey.value = groupKey
+  showTaskView.value = true
+}
+const closeTaskView = () => {
+  showTaskView.value = false
+  taskViewId.value = null
+  taskViewGroupKey.value = null
+}
 
-watch(
-  () => [
-    store.assigneeFilters,
-    store.taskTypes,
-    store.priorityFilters,
-    store.labelFilters,
-    store.estimateFilters,
-    store.sprintFilters,
-  ],
-  async () => {
-    if (isInitializing.value === true) {
-      return
+const loadTaskAndUpdateCurrentGroupBy = async (value) => {
+  isLoading.value = true
+
+  await store.clearFilters()
+  await loadTasks()
+
+  isLoading.value = false
+
+  boardUpdateAPI(props.board.id, {
+    currentGroupBy: value,
+  })
+}
+
+const updateTask = async (taskId, updatedData) => {
+  for (const [key, value] of Object.entries(updatedData)) {
+    switch (key) {
+      case 'priorityId':
+        const priority = store.priorities.find((p) => p.id === value)
+        updatedData['priority'] = priority
+
+        store.updateTask(taskId, updatedData, 'priority', value)
+        break
+
+      case 'stateId':
+        const state = store.states.find((s) => s.id === value)
+        updatedData['state'] = state
+
+        store.updateTask(taskId, updatedData)
+        if (!!taskViewGroupKey.value) {
+          store.updateTaskPositionByGroup(
+            taskId,
+            value,
+            taskViewGroupKey.value,
+            updatedData
+          )
+        } else {
+          store.updateTaskPosition(taskId, value, updatedData)
+        }
+        break
+
+      case 'assigneeId':
+        const assignee = store.members.find((m) => m.id === value)
+
+        updatedData['assignee'] = assignee
+        store.updateTask(taskId, updatedData, 'assignee', value)
+
+        break
+
+      case 'taskType':
+        store.updateTask(taskId, updatedData, 'task_type', value)
+        break
+
+      default:
+        store.updateTask(taskId, updatedData)
+        break
     }
-
-    await fetchTasks({
-      assignees: store.assigneeFilters,
-      taskTypes: store.taskTypes,
-      priorities: store.priorityFilters,
-      labels: store.labelFilters,
-      estimates: store.estimateFilters,
-      sprints: store.sprintFilters,
-    })
-    await store.setupKanban()
-  }
-)
-
-const activeTaskAddCard = ref('')
-const activateAddCard = (stateId) => {
-  activeTaskAddCard.value = stateId
-}
-const closeActiveTaskCard = () => {
-  activeTaskAddCard.value = ''
-}
-const createNewTask = async (event, stateId) => {
-  const newTaskData = {
-    summary: event.target.value,
-    stateId: stateId,
-    taskType: 'issue',
-    assignees: [],
-  }
-
-  try {
-    const { data } = await taskCreateAPI(props.board.id, newTaskData)
-    store.addNewTask(data.task)
-    closeActiveTaskCard()
-  } catch (error) {
-    handleResponseError(error)
   }
 }
 
-const openTaskAddDrawer = ref(false)
-const showTaskAddDrawer = (taskId) => {
-  store.setSelectedTask(taskId)
-  openTaskAddDrawer.value = true
+const reloadTasks = async () => {
+  isLoading.value = true
+  await loadTasks({
+    assignees: store.assigneeFilters,
+    taskTypes: store.taskTypes,
+    priorities: store.priorityFilters,
+    labels: store.labelFilters,
+    estimates: store.estimateFilters,
+    sprints: store.sprintFilters,
+  })
+  isLoading.value = false
 }
-const closeTaskAddDrawer = () => {
-  store.setSelectedTask('')
-  openTaskAddDrawer.value = false
+
+const addNewTask = (task) => {
+  openTaskAddDropdown.value = false
+  store.addTask(task)
 }
 </script>
 
@@ -277,207 +242,302 @@ const closeTaskAddDrawer = () => {
         :board="props.board"
         :page="props.currentTab"
       >
-        <template #default>
-          <div class="board-container">
-            <div
-              v-if="isLoading || taskLoading"
-              class="flex justify-center items-center h-[80vh]"
-            >
-              <div class="flex items-center gap-2">
-                <BaseSpinner />
-                <div>Please wait while we load tasks...</div>
-              </div>
-            </div>
-            <div class="flex space-x-1" v-else>
-              <div
-                v-for="state in store.kanban"
-                :key="state.id"
-                class="column p-1 rounded-lg w-[21rem] flex-shrink-0 task-list"
-              >
-                <div
-                  class="font-bold mb-2 bg-gray-100 rounded px-2 py-1 flex justify-between items-center"
-                >
-                  <div>
-                    <BorderOutlined class="text-primary" />
-                    <span class="ml-2">{{ state.name }}</span>
-                  </div>
-
-                  <div>
-                    <Dropdown :trigger="['click']" placement="bottom">
-                      <Button
-                        :icon="h(EllipsisOutlined)"
-                        size="small"
-                        type="text"
-                      />
-                      <template #overlay>
-                        <StateMenu :state="state" :board="props.board" />
-                      </template>
-                    </Dropdown>
-                  </div>
-                </div>
-                <!-- <Button size="small" class="w-full mb-2" :icon="h(PlusOutlined)">Add task</Button> -->
-                <div class="">
-                  <VueDraggable
-                    class="flex flex-col space-y-2"
-                    v-model="state.tasks"
-                    group="states"
-                    @update="(event) => updateTaskSequence(event, state.id)"
-                    @add="(event) => updateTaskSequence(event, state.id)"
-                  >
-                    <div
-                      v-for="task in state.tasks"
-                      :key="task.id"
-                      class="cursor-pointer"
-                      @click="showTaskAddDrawer(task.id)"
-                    >
-                      <Card
-                        size="small"
-                        class="rounded hover:border-1 hover:border-primary transition duration-300"
-                        :class="{
-                          'border-1 border-primary':
-                            store.selectedTask === task.id,
-                        }"
-                      >
-                        <TaskCard :task="task" :board="props.board" :hasCurrentSprint="hasCurrentSprint" />
-                      </Card>
-                    </div>
-                  </VueDraggable>
-                </div>
-
-                <Card
-                  size="small mt-2"
-                  class="rounded"
-                  v-if="activeTaskAddCard === state.id"
-                >
-                  <Input
-                    :bordered="false"
-                    placeholder="Summary"
-                    @keyup.enter="(event) => createNewTask(event, state.id)"
-                  />
-                  <div class="flex justify-end">
-                    <Button
-                      type="text"
-                      size="small"
-                      @click="closeActiveTaskCard"
-                      >Close</Button
-                    >
-                  </div>
-                </Card>
-
-                <div class="mt-2">
-                  <span class="text-sm" @click="activateAddCard(state.id)"
-                    >+ Add Task</span
-                  >
-                </div>
-              </div>
-            </div>
-          </div>
-        </template>
-
         <template #actions>
-          <div class="flex me-2 gap-3 items-center">
-            <Tag :bordered="false" v-if="hasCurrentSprint">
-              <span class="font-semibold text-primary">
-                <SyncOutlined class="mr-2" />
-                {{ currentSprint.name }}
-              </span>
-            </Tag>
-            <Button type="text" :icon="h(ReloadOutlined)" @click="loadKanban"
-              >Refresh board</Button
-            >
-            <Dropdown :trigger="['click']" placement="bottomRight">
-              <AvatarGroup size="small" :max-count="5">
-                <Avatar
-                  v-for="member in store.members"
-                  :key="member.id"
-                  :src="
-                    !!member.avatar
-                      ? member.avatar
-                      : generateAvatar(member.firstName)
-                  "
-                />
-              </AvatarGroup>
-              <template #overlay> </template>
-            </Dropdown>
-
-            <Button type="text" :icon="h(UnorderedListOutlined)"
-              >Group by</Button
-            >
-
+          <div class="flex items-center gap-3 mx-2">
+            <div class="flex items-center gap-1">
+              <div class="font-semibold text-xs text-gray-500">Group by</div>
+              <Select
+                v-model:value="store.groupBy"
+                class="w-36"
+                @change="loadTaskAndUpdateCurrentGroupBy"
+              >
+                <Select.Option :value="null">None</Select.Option>
+                <Select.Option value="assignee">
+                  <UserOutlined class="text-primary" />
+                  <span class="ml-2">Assignee</span>
+                </Select.Option>
+                <Select.Option value="priority">
+                  <FlagOutlined class="text-primary" />
+                  <span class="ml-2">Priority</span>
+                </Select.Option>
+                <Select.Option value="sprint" :disabled="!!props.currentSprint">
+                  <CarryOutOutlined class="text-primary" />
+                  <span class="ml-2">Sprint</span>
+                </Select.Option>
+                <Select.Option value="task_type">
+                  <BlockOutlined class="text-primary" />
+                  <span class="ml-2">Task type</span>
+                </Select.Option>
+                <Select.Option value="estimate">
+                  <ClockCircleOutlined class="text-primary" />
+                  <span class="ml-2">Estimate</span>
+                </Select.Option>
+              </Select>
+            </div>
             <Dropdown
               :trigger="['click']"
-              v-model:open="openFilterDropdown"
               placement="bottomRight"
+              v-model:open="openFilterDropdown"
             >
               <Button :icon="h(FilterOutlined)">Filters</Button>
               <template #overlay>
                 <FilterList
                   :board="props.board"
+                  @reload="reloadTasks"
                   :currentSprint="props.currentSprint"
                 />
               </template>
             </Dropdown>
-
             <Dropdown
               :trigger="['click']"
-              v-model:open="openAddTaskDropdown"
               placement="bottomRight"
+              v-model:open="openTaskAddDropdown"
             >
               <Button type="primary" :icon="h(PlusOutlined)">Add task</Button>
               <template #overlay>
-                <TaskAddForm
-                  :board="props.board"
-                  @created="addTaskAndCloseAddTaskDropdown"
-                />
+                <TaskAddForm :board="props.board" @created="addNewTask" />
               </template>
             </Dropdown>
           </div>
         </template>
-      </BoardLayout>
+        <template #default>
+          <div class="w-full overflow-x-auto">
+            <div class="min-w-max px-1">
+              <StateList :states="store.states" />
+              <template v-if="taskLoading">
+                <div class="task-list">
+                  <StateTaskSkeletonLoader :states="store.states" />
+                </div>
+              </template>
+              <template v-else>
+                <!-- For Group By - Assignee -->
+                <div
+                  v-if="!!store.groupBy && store.groupBy === 'assignee'"
+                  class="task-list"
+                >
+                  <div
+                    class="w-full mb-1"
+                    v-for="item in store.kanban"
+                    :key="item.id"
+                  >
+                    <template v-if="item.groupBy === 'assignee'">
+                      <div class="bg-gray-100 px-2 py-1 rounded">
+                        <Button
+                          type="text"
+                          size="small"
+                          class="mr-2"
+                          @click="toggleGroup(item.groupKey)"
+                        >
+                          <ArrowRightOutlined
+                            v-if="!openedGroups.has(item.groupKey)"
+                            class="text-xs text-gray-500"
+                          />
+                          <ArrowDownOutlined
+                            v-else
+                            class="text-xs text-gray-500"
+                          />
+                        </Button>
+                        <Avatar
+                          :src="
+                            !!item.assignee.avatar
+                              ? item.assignee.avatar
+                              : generateAvatar(item.assignee.displayName)
+                          "
+                          :size="24"
+                        />
+                        <span class="ml-2">{{
+                          item.assignee.displayName
+                        }}</span>
+                      </div>
 
-      <Drawer
-        centered
-        v-model:open="openTaskAddDrawer"
-        destroyOnClose
-        :width="920"
-        @close="closeTaskAddDrawer"
-        :header-style="{ display: 'none' }"
-      >
-        <TaskView
-          :board="props.board"
-          :workspace="props.workspace"
-          :taskId="store.selectedTask"
-          v-if="!!store.selectedTask"
-        />
-        <template #extra>
-          <Breadcrumb>
-            <BreadcrumbItem>
-              <Avatar
-                :size="20"
-                shape="square"
-                :src="
-                  !!props.workspace.logo
-                    ? props.workspace.logoSrc
-                    : generateAvatar(props.workspace.name, 10)
-                "
-              />
-              <span class="ml-2">{{ props.workspace.name }}</span>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Avatar
-                :size="20"
-                shape="square"
-                :src="
-                  !!props.board.cover
-                    ? props.board.cover
-                    : generateAvatar(props.board.name, 10)
-                "
-              />
-              <span class="ml-2">{{ props.board.name }}</span>
-            </BreadcrumbItem>
-          </Breadcrumb>
+                      <StateTasks
+                        v-if="openedGroups.has(item.groupKey)"
+                        :states="item.states"
+                        :board="props.board"
+                        :groupKey="item.groupKey"
+                        @open="openTaskView"
+                        @created="(newTask) => store.addTask(newTask)"
+                      />
+                    </template>
+                  </div>
+                </div>
+
+                <!-- For Group By - Priority -->
+                <div
+                  v-else-if="!!store.groupBy && store.groupBy === 'priority'"
+                  class="task-list"
+                >
+                  <div
+                    class="w-full mb-1"
+                    v-for="item in store.kanban"
+                    :key="item.id"
+                  >
+                    <template v-if="item.groupBy === 'priority'">
+                      <div class="bg-gray-100 px-2 py-1 rounded">
+                        <Button
+                          type="text"
+                          size="small"
+                          class="mr-2"
+                          @click="toggleGroup(item.groupKey)"
+                        >
+                          <ArrowRightOutlined
+                            v-if="!openedGroups.has(item.groupKey)"
+                            class="text-xs text-gray-500"
+                          />
+                          <ArrowDownOutlined
+                            v-else
+                            class="text-xs text-gray-500"
+                          />
+                        </Button>
+                        <FlagOutlined class="text-primary" />
+                        <span class="ml-2 font-semibold">
+                          {{ item.priority.name }}
+                        </span>
+                      </div>
+
+                      <StateTasks
+                        v-if="openedGroups.has(item.groupKey)"
+                        :states="item.states"
+                        :board="props.board"
+                        :groupKey="item.groupKey"
+                        @open="openTaskView"
+                        @created="(newTask) => store.addTask(newTask)"
+                      />
+                    </template>
+                  </div>
+                </div>
+
+                <!-- For Group By - Task Type -->
+                <div
+                  v-else-if="!!store.groupBy && store.groupBy === 'task_type'"
+                  class="task-list"
+                >
+                  <div
+                    class="w-full mb-1"
+                    v-for="item in store.kanban"
+                    :key="item.id"
+                  >
+                    <template v-if="item.groupBy === 'task_type'">
+                      <div class="bg-gray-100 px-2 py-1 rounded">
+                        <Button
+                          type="text"
+                          size="small"
+                          class="mr-2"
+                          @click="toggleGroup(item.groupKey)"
+                        >
+                          <ArrowRightOutlined
+                            v-if="!openedGroups.has(item.groupKey)"
+                            class="text-xs text-gray-500"
+                          />
+                          <ArrowDownOutlined
+                            v-else
+                            class="text-xs text-gray-500"
+                          />
+                        </Button>
+                        <BlockOutlined class="text-primary" />
+                        <span class="ml-2 font-semibold">
+                          {{ item.taskType }}
+                        </span>
+                      </div>
+
+                      <StateTasks
+                        v-if="openedGroups.has(item.groupKey)"
+                        :states="item.states"
+                        :board="props.board"
+                        :groupKey="item.groupKey"
+                        @open="openTaskView"
+                        @created="(newTask) => store.addTask(newTask)"
+                      />
+                    </template>
+                  </div>
+                </div>
+
+                <!-- Group By - Sprint -->
+                <div
+                  v-else-if="!!store.groupBy && store.groupBy === 'sprint'"
+                  class="task-list"
+                >
+                  <div
+                    class="w-full mb-1"
+                    v-for="item in store.kanban"
+                    :key="item.id"
+                  >
+                    <template v-if="item.groupBy === 'sprint'">
+                      <div
+                        class="bg-gray-100 px-2 py-1 rounded flex items-center"
+                      >
+                        <Button
+                          type="text"
+                          size="small"
+                          class="mr-2"
+                          @click="toggleGroup(item.groupKey)"
+                        >
+                          <ArrowRightOutlined
+                            v-if="!openedGroups.has(item.groupKey)"
+                            class="text-xs text-gray-500"
+                          />
+                          <ArrowDownOutlined
+                            v-else
+                            class="text-xs text-gray-500"
+                          />
+                        </Button>
+                        <SyncOutlined class="text-primary" />
+                        <div class="ml-2 font-semibold">
+                          {{ item.sprint.name }}
+                        </div>
+                        <Tag
+                          v-if="item.sprint.isActive"
+                          :bordered="false"
+                          class="ml-1 text-primary"
+                          >Active</Tag
+                        >
+                      </div>
+
+                      <StateTasks
+                        v-if="openedGroups.has(item.groupKey)"
+                        :states="item.states"
+                        :board="props.board"
+                        :groupKey="item.groupKey"
+                        @open="openTaskView"
+                        @created="(newTask) => store.addTask(newTask)"
+                      />
+                    </template>
+                  </div>
+                </div>
+
+                <!-- For Group By - None (Normal Board) -->
+                <div v-else class="task-list">
+                  <StateTasks
+                    :states="store.kanban"
+                    :board="props.board"
+                    @open="openTaskView"
+                    @created="(newTask) => store.addTask(newTask)"
+                  />
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- TaskViewDrawer -->
+          <Drawer
+            centered
+            v-model:open="showTaskView"
+            destroyOnClose
+            @close="closeTaskView"
+            :header-style="{ display: 'none' }"
+            :width="920"
+          >
+            <TaskView
+              :board="props.board"
+              :taskId="taskViewId"
+              :members="store.members"
+              :priorities="store.priorities"
+              :states="store.states"
+              @update="updateTask"
+            />
+          </Drawer>
         </template>
-      </Drawer>
+      </BoardLayout>
     </WorkspaceLayout>
   </div>
 </template>
@@ -489,7 +549,7 @@ const closeTaskAddDrawer = () => {
 
 .task-list {
   /* min-height: 50px; */
-  height: calc(100vh - 80px);
+  height: calc(100vh - 118px);
   overflow-y: auto;
 }
 

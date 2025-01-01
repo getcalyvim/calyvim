@@ -52,7 +52,10 @@ class StatesViewSet(BoardMixin, ViewSet):
     def list(self, request, *args, **kwargs):
         states = State.objects.filter(board=request.board).order_by("sequence")
         serializer = StateSerializer(states, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        response_data = {
+            "results": serializer.data,
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         create_serializer = StateCreateSerializer(data=request.data)

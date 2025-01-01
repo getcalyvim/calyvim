@@ -1,4 +1,16 @@
 import { client } from './client'
+export const taskUpdateAPI = (boardId, taskId, data) =>
+  client.patch(`/boards/${boardId}/tasks/${taskId}`, data)
+
+export const taskListAPI = (boardId, filters = {}) =>
+  client.get(`/boards/${boardId}/tasks`, {
+    params: filters,
+  })
+
+export const taskListKanbanAPI = (boardId, filters = {}) =>
+  client.get(`/boards/${boardId}/tasks/kanban`, {
+    params: filters,
+  })
 
 export const taskArchiveApi = (boardId, taskId) =>
   client.patch(`/boards/${boardId}/tasks/${taskId}/archive`)
@@ -37,3 +49,6 @@ export const taskBulkStateUpdateAPI = (boardId, stateId, taskIds) =>
       },
     }
   )
+
+export const taskUpdateSequenceAPI = (boardId, taskId, data) =>
+  client.patch(`/boards/${boardId}/tasks/${taskId}/update-sequence`, data)

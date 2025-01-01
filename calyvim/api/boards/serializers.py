@@ -39,6 +39,7 @@ class BoardUpdateSerializer(serializers.Serializer):
     description = serializers.CharField(
         required=False, allow_null=True, allow_blank=True
     )
+    current_group_by = serializers.CharField(required=False, allow_null=True)
 
 
 class BoardMemberSeralizer(serializers.ModelSerializer):

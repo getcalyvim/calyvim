@@ -1,13 +1,14 @@
 <script setup>
 import { Checkbox, CheckboxGroup } from 'ant-design-vue';
-import { useKanbanStore } from '@/stores/kanban';
+import { useBoardStore } from '@/stores/board';
 import TaskTypeIcon from '@/components/icons/task-type-icon.vue';
 
-const store = useKanbanStore()
+const emit = defineEmits(['reload'])
+const store = useBoardStore()
 </script>
 
 <template>
-    <CheckboxGroup v-model:value="store.taskTypes" class="">
+    <CheckboxGroup v-model:value="store.taskTypes" class="" @change="emit('reload')">
         <div class="flex flex-col gap-1">
             <div class="flex items-center gap-1">
                 <Checkbox value="issue"></Checkbox>

@@ -1,13 +1,14 @@
 <script setup>
 import { Checkbox, CheckboxGroup, Tag } from 'ant-design-vue'
-import { useKanbanStore } from '@/stores/kanban'
+import { useBoardStore } from '@/stores/board'
 import { SyncOutlined } from '@ant-design/icons-vue'
 
-const store = useKanbanStore()
+const emit = defineEmits(['reload'])
+const store = useBoardStore()
 </script>
 
 <template>
-  <CheckboxGroup v-model:value="store.sprintFilters" class="">
+  <CheckboxGroup v-model:value="store.sprintFilters" class="" @change="emit('reload')">
     <div class="flex flex-col gap-1">
       <div
         class="flex items-center gap-2"
