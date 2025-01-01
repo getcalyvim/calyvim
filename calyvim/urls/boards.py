@@ -7,7 +7,9 @@ from calyvim.views.boards import (
     BoardSettingsStatesView,
     BoardSprintsListView,
     BoardSprintsDetailView,
-    BoardSettingsPrioritiesView
+    BoardSettingsPrioritiesView,
+    BoardLeaveView,
+    BoardDeleteView
 )
 
 # fmt: off
@@ -19,5 +21,7 @@ urlpatterns = [
     path("settings/collaborators/", BoardSettingsCollaboratorsView.as_view(), name="board-settings-collaborators"),
     path("settings/states/", BoardSettingsStatesView.as_view(), name="board-settings-states"),
     path("settings/priorities/", BoardSettingsPrioritiesView.as_view(), name="board-settings-priorities"),
+    path("leave/", BoardLeaveView.as_view(), name="board-leave"),
+    path("delete/", BoardDeleteView.as_view(), name="board-delete"),
     path("", BoardKanbanView.as_view(), name="board-kanban"),
 ]
