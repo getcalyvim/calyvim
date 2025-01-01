@@ -24,7 +24,7 @@ const fetchPriorities = async () => {
   try {
     isLoading.value = true
     const { data } = await priorityListAPI(props.board.id)
-    priorities.value = data
+    priorities.value = data.results
   } catch (error) {
     handleResponseError(error)
   } finally {

@@ -79,10 +79,14 @@ class StatesViewSet(BoardMixin, ViewSet):
         data = update_serializer.validated_data
         for key, value in data.items():
             setattr(state, key, value)
-        state.save(update_fields=data.keys)
+        state.save(update_fields=data.keys())
 
         serializer = StateSerializer(state)
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
+        response_data = {
+            "detail": "State updated successfully.",
+            "state": serializer.data
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
         state = get_object_or_raise_api_404(

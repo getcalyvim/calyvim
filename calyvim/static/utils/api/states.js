@@ -13,3 +13,6 @@ export const stateCreateAPI = (boardId, data) =>
 
 export const stateDeleteAPI = (boardId, stateId) =>
   client.delete(`/boards/${boardId}/states/${stateId}`)
+
+export const stateUpdateAPI = (boardId, stateId, data) =>
+  client.patch(`/boards/${boardId}/states/${stateId}`, data)
