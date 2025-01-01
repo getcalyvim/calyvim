@@ -55,6 +55,8 @@ const props = defineProps({
 })
 
 const openFilterDropdown = ref(false)
+const openTaskAddDropdown = ref(false)
+
 const openedGroups = ref(new Set())
 const defaultFilters = {
   sprints: props.currentSprint ? [props.currentSprint.id] : [],
@@ -225,6 +227,11 @@ const reloadTasks = async () => {
   })
   isLoading.value = false
 }
+
+const addNewTask = (task) => {
+  openTaskAddDropdown.value = false
+  store.addTask(task)
+}
 </script>
 
 <template>
@@ -281,7 +288,16 @@ const reloadTasks = async () => {
                 />
               </template>
             </Dropdown>
-            <Button type="primary" :icon="h(PlusOutlined)">Add task</Button>
+            <Dropdown
+              :trigger="['click']"
+              placement="bottomRight"
+              v-model:open="openTaskAddDropdown"
+            >
+              <Button type="primary" :icon="h(PlusOutlined)">Add task</Button>
+              <template #overlay>
+                <TaskAddForm :board="props.board" @created="addNewTask" />
+              </template>
+            </Dropdown>
           </div>
         </template>
         <template #default>
@@ -340,6 +356,7 @@ const reloadTasks = async () => {
                         :board="props.board"
                         :groupKey="item.groupKey"
                         @open="openTaskView"
+                        @created="(newTask) => store.addTask(newTask)"
                       />
                     </template>
                   </div>
@@ -384,6 +401,7 @@ const reloadTasks = async () => {
                         :board="props.board"
                         :groupKey="item.groupKey"
                         @open="openTaskView"
+                        @created="(newTask) => store.addTask(newTask)"
                       />
                     </template>
                   </div>
@@ -428,6 +446,7 @@ const reloadTasks = async () => {
                         :board="props.board"
                         :groupKey="item.groupKey"
                         @open="openTaskView"
+                        @created="(newTask) => store.addTask(newTask)"
                       />
                     </template>
                   </div>
@@ -480,6 +499,7 @@ const reloadTasks = async () => {
                         :board="props.board"
                         :groupKey="item.groupKey"
                         @open="openTaskView"
+                        @created="(newTask) => store.addTask(newTask)"
                       />
                     </template>
                   </div>
@@ -491,6 +511,7 @@ const reloadTasks = async () => {
                     :states="store.kanban"
                     :board="props.board"
                     @open="openTaskView"
+                    @created="(newTask) => store.addTask(newTask)"
                   />
                 </div>
               </template>

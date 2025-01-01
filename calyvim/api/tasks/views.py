@@ -128,11 +128,8 @@ class TasksViewSet(BoardMixin, ViewSet):
         ):
             raise PriorityNotFoundException
 
-        assignees = data.pop("assignees")
         task = Task(**data, created_by=request.user, board=request.board)
         task.save()
-        if assignees:
-            task.assignees.set(assignees)
 
         serializer = TaskSerializer(task)
         response_data = {

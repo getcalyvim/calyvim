@@ -1,12 +1,14 @@
 <script setup>
-import { Card } from 'ant-design-vue'
+import { Card, Input, Button } from 'ant-design-vue'
 import TaskCard from './task-card.vue'
 import { VueDraggable } from 'vue-draggable-plus'
-import { taskUpdateSequenceAPI } from '@/utils/api'
-import { handleResponseError } from '@/utils/helpers'
+import { taskUpdateSequenceAPI, taskCreateAPI } from '@/utils/api'
+import { handleResponseError, notify } from '@/utils/helpers'
 import { useBoardStore } from '@/stores/board'
+import { PlusOutlined } from '@ant-design/icons-vue'
+import { ref } from 'vue'
 
-const emit = defineEmits(['open'])
+const emit = defineEmits(['open', 'created'])
 
 const props = defineProps({
   states: {
@@ -26,7 +28,6 @@ const props = defineProps({
 const store = useBoardStore()
 
 const updateTaskSequence = async (event, stateId) => {
-  console.log('Event --', event)
   const updatedData = {
     stateId,
   }
@@ -67,27 +68,101 @@ const updateTaskSequence = async (event, stateId) => {
     handleResponseError(error)
   }
 }
+
+const newTaskTitle = ref('')
+const openTaskAddForm = ref(null)
+const showTaskAddForm = (stateId) => {
+  openTaskAddForm.value = stateId
+}
+const closeTaskAddForm = () => {
+  newTaskTitle.value = ''
+  openTaskAddForm.value = null
+}
+
+const createTask = async (stateId, title) => {
+  try {
+    const newData = {
+      stateId,
+      summary: title,
+      taskType: 'issue',
+    }
+
+    if(!!props.groupKey && !!store.groupBy) {
+      switch (store.groupBy) {
+        case 'priority':
+          newData['priorityId'] = props.groupKey
+          break;
+        case 'assignee':
+          newData['assigneeId'] = props.groupKey
+          break;
+        case 'sprint':
+          newData['sprintId'] = props.groupKey
+          break;
+        case 'task_type':
+          newData['taskType'] = props.groupKey
+          break;
+        default:
+          break;
+      }
+    }
+
+    const { data } = await taskCreateAPI(props.board.id, newData)
+    notify('CREATED', data.detail)
+    emit('created', data.task)
+  } catch (error) {
+    handleResponseError(error)
+  } finally {
+    closeTaskAddForm()
+  }
+}
 </script>
 
 <template>
   <div class="flex space-x-3">
-    <VueDraggable
+    <div
       v-for="state in props.states"
       :key="state.id"
-      v-model="state.tasks"
-      :group="!!props.groupKey ? props.groupKey : 'default'"
-      class="rounded-lg w-[21rem] flex-shrink-0 py-2 flex flex-col gap-2"
-      @update="(event) => updateTaskSequence(event, state.id)"
-      @add="(event) => updateTaskSequence(event, state.id)"
+      class="rounded-lg w-[21rem] flex-shrink-0 flex flex-col"
     >
+      <VueDraggable
+        v-model="state.tasks"
+        :group="!!props.groupKey ? props.groupKey : 'default'"
+        class=""
+        @update="(event) => updateTaskSequence(event, state.id)"
+        @add="(event) => updateTaskSequence(event, state.id)"
+      >
+        <Card
+          size="small"
+          class="rounded hover:border-1 hover:border-primary transition duration-300 cursor-pointer my-2"
+          v-for="task in state.tasks"
+          @click="emit('open', task.id, groupKey)"
+        >
+          <TaskCard :board="props.board" :task="task" />
+        </Card>
+      </VueDraggable>
       <Card
         size="small"
-        class="rounded hover:border-1 hover:border-primary transition duration-300 cursor-pointer"
-        v-for="task in state.tasks"
-        @click="emit('open', task.id, groupKey)"
+        class="rounded hover:border-1 hover:border-primary transition duration-300 cursor-pointer my-2"
+        v-if="openTaskAddForm === state.id"
       >
-        <TaskCard :board="props.board" :task="task" />
+        <Input
+          v-model:value="newTaskTitle"
+          :bordered="false"
+          placeholder="Type your task here"
+          @keyup.enter="(event) => createTask(state.id, event.target.value)"
+        />
+        <div class="flex justify-end">
+          <Button size="small" type="text" @click="closeTaskAddForm">Cancel</Button>
+        </div>
       </Card>
-    </VueDraggable>
+      <div
+        class="mb-3 cursor-pointer"
+        @click="showTaskAddForm(state.id)"
+        v-else
+      >
+        <PlusOutlined class="text-primary ml-1" />
+        <span class="text-primary"> Add Task </span>
+      </div>
+    </div>
   </div>
 </template>

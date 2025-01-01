@@ -150,6 +150,70 @@ export const useBoardStore = defineStore('board', () => {
     })
   }
 
+  const addTask = (task) => {
+    if (!groupBy.value) {
+      // No group by
+      kanban.value.forEach((state) => {
+        if (state.id === task.stateId) {
+          state.tasks.push(task)
+          state.tasks.sort((a, b) => a.sequence - b.sequence)
+        }
+      })
+
+      return
+    }
+
+    // If Grouping is present
+    if (task.assigneeId && groupBy.value === 'assignee') {
+      kanban.value.forEach((item) => {
+        if (item.groupKey === task.assigneeId) {
+          item.states.forEach((state) => {
+            if (state.id === task.stateId) {
+              state.tasks.push(task)
+              state.tasks.sort((a, b) => a.sequence - b.sequence)
+            }
+          })
+        }
+      })
+    } else if (task.sprintId && groupBy.value === 'sprint') {
+      kanban.value.forEach((item) => {
+        if (item.groupKey === task.sprintId) {
+          item.states.forEach((state) => {
+            if (state.id === task.stateId) {
+              state.tasks.push(task)
+              state.tasks.sort((a, b) => a.sequence - b.sequence)
+            }
+          })
+        }
+      })
+    } else if (task.priorityId && groupBy.value === 'priority') {
+      kanban.value.forEach((item) => {
+        if (item.groupKey === task.priorityId) {
+          item.states.forEach((state) => {
+            if (state.id === task.stateId) {
+              state.tasks.push(task)
+              state.tasks.sort((a, b) => a.sequence - b.sequence)
+            }
+          })
+        }
+      })
+    } else if (groupBy.value === 'task_type') {
+      kanban.value.forEach((item) => {
+        if (item.groupKey === task.taskType) {
+          item.states.forEach((state) => {
+            if (state.id === task.stateId) {
+              state.tasks.push(task)
+              state.tasks.sort((a, b) => a.sequence - b.sequence)
+            }
+          })
+        }
+      })
+    } else {
+      // TODO: Handle to the last ungrouped section
+      console.log('Skipping')
+    }
+  }
+
   const setActiveSprint = (sprintId) => {
     sprintFilters.value = [sprintId]
   }
@@ -193,6 +257,7 @@ export const useBoardStore = defineStore('board', () => {
     updateTaskPositionByGroup,
     updateTaskPosition,
     clearFilters,
-    setActiveSprint
+    setActiveSprint,
+    addTask,
   }
 })

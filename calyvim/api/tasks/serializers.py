@@ -1,6 +1,16 @@
 from rest_framework import serializers
 
-from calyvim.models import Task, User, Priority, Label, TaskComment, Estimate, Sprint, State
+from calyvim.models import (
+    Task,
+    User,
+    Priority,
+    Label,
+    TaskComment,
+    Estimate,
+    Sprint,
+    State,
+)
+
 
 class StateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,13 +21,21 @@ class StateSerializer(serializers.ModelSerializer):
 class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "email", "first_name", "last_name", "avatar", "display_name"]
+        fields = [
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "avatar",
+            "display_name",
+        ]
 
 
 class PrioritySerializer(serializers.ModelSerializer):
     class Meta:
         model = Priority
-        fields = ["id", "name", "created_at"]    
+        fields = ["id", "name", "created_at"]
 
 
 class LabelSerializer(serializers.ModelSerializer):
@@ -90,11 +108,12 @@ class TaskCreateSerializer(serializers.Serializer):
     task_type = serializers.ChoiceField(choices=Task.TaskType.choices)
     state_id = serializers.UUIDField()
     priority_id = serializers.UUIDField(required=False, allow_null=True)
-    assignees = serializers.ListField(
-        child=serializers.UUIDField(), required=False, allow_empty=True
-    )
+    # assignees = serializers.ListField(
+    #     child=serializers.UUIDField(), required=False, allow_empty=True
+    # )
+    assignee_id = serializers.UUIDField(required=False, allow_null=True)
     parent_id = serializers.UUIDField(required=False)
-
+    sprint_id = serializers.UUIDField(required=False, allow_null=True)
 
 class TaskSerializer(serializers.ModelSerializer):
     assignees = AssigneeSerializer(many=True)
