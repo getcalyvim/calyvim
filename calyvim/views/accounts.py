@@ -17,7 +17,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["email", "first_name", "last_name", "display_name", "username"]
 
 
-@method_decorator(cache_page(60 * 60 * 24, key_prefix="accounts"), name="dispatch")
 class LoginView(View):
     def get(self, request):
         next = request.GET.get("next", "/")
@@ -29,7 +28,6 @@ class LoginView(View):
         return render(request, "accounts/login.html", context)
 
 
-@method_decorator(cache_page(60 * 60 * 24, key_prefix="accounts"), name="dispatch")
 class RegisterView(View):
     def get(self, request):
         context = {"props": {"invitation_id": request.GET.get("invitation_id", None)}}

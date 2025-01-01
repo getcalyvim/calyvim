@@ -298,3 +298,5 @@ calyvim/templates/dashboard/
 media/
 
 .DS_Store
+
+.env.prod
