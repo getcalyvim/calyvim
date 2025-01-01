@@ -137,6 +137,19 @@ const currentUser = computed(() => {
             </a>
           </Menu.Item>
 
+          <Menu.Item key="boards">
+            <a
+              :href="`/app/${props.workspace.slug}/boards`"
+              class="no-underline text-inherit hover:no-underline hover:text-inherit"
+              :class="{
+                'text-primary hover:text-primary': selectedKeys[0] === 'boards',
+              }"
+            >
+              <ProjectOutlined />
+              <span>Boards</span>
+            </a>
+          </Menu.Item>
+
           <Menu.Item key="newslines">
             <a
               :href="`/app/${props.workspace.slug}/newslines/`"
@@ -148,19 +161,6 @@ const currentUser = computed(() => {
             >
               <ReadOutlined />
               <span>Newslines</span>
-            </a>
-          </Menu.Item>
-
-          <Menu.Item key="boards">
-            <a
-              :href="`/app/${props.workspace.slug}/boards`"
-              class="no-underline text-inherit hover:no-underline hover:text-inherit"
-              :class="{
-                'text-primary hover:text-primary': selectedKeys[0] === 'boards',
-              }"
-            >
-              <ProjectOutlined />
-              <span>Boards</span>
             </a>
           </Menu.Item>
 
