@@ -14,7 +14,7 @@ class BoardCreateSerializer(serializers.Serializer):
 class BoardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
-        fields = ["id", "name", "slug", "cover", "description", "created_at"]
+        fields = ["id", "name", "slug", "cover", "logo", "description", "created_at"]
 
 
 class BoardDetailSerializer(NameAndSourceSerializerMixin, serializers.ModelSerializer):
@@ -25,6 +25,7 @@ class BoardDetailSerializer(NameAndSourceSerializerMixin, serializers.ModelSeria
             "name",
             "slug",
             "cover",
+            "logo",
             "task_prefix",
             "description",
             "created_at",
@@ -34,6 +35,7 @@ class BoardDetailSerializer(NameAndSourceSerializerMixin, serializers.ModelSeria
 class BoardUpdateSerializer(serializers.Serializer):
     name = serializers.CharField(required=False)
     cover = serializers.CharField(required=False, allow_null=True)
+    logo = serializers.CharField(required=False, allow_null=True)
     slug = serializers.CharField(required=False)
     task_prefix = serializers.CharField(required=False)
     description = serializers.CharField(

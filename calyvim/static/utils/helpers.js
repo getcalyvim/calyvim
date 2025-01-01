@@ -43,8 +43,8 @@ export const uploadRequestHandler = async (
     // Close loading message
     loadingMessage()
 
-    // // Show success message
-    message.success('Upload successful')
+    // Show success message
+    // message.success('Upload successful')
 
     onSuccess()
     return {

@@ -155,6 +155,9 @@ class BoardViewSet(ViewSet):
         if "cover" in data:
             update_file_field(board, "cover", data.get("cover"))
 
+        if "logo" in data:
+            update_file_field(board, "logo", data.get("logo"))
+
         if data.get("task_prefix") and data.get("task_prefix") != board.task_prefix:
             # Check if task prefix is getting updated
             update_tasks_prefix = True
