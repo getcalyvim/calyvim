@@ -26,6 +26,7 @@ import {
   LinkOutlined,
   CheckSquareOutlined,
   FileOutlined,
+  ArrowLeftOutlined,
 } from '@ant-design/icons-vue'
 import {
   handleResponseError,
@@ -44,7 +45,7 @@ import TextEditor from '@/components/base/text-editor.vue'
 import TaskActionBar from './task-action-bar.vue'
 import TaskCommentAddForm from './task-comment-add-form.vue'
 import TaskAttachmentList from './task-attachment-list.vue'
-// import SubTaskList from './sub-task-list.vue'
+import SubTaskList from './sub-task-list.vue'
 
 // API imports
 import {
@@ -57,6 +58,7 @@ import {
   taskListAPI,
   taskArchiveApi,
 } from '@/utils/api'
+import TaskTypeIcon from '../../../icons/task-type-icon.vue'
 
 // Setup dayjs
 dayjs.extend(relativeTime)
@@ -85,9 +87,7 @@ const props = defineProps({
   },
 })
 
-console.log(props)
-
-const emit = defineEmits(['update'])
+const emit = defineEmits(['update', 'selected'])
 
 // State
 const loading = ref(false)
@@ -102,9 +102,9 @@ const openDescriptionActionButton = ref(false)
 const isArchived = ref(false)
 
 // Task Management
-const loadTask = async () => {
+const loadTask = async (taskId) => {
   try {
-    const { data } = await taskDetailAPI(props.board.id, props.taskId)
+    const { data } = await taskDetailAPI(props.board.id, taskId)
     task.value = {
       ...data,
       oldStateId: data.stateId,
@@ -115,11 +115,11 @@ const loadTask = async () => {
 }
 
 // Comments Management
-const loadComments = async () => {
+const loadComments = async (taskId) => {
   try {
     const { data } = await taskCommentsAPI(
       props.board.id,
-      props.taskId,
+      taskId,
       selectedCommentType.value
     )
     comments.value = data.map((comment) => ({
@@ -154,9 +154,9 @@ const handleCommentTypeChange = () => {
 }
 
 // Attachments Management
-const loadAttachments = async () => {
+const loadAttachments = async (taskId) => {
   try {
-    const { data } = await taskAttachmentsListAPI(props.board.id, props.taskId)
+    const { data } = await taskAttachmentsListAPI(props.board.id, taskId)
     attachments.value = data
   } catch (error) {
     handleResponseError(error)
@@ -239,12 +239,12 @@ const closeSubtaskAddForm = () => {
   showSubtaskAddForm.value = false
 }
 
-const loadSubTasks = async () => {
+const loadSubTasks = async (taskId) => {
   try {
     const { data } = await taskListAPI(props.board.id, {
-      parentId: props.taskId,
+      parentId: taskId,
     })
-    subtasks.value = data
+    subtasks.value = data.results
   } catch (error) {
     handleResponseError(error)
   }
@@ -256,23 +256,27 @@ const addTaskToSubtask = (data) => {
 }
 
 // Loading and Initialization
-const loadTaskDetails = async () => {
+const loadTaskDetails = async (taskId) => {
   loading.value = true
-  await loadTask()
-  await loadComments()
-  await loadAttachments()
-  await loadSubTasks()
+  await loadTask(taskId)
+  await loadComments(taskId)
+  await loadAttachments(taskId)
+  await loadSubTasks(taskId)
   loading.value = false
 }
 
 // Lifecycle Hooks
 onMounted(() => {
-  loadTaskDetails()
+  loadTaskDetails(props.taskId)
 })
 
 const updateTaskv2 = async (updatedData) => {
   try {
-    const { data } = await taskUpdateAPI(props.board.id, props.taskId, updatedData)
+    const { data } = await taskUpdateAPI(
+      props.board.id,
+      props.taskId,
+      updatedData
+    )
     notify('UPDATED', data.log)
     logComment(data.log)
   } catch (error) {
@@ -283,6 +287,11 @@ const updateTaskv2 = async (updatedData) => {
 const updateTaskItem = async (updatedData) => {
   await updateTaskv2(updatedData)
   await emit('update', props.taskId, updatedData)
+}
+
+const openTask = async (taskId) => {
+  emit('selected', taskId)
+  await loadTaskDetails(taskId)
 }
 </script>
 
@@ -300,15 +309,16 @@ const updateTaskItem = async (updatedData) => {
         </div>
       </div>
 
-      <Button
-        :icon="h(LeftSquareOutlined)"
-        v-if="!!task.parentId"
-        @click="store.setSelectedTask(task.parentId)"
-        >Back to parent task</Button
-      >
+      <div v-if="!!task.parentId" class="cursor-pointer mb-2" @click="openTask(task.parentId)">
+        <ArrowLeftOutlined />
+        <span class="ml-2">Back to parent task</span>
+      </div>
 
       <div class="flex items-center justify-between">
-        <div class="text-xs font-bold">#{{ task.name }}</div>
+        <div class="text-base font-bold">
+          <TaskTypeIcon :taskType="task.taskType" />
+          {{ task.name }}
+        </div>
         <div class="flex gap-2 items-center">
           <div v-if="updateLoading" class="text-gray-400">
             <SyncOutlined />
@@ -329,8 +339,8 @@ const updateTaskItem = async (updatedData) => {
 
       <div class="text-sm text-gray-500">
         <div class="flex items-center gap-1 text-xs">
-          <div>Created</div>
-          <div>{{ dayjs(task.createdAt).fromNow() }} by</div>
+          <div>Created on</div>
+            <div>{{ dayjs(task.createdAt).format('MMMM D, YYYY') }} by</div>
           <Avatar
             :size="16"
             :src="
@@ -401,8 +411,13 @@ const updateTaskItem = async (updatedData) => {
         </div>
 
         <div class="mb-4">
-          <!-- Subtasks -->
-          <!-- <SubTaskList :subtasks="subtasks" :boardId="props.board.id" /> -->
+          <SubTaskList
+            :subtasks="subtasks"
+            :boardId="props.board.id"
+            :states="props.states"
+            :members="props.members"
+            @selected="openTask"
+          />
         </div>
 
         <Divider />
@@ -462,6 +477,9 @@ const updateTaskItem = async (updatedData) => {
         :task="task"
         :boardId="props.board.id"
         @created="addTaskToSubtask"
+        :members="props.members"
+        :priorities="props.priorities"
+        :states="props.states"
       />
     </Modal>
   </div>

@@ -1,5 +1,4 @@
 <script setup>
-import { useKanbanStore } from '@/stores/kanban'
 import {
   Form,
   FormItem,
@@ -12,25 +11,30 @@ import {
 } from 'ant-design-vue'
 import { h, ref } from 'vue'
 import { generateAvatar, handleResponseError, notify } from '@/utils/helpers'
-import { PlusOutlined } from '@ant-design/icons-vue'
+import { FlagOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import { taskCreateAPI } from '@/utils/api'
+import TaskTypeIcon from '../../../icons/task-type-icon.vue'
 
-const props = defineProps(['task', 'boardId'])
+const props = defineProps([
+  'task',
+  'boardId',
+  'members',
+  'priorities',
+  'states',
+])
 const emit = defineEmits(['created'])
 
-const store = useKanbanStore()
-
 const getAvatarSrc = (memberId) => {
-  const member = store.members.find((m) => m.id === memberId)
-  return member ? member.avatar || generateAvatar(member.firstName) : ''
+  const member = props.members.find((m) => m.id === memberId)
+  return member ? member.avatar || generateAvatar(member.displayName) : ''
 }
 
 const subTaskForm = ref({
   summary: '',
   description: '',
   taskType: 'issue',
-  stateId: store.states.length > 0 ? store.states[0].id : '',
-  assignees: [],
+  stateId: props.states.length > 0 ? props.states[0].id : '',
+  assigneeId: '',
   priorityId: null,
 })
 const formRef = ref()
@@ -51,14 +55,20 @@ const onSubmit = async (values) => {
 </script>
 
 <template>
-  <Form :model="subTaskForm" layout="vertical" @finish="onSubmit" ref="formRef">
+  <Form
+    :model="subTaskForm"
+    layout="vertical"
+    @finish="onSubmit"
+    ref="formRef"
+    hideRequiredMark
+  >
     <div class="grid grid-cols-4 gap-2">
       <div class="col-span-1">
         <FormItem name="stateId" label="State">
           <Select v-model:value="subTaskForm.stateId">
             <SelectOption
               :value="state.id"
-              v-for="state in store.states"
+              v-for="state in props.states"
               :key="state.id"
               >{{ state.name }}
             </SelectOption>
@@ -83,10 +93,22 @@ const onSubmit = async (values) => {
     <div class="grid grid-cols-3 gap-2">
       <FormItem name="taskType" label="Task type">
         <Select v-model:value="subTaskForm.taskType">
-          <SelectOption value="issue">Issue</SelectOption>
-          <SelectOption value="feature">Feature</SelectOption>
-          <SelectOption value="story">Story</SelectOption>
-          <SelectOption value="bug">Bug</SelectOption>
+          <SelectOption value="issue">
+            <TaskTypeIcon taskType="issue" />
+            <span class="ml-2">Issue</span>
+          </SelectOption>
+          <SelectOption value="feature">
+            <TaskTypeIcon taskType="feature" />
+            <span class="ml-2">Feature</span>
+          </SelectOption>
+          <SelectOption value="story">
+            <TaskTypeIcon taskType="story" />
+            <span class="ml-2">Story</span>
+          </SelectOption>
+          <SelectOption value="bug">
+            <TaskTypeIcon taskType="bug" />
+            <span class="ml-2">Bug</span>
+          </SelectOption>
         </Select>
       </FormItem>
       <FormItem name="priorityId" label="Priority">
@@ -94,27 +116,26 @@ const onSubmit = async (values) => {
           <SelectOption :value="null">None</SelectOption>
           <SelectOption
             :value="priority.id"
-            v-for="priority in store.priorities"
+            v-for="priority in props.priorities"
             :key="priority.id"
           >
-            {{ priority.name }}
+            <FlagOutlined class="text-primary" />
+            <span class="ml-2">
+              {{ priority.name }}
+            </span>
           </SelectOption>
         </Select>
       </FormItem>
 
-      <FormItem name="assignees" label="Assignees">
-        <Select
-          v-model:value="subTaskForm.assignees"
-          mode="multiple"
-          optionFilterProp="label"
-        >
+      <FormItem name="assigneeId" label="Assignee">
+        <Select v-model:value="subTaskForm.assigneeId" optionFilterProp="label">
           <template #tagRender="{ value }">
             <Avatar size="small" :src="getAvatarSrc(value)" />
           </template>
           <SelectOption
-            v-for="member in store.members"
+            v-for="member in props.members"
             :key="member.id"
-            :label="member.firstName"
+            :label="member.displayName"
           >
             <div class="flex items-center gap-2">
               <Avatar
@@ -122,10 +143,10 @@ const onSubmit = async (values) => {
                 :src="
                   !!member.avatar
                     ? member.avatar
-                    : generateAvatar(member.firstName)
+                    : generateAvatar(member.displayName)
                 "
               />
-              <div>{{ member.firstName }} {{ member?.lastName }}</div>
+              <div>{{ member.displayName }}</div>
             </div>
           </SelectOption>
         </Select>

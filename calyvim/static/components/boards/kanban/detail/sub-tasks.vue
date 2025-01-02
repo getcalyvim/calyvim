@@ -3,7 +3,6 @@ import { h, onMounted, ref } from 'vue'
 import { taskListAPI } from '@/utils/api'
 import { handleResponseError } from '@/utils/helpers'
 import TaskTypeIcon from '@/components/icons/task-type-icon.vue'
-import { useKanbanStore } from '@/stores/kanban'
 import {
   Button,
   FormItem,
@@ -14,12 +13,9 @@ import {
   Select,
   SelectOption,
 } from 'ant-design-vue'
-import { PlusOutlined } from '@ant-design/icons-vue'
 
-const props = defineProps(['boardId', 'taskId', 'showSubtaskAddForm'])
-const emit = defineEmits(['added', 'close'])
-
-const store = useKanbanStore()
+const props = defineProps(['boardId', 'taskId', 'showSubtaskAddForm', 'states'])
+const emit = defineEmits(['added', 'close', 'selected'])
 
 const tasks = ref([])
 const loadSubTasks = async () => {
@@ -27,20 +23,20 @@ const loadSubTasks = async () => {
     const { data } = await taskListAPI(props.boardId, {
       parentId: props.taskId,
     })
-    tasks.value = data
+    tasks.value = data.results
   } catch (error) {
     handleResponseError(error)
   }
 }
 
 const openSubTask = (taskId) => {
-  store.setSelectedTask(taskId)
+  emit('selected', taskId)
 }
 
 const addForm = ref({
   summary: '',
   taskType: 'issue',
-  stateId: store.states[0].id
+  stateId: props.states[0].id
 })
 
 const dummyTasks = ref(['add-form'])
@@ -80,7 +76,7 @@ onMounted(() => {
             <Select v-model:value="item.stateId" class="w-28">
               <SelectOption
                 :value="state.id"
-                v-for="state in store.states"
+                v-for="state in props.states"
                 :key="state.id"
               >
                 {{ state.name }}
@@ -127,7 +123,7 @@ onMounted(() => {
               
               <FormItem name="stateId" class="col-span-4">
                 <Select v-model:value="addForm.stateId" :bordered="false">
-                  <SelectOption v-for="state in store.states" :value="state.id" :key="state.id">{{ state.name }}</SelectOption>
+                  <SelectOption v-for="state in props.states" :value="state.id" :key="state.id">{{ state.name }}</SelectOption>
                 </Select>
               </FormItem>
             </div>

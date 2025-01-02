@@ -1,12 +1,13 @@
 <script setup>
-import { useKanbanStore } from '@/stores/kanban'
-import { Divider, Select, SelectOption } from 'ant-design-vue'
+// import { useKanbanStore } from '@/stores/kanban'
+import { Avatar, Divider, Select, SelectOption, Tag } from 'ant-design-vue'
 import TaskTypeIcon from '@/components/icons/task-type-icon.vue'
-import { handleResponseError } from '@/utils/helpers'
+import { handleResponseError, generateAvatar } from '@/utils/helpers'
 import { taskUpdateAPI } from '@/utils/api'
+import { computed, ref } from 'vue'
 
-const props = defineProps(['subtasks', 'boardId'])
-const store = useKanbanStore()
+const props = defineProps(['subtasks', 'boardId', 'states', 'members'])
+const emit = defineEmits(['selected'])
 
 const handleStateChange = async (value, taskId) => {
   try {
@@ -17,7 +18,20 @@ const handleStateChange = async (value, taskId) => {
 }
 
 const openSubTask = (taskId) => {
-    store.setSelectedTask(taskId)
+  emit('selected', taskId)
+}
+
+const memberOptions = computed(() =>
+  props.members.map((member) => ({
+    value: member.id,
+    label: member.avatar || generateAvatar(member.displayName),
+    name: member.displayName,
+  }))
+)
+
+const getAvatarSrc = (memberId) => {
+  const member = props.members.find((m) => m.id === memberId)
+  return member ? member.avatar || generateAvatar(member.displayName) : ''
 }
 </script>
 
@@ -42,8 +56,18 @@ const openSubTask = (taskId) => {
             {{ task.summary }}
           </div>
         </div>
-        <div class="flex gap-2 items-center">
+        <div class="flex gap-3 items-center">
           <div class="text-xs font-semibold">{{ task?.priority?.name }}</div>
+          <Avatar
+            :size="22"
+            :src="
+              !!task.assignee.avatar
+                ? task.assignee.avatar
+                : generateAvatar(task.assignee.displayName)
+            "
+            v-if="!!task.assignee"
+          />
+          <Avatar :size="22" v-else />
           <Select
             v-model:value="task.stateId"
             size="small"
@@ -52,7 +76,7 @@ const openSubTask = (taskId) => {
           >
             <SelectOption
               :value="state.id"
-              v-for="state in store.states"
+              v-for="state in props.states"
               :key="state.id"
               >{{ state.name }}
             </SelectOption>
