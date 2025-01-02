@@ -5,12 +5,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 
-from calyvim.models import WorkspaceMembership, Board, Sprint, BoardPermission
+from calyvim.models import WorkspaceMembership, Board, Sprint, BoardPermission, Task
 from calyvim.serializers import (
     WorkspaceSerializer,
     ProfileSerializer,
     BoardSerializer,
     SprintSerializer,
+    MinimalTaskSerializer,
 )
 from calyvim.mixins import BoardPermissionMixin
 
@@ -217,3 +218,28 @@ class BoardDeleteView(LoginRequiredMixin, BoardPermissionMixin, View):
 
         board.delete()
         return redirect("workspace-boards", workspace_slug=workspace.slug)
+
+
+class BoardTasksDetailView(LoginRequiredMixin, BoardPermissionMixin, View):
+    def get(self, request, *args, **kwargs):
+        board = get_object_or_404(Board, id=kwargs.get("board_id"))
+
+        if not self.has_valid_board_permission(board, request.user):
+            raise Http404
+
+        task = (
+            Task.objects.filter(board=board, name=kwargs.get("task_name"))
+            .only("id", "name", "number", "created_at")
+            .first()
+        )
+        if not task:
+            raise Http404
+
+        context = {
+            "props": {
+                "workspace": WorkspaceSerializer(board.workspace).data,
+                "board": BoardSerializer(board).data,
+                "task": MinimalTaskSerializer(task).data,
+            }
+        }
+        return render(request, "boards/tasks/detail.html", context)

@@ -44,7 +44,7 @@ import TextEditor from '@/components/base/text-editor.vue'
 import TaskActionBar from './task-action-bar.vue'
 import TaskCommentAddForm from './task-comment-add-form.vue'
 import TaskAttachmentList from './task-attachment-list.vue'
-import SubTaskList from './sub-task-list.vue'
+// import SubTaskList from './sub-task-list.vue'
 
 // API imports
 import {
@@ -85,6 +85,8 @@ const props = defineProps({
   },
 })
 
+console.log(props)
+
 const emit = defineEmits(['update'])
 
 // State
@@ -111,81 +113,6 @@ const loadTask = async () => {
     handleResponseError(error)
   }
 }
-
-// const updateTask = async (updatedData) => {
-//   try {
-//     updateLoading.value = true
-//     const { data } = await taskUpdateAPI(
-//       props.board.id,
-//       props.taskId,
-//       updatedData
-//     )
-//     // store.updateTask(data.task)
-//     task.value = data.task
-//     logComment(data.comments)
-//     return data
-//   } catch (error) {
-//     handleResponseError(error)
-//   } finally {
-//     updateLoading.value = false
-//   }
-// }
-
-// const archiveTask = async () => {
-//   try {
-//     const { data } = await taskArchiveApi(props.board.id, props.taskId)
-//     isArchived.value = true
-//     notify('ARCHIVED', data.detail, 'info')
-//     // store.removeTask(props.taskId)
-//   } catch (error) {
-//     handleResponseError(error)
-//   }
-// }
-
-// const updateState = async (stateId) => {
-//   try {
-//     updateLoading.value = true
-//     const { data } = await taskUpdateAPI(props.board.id, props.taskId, {
-//       stateId,
-//     })
-//     // store.updateTaskState(task.value.oldStateId, data.task)
-//     task.value = {
-//       ...data.task,
-//       oldStateId: data.task.stateId,
-//     }
-
-//     const lastCommentResponse = await taskCommentsLastAPI(
-//       props.board.id,
-//       props.taskId
-//     )
-//     comments.value.push(lastCommentResponse.data)
-//   } catch (error) {
-//     handleResponseError(error)
-//   } finally {
-//     updateLoading.value = false
-//   }
-// }
-
-// const updateSprint = async (sprintId) => {
-//   try {
-//     updateLoading.value = true
-//     const { data } = await taskUpdateAPI(props.board.id, props.taskId, {
-//       sprintId,
-//     })
-//     // store.updateTask(data.task)
-//     task.value = data.task
-
-//     logComment(data.comments)
-
-//     // if (!store.sprintFilters.includes(sprintId)) {
-//     //   store.removeTask(task.value.id)
-//     // }
-//   } catch (error) {
-//     handleResponseError(error)
-//   } finally {
-//     updateLoading.value = false
-//   }
-// }
 
 // Comments Management
 const loadComments = async () => {
@@ -343,14 +270,6 @@ onMounted(() => {
   loadTaskDetails()
 })
 
-// // Watchers
-// watch(
-//   () => store.selectedTask,
-//   () => {
-//     loadTaskDetails()
-//   }
-// )
-
 const updateTaskv2 = async (updatedData) => {
   try {
     const { data } = await taskUpdateAPI(props.board.id, props.taskId, updatedData)
@@ -483,7 +402,7 @@ const updateTaskItem = async (updatedData) => {
 
         <div class="mb-4">
           <!-- Subtasks -->
-          <SubTaskList :subtasks="subtasks" :boardId="props.board.id" />
+          <!-- <SubTaskList :subtasks="subtasks" :boardId="props.board.id" /> -->
         </div>
 
         <Divider />

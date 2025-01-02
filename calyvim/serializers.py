@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from calyvim.mixins import NameAndSourceSerializerMixin
-from calyvim.models import Workspace, User, Team, Board, Sprint
+from calyvim.models import Workspace, User, Team, Board, Sprint, Task
 
 
 class ProfileSerializer(NameAndSourceSerializerMixin, serializers.ModelSerializer):
@@ -57,3 +57,15 @@ class SprintSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sprint
         fields = ["id", "name", "start_date", "end_date", "is_active", "created_at"]
+
+
+
+class MinimalTaskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = [
+            "id",
+            "name",
+            "number",
+            "created_at"
+        ]
