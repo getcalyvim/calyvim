@@ -87,6 +87,7 @@ const props = defineProps({
   },
 })
 
+const currentTaskId = ref(props.taskId)
 const emit = defineEmits(['update', 'selected'])
 
 // State
@@ -173,7 +174,7 @@ const createAttachment = async (options) => {
   try {
     const { data } = await taskAttachmentsCreateAPI(
       props.board.id,
-      props.taskId,
+      currentTaskId,
       {
         attachment: fileKey,
         filename: options.file.name,
@@ -196,7 +197,7 @@ const deleteAttachment = async (attachmentId) => {
   try {
     const { data } = await taskAttachmentsDeleteAPI(
       props.board.id,
-      props.taskId,
+      currentTaskId.value,
       attachmentId
     )
     attachments.value = attachments.value.filter(
@@ -267,14 +268,14 @@ const loadTaskDetails = async (taskId) => {
 
 // Lifecycle Hooks
 onMounted(() => {
-  loadTaskDetails(props.taskId)
+  loadTaskDetails(currentTaskId.value)
 })
 
 const updateTaskv2 = async (updatedData) => {
   try {
     const { data } = await taskUpdateAPI(
       props.board.id,
-      props.taskId,
+      currentTaskId.value,
       updatedData
     )
     notify('UPDATED', data.log)
@@ -286,11 +287,12 @@ const updateTaskv2 = async (updatedData) => {
 
 const updateTaskItem = async (updatedData) => {
   await updateTaskv2(updatedData)
-  await emit('update', props.taskId, updatedData)
+  await emit('update', currentTaskId.value, updatedData)
 }
 
 const openTask = async (taskId) => {
   emit('selected', taskId)
+  currentTaskId.value = taskId
   await loadTaskDetails(taskId)
 }
 </script>
@@ -404,7 +406,7 @@ const openTask = async (taskId) => {
         <div class="mb-4">
           <TaskAttachmentList
             :boardId="props.board.id"
-            :taskId="props.taskId"
+            :taskId="currentTaskId"
             :attachments="attachments"
             @delete="deleteAttachment"
           />
@@ -439,13 +441,13 @@ const openTask = async (taskId) => {
 
           <TaskCommentAddForm
             :boardId="props.board.id"
-            :taskId="props.taskId"
+            :taskId="currentTaskId"
             @added="addNewComment"
           />
 
           <TaskCommentList
             :boardId="props.board.id"
-            :taskId="props.taskId"
+            :taskId="currentTaskId"
             :comments="comments"
           />
         </div>
