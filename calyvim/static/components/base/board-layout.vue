@@ -59,25 +59,25 @@ const activeKey = ref(props.page)
         </template>
       </TabPane> -->
 
-      <TabPane key="timeline" disabled>
-        <template #tab>
-          <CalendarOutlined />
-          Timeline
-        </template>
-      </TabPane>
-
       <TabPane key="sprints">
         <template #tab>
           <a
             :href="`/app/b/${props.board.id}/sprints/`"
             class="no-underline text-inherit hover:no-underline hover:text-inherit"
             :class="{
-              'text-primary hover:text-primary': activeKey === 'kanban',
+              'text-primary hover:text-primary': activeKey === 'sprints',
             }"
           >
             <CarryOutOutlined />
             Sprints
           </a>
+        </template>
+      </TabPane>
+
+      <TabPane key="timeline" disabled>
+        <template #tab>
+          <CalendarOutlined />
+          Timeline
         </template>
       </TabPane>
 
@@ -87,7 +87,7 @@ const activeKey = ref(props.page)
             :href="`/app/b/${props.board.id}/settings/`"
             class="no-underline text-inherit hover:no-underline hover:text-inherit"
             :class="{
-              'text-primary hover:text-primary': activeKey === 'kanban',
+              'text-primary hover:text-primary': activeKey === 'settings',
             }"
           >
             <SettingOutlined />

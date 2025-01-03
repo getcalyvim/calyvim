@@ -76,7 +76,7 @@ onMounted(async () => {
   <WorkspaceLayout :workspace="props.workspace" page="boards">
     <BoardLayout :workspace="props.workspace" :board="props.board">
       <template #default>
-        <div v-if="!isLoading">
+        <div v-if="!isLoading" class="pr-4">
           <TaskView
             :members="members"
             :states="states"

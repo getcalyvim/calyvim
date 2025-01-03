@@ -30,6 +30,10 @@ const currentUser = computed(() => {
 watch(() => createForm.value.name, (newValue) => {
     createForm.value.slug = slugify(newValue)
 })
+
+const redirectToHome = () => {
+    window.location.href = '/app'
+}
 </script>
 
 <template>
@@ -52,7 +56,7 @@ watch(() => createForm.value.name, (newValue) => {
                                 <a class="text-xs cursor-pointer underline underline-offset-2" href="/accounts/logout/">Logout</a>
                             </div>
                         </div>
-                        <Avatar :src="currentUser?.avatar ? currentUser.avatar : generateAvatar(currentUser?.firstName)" alt="Profile" />
+                        <Avatar :src="currentUser?.avatar ? currentUser.avatarSrc : generateAvatar(currentUser?.firstName)" alt="Profile" />
                     </div>
                 </div>
 
@@ -82,7 +86,7 @@ watch(() => createForm.value.name, (newValue) => {
                         <div class="flex justify-end">
                             <FormItem>
                                 <div class="flex gap-2">
-                                    <Button>Go back</Button>
+                                    <Button @click="redirectToHome">Go back</Button>
                                     <Button type="primary" :icon="h(PlusOutlined)" html-type="submit">Create</Button>
                                 </div>
                             </FormItem>

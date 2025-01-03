@@ -126,13 +126,13 @@ const emit = defineEmits([
     @change="(priorityId) => emit('update', { priorityId })"
     class="w-full"
   >
-    <SelectOption :value="null">-</SelectOption>
+    <SelectOption :value="null">None</SelectOption>
     <SelectOption
       :value="priority.id"
       v-for="priority in props.priorities"
       :key="priority.id"
     >
-      <FlagOutlined />
+      <FlagOutlined class="text-primary" />
       <span class="ml-2">{{ priority.name }}</span>
     </SelectOption>
   </Select>
