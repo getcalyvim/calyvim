@@ -9,7 +9,7 @@ import {
   sprintListAPI,
   boardUpdateAPI,
   taskListKanbanAPI,
-  labelListAPI
+  labelListAPI,
 } from '@/utils/api'
 import { handleResponseError, generateAvatar } from '@/utils/helpers'
 import { Button, Dropdown, Avatar, Drawer, Tag, Select } from 'ant-design-vue'
@@ -187,7 +187,12 @@ const updateTask = async (taskId, updatedData) => {
         const priority = store.priorities.find((p) => p.id === value)
         updatedData['priority'] = priority
 
-        store.updateTask(taskId, updatedData, 'priority', value)
+        store.updateTask(
+          taskId,
+          updatedData,
+          'priority',
+          value === null ? 'no_priority' : value
+        )
         break
 
       case 'stateId':
@@ -211,8 +216,24 @@ const updateTask = async (taskId, updatedData) => {
         const assignee = store.members.find((m) => m.id === value)
 
         updatedData['assignee'] = assignee
-        store.updateTask(taskId, updatedData, 'assignee', value)
+        store.updateTask(
+          taskId,
+          updatedData,
+          'assignee',
+          value === null ? 'no_assignee' : value
+        )
+        break
 
+      case 'sprintId':
+        const sprint = store.sprints.find((s) => s.id === value)
+        updatedData['sprint'] = sprint
+
+        store.updateTask(
+          taskId,
+          updatedData,
+          'sprint',
+          value === null ? 'no_sprint' : value
+        )
         break
 
       case 'taskType':
@@ -348,17 +369,23 @@ const addNewTask = (task) => {
                             class="text-xs text-gray-500"
                           />
                         </Button>
-                        <Avatar
-                          :src="
-                            !!item.assignee.avatar
-                              ? item.assignee.avatar
-                              : generateAvatar(item.assignee.displayName)
-                          "
-                          :size="24"
-                        />
-                        <span class="ml-2">{{
-                          item.assignee.displayName
-                        }}</span>
+                        <template v-if="!!item.assignee">
+                          <Avatar
+                            :src="
+                              !!item.assignee.avatar
+                                ? item.assignee.avatar
+                                : generateAvatar(item.assignee.displayName)
+                            "
+                            :size="24"
+                          />
+                          <span class="ml-2">{{
+                            item.assignee.displayName
+                          }}</span>
+                        </template>
+                        <template v-else>
+                          <UserOutlined class="text-primary" />
+                          <span class="ml-2">Unassigned</span>
+                        </template>
                       </div>
 
                       <StateTasks
@@ -401,8 +428,11 @@ const addNewTask = (task) => {
                           />
                         </Button>
                         <FlagOutlined class="text-primary" />
-                        <span class="ml-2 font-semibold">
+                        <span class="ml-2 font-semibold" v-if="!!item.priority">
                           {{ item.priority.name }}
+                        </span>
+                        <span v-else class="font-semibold">
+                          Unprioritized
                         </span>
                       </div>
 
@@ -493,11 +523,12 @@ const addNewTask = (task) => {
                           />
                         </Button>
                         <SyncOutlined class="text-primary" />
-                        <div class="ml-2 font-semibold">
+                        <div class="ml-2 font-semibold" v-if="!!item.sprint">
                           {{ item.sprint.name }}
                         </div>
+                        <div v-else class="font-semibold ml-2">No Sprint</div>
                         <Tag
-                          v-if="item.sprint.isActive"
+                          v-if="!!item.sprint && item.sprint.isActive"
                           :bordered="false"
                           class="ml-1 text-primary"
                           >Active</Tag
@@ -544,6 +575,7 @@ const addNewTask = (task) => {
               :members="store.members"
               :priorities="store.priorities"
               :states="store.states"
+              :sprints="store.sprints"
               @update="updateTask"
             />
           </Drawer>

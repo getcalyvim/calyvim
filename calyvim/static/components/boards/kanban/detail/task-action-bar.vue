@@ -143,7 +143,7 @@ const emit = defineEmits([
     <div class="mb-2 font-semibold">Estimate</div>
     <Select
       v-model:value="task.estimateId"
-      @change="(estimateId) => emit('update', { priorityId })"
+      @change="(estimateId) => emit('update', { estimateId })"
       class="w-full"
     >
       <SelectOption :value="null">-</SelectOption>
@@ -164,7 +164,7 @@ const emit = defineEmits([
     <div class="mb-2 font-semibold">Sprint</div>
     <Select
       v-model:value="task.sprintId"
-      @change="(sprintId) => emit('update', { priorityId })"
+      @change="(sprintId) => emit('update', { sprintId })"
       class="w-full"
     >
       <SelectOption :value="null">-</SelectOption>

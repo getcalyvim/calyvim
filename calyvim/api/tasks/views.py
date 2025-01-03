@@ -30,7 +30,7 @@ from calyvim.api.tasks.serializers import (
     MemberSerializer,
     PrioritySerializer,
     LabelSerializer,
-    SprintSerializer
+    SprintSerializer,
 )
 from calyvim.permissions import BoardGenericPermission
 from calyvim.exceptions import (
@@ -218,10 +218,10 @@ class TasksViewSet(BoardMixin, ViewSet):
         elif group_by == "assignee":
             assignees = request.board.members
             for assignee in assignees:
+                states_data = []
                 member_tasks = [
                     task for task in tasks if task.assignee_id == assignee.id
                 ]
-                states_data = []
                 for state in states:
                     state_tasks = [
                         task for task in member_tasks if task.state_id == state.id
@@ -232,6 +232,7 @@ class TasksViewSet(BoardMixin, ViewSet):
                             "tasks": TaskSerializer(state_tasks, many=True).data,
                         }
                     )
+
                 results.append(
                     {
                         "group_key": assignee.id,
@@ -240,6 +241,27 @@ class TasksViewSet(BoardMixin, ViewSet):
                         "assignee": MemberSerializer(assignee).data,
                     }
                 )
+            unassigned_tasks = [task for task in tasks if task.assignee_id is None]
+            states_data = []
+            for state in states:
+                state_tasks = [
+                    task for task in unassigned_tasks if task.state_id == state.id
+                ]
+                states_data.append(
+                    {
+                        **StateSerializer(state).data,
+                        "tasks": TaskSerializer(state_tasks, many=True).data,
+                    }
+                )
+            results.append(
+                {
+                    "group_key": "no_assignee",
+                    "states": states_data,
+                    "group_by": group_by,
+                    "assignee": None,
+                }
+            )
+
         elif group_by == "priority":
             priorities = request.board.priorities.all()
             for priority in priorities:
@@ -265,6 +287,26 @@ class TasksViewSet(BoardMixin, ViewSet):
                         "priority": PrioritySerializer(priority).data,
                     }
                 )
+            unprioritized_tasks = [task for task in tasks if task.priority_id is None]
+            states_data = []
+            for state in states:
+                state_tasks = [
+                    task for task in unprioritized_tasks if task.state_id == state.id
+                ]
+                states_data.append(
+                    {
+                        **StateSerializer(state).data,
+                        "tasks": TaskSerializer(state_tasks, many=True).data,
+                    }
+                )
+            results.append(
+                {
+                    "group_key": "no_priority",
+                    "states": states_data,
+                    "group_by": group_by,
+                    "priority": None,
+                }
+            )
 
         elif group_by == "task_type":
             task_types = [choice[0] for choice in Task.TaskType.choices]
@@ -315,6 +357,26 @@ class TasksViewSet(BoardMixin, ViewSet):
                         "sprint": SprintSerializer(sprint).data,
                     }
                 )
+            no_sprint_tasks = [task for task in tasks if task.sprint_id is None]
+            states_data = []
+            for state in states:
+                state_tasks = [
+                    task for task in no_sprint_tasks if task.state_id == state.id
+                ]
+                states_data.append(
+                    {
+                        **StateSerializer(state).data,
+                        "tasks": TaskSerializer(state_tasks, many=True).data,
+                    }
+                )
+            results.append(
+                {
+                    "group_key": "no_sprint",
+                    "states": states_data,
+                    "group_by": group_by,
+                    "sprint": None,
+                }
+            )
 
         response_data = {
             "results": results,

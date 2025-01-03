@@ -142,7 +142,7 @@ const createTask = async (stateId, title) => {
       </VueDraggable>
       <Card
         size="small"
-        class="rounded hover:border-1 hover:border-primary transition duration-300 cursor-pointer my-2"
+        class="rounded hover:border-1 hover:border-primary transition duration-300 cursor-pointer mt-2"
         v-if="openTaskAddForm === state.id"
       >
         <Input
@@ -160,7 +160,7 @@ const createTask = async (stateId, title) => {
         @click="showTaskAddForm(state.id)"
         v-else
       >
-        <PlusOutlined class="text-primary ml-1" />
+        <PlusOutlined class="text-primary ml-1 mt-2" />
         <span class="text-primary"> Add Task </span>
       </div>
     </div>

@@ -85,6 +85,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  sprints: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const currentTaskId = ref(props.taskId)
@@ -468,6 +472,7 @@ const openTask = async (taskId) => {
             :members="props.members"
             :priorities="props.priorities"
             :states="props.states"
+            :sprints="props.sprints"
             @update="updateTaskItem"
           />
         </div>
