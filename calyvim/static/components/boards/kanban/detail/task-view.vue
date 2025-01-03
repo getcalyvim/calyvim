@@ -151,7 +151,7 @@ const addNewComment = (newComment) => {
 }
 
 const handleCommentTypeChange = () => {
-  loadComments()
+  loadComments(currentTaskId.value)
 }
 
 // Attachments Management
@@ -174,7 +174,7 @@ const createAttachment = async (options) => {
   try {
     const { data } = await taskAttachmentsCreateAPI(
       props.board.id,
-      currentTaskId,
+      currentTaskId.value,
       {
         attachment: fileKey,
         filename: options.file.name,
