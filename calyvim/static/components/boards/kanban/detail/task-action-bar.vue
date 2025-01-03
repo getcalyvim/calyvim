@@ -46,9 +46,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits([
-  'update'
-])
+const emit = defineEmits(['update'])
 </script>
 
 <template>
