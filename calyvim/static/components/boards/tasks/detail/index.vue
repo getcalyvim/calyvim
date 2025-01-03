@@ -73,19 +73,23 @@ onMounted(async () => {
 </script>
 
 <template>
-  <WorkspaceLayout :workspace="props.workspace" page="boards">
-    <BoardLayout :workspace="props.workspace" :board="props.board">
-      <template #default>
-        <div v-if="!isLoading" class="pr-4">
-          <TaskView
-            :members="members"
-            :states="states"
-            :priorities="priorities"
-            :board="props.board"
-            :taskId="props.task.id"
-          />
-        </div>
-      </template>
-    </BoardLayout>
-  </WorkspaceLayout>
+  <div class="min-h-screen">
+    <WorkspaceLayout :workspace="props.workspace" page="boards">
+      <BoardLayout :workspace="props.workspace" :board="props.board">
+        <template #default>
+          <div v-if="!isLoading" class="flex justify-center">
+            <div class="w-3/4 max-w-5xl">
+              <TaskView
+                :members="members"
+                :states="states"
+                :priorities="priorities"
+                :board="props.board"
+                :taskId="props.task.id"
+              />
+            </div>
+          </div>
+        </template>
+      </BoardLayout>
+    </WorkspaceLayout>
+  </div>
 </template>

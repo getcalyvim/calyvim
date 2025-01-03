@@ -298,8 +298,9 @@ const openTask = async (taskId) => {
 </script>
 
 <template>
-  <div v-if="!!task && !loading">
-    <div class="mb-4">
+  <div v-if="!!task && !loading" class="flex flex-col h-full">
+    <!-- Fixed Header Section -->
+    <div class="flex-none">
       <!-- Archive Banner -->
       <div
         v-if="isArchived"
@@ -311,7 +312,11 @@ const openTask = async (taskId) => {
         </div>
       </div>
 
-      <div v-if="!!task.parentId" class="cursor-pointer mb-2" @click="openTask(task.parentId)">
+      <div
+        v-if="!!task.parentId"
+        class="cursor-pointer mb-2"
+        @click="openTask(task.parentId)"
+      >
         <ArrowLeftOutlined />
         <span class="ml-2">Back to parent task</span>
       </div>
@@ -342,7 +347,7 @@ const openTask = async (taskId) => {
       <div class="text-sm text-gray-500">
         <div class="flex items-center gap-1 text-xs">
           <div>Created on</div>
-            <div>{{ dayjs(task.createdAt).format('MMMM D, YYYY') }} by</div>
+          <div>{{ dayjs(task.createdAt).format('MMMM D, YYYY') }} by</div>
           <Avatar
             :size="16"
             :src="
@@ -356,117 +361,120 @@ const openTask = async (taskId) => {
       </div>
     </div>
 
-    <div class="grid grid-cols-12 gap-4">
-      <div class="col-span-9">
-        <div class="mb-5">
-          <Dropdown :trigger="['click']" placement="rightTop">
-            <Button :icon="h(PlusOutlined)" type="primary"
-              ><span class="font-semibold">Add</span></Button
-            >
-            <template #overlay>
-              <Menu>
-                <MenuItem key="subtask" @click="openSubtaskAddForm">
-                  <SwitcherOutlined />
-                  Subtask
-                </MenuItem>
-
-                <MenuItem key="attachment">
-                  <Upload
-                    :multiple="false"
-                    name="file"
-                    :customRequest="createAttachment"
-                  >
-                    <template #itemRender="{ file, actions }">
-                      <!-- Don't render anything -->
-                    </template>
-                    <FileOutlined />
-                    Attachment
-                  </Upload>
-                </MenuItem>
-
-                <MenuItem key="checklist" disabled>
-                  <CheckSquareOutlined />
-                  Checklist (Coming Soon)
-                </MenuItem>
-
-                <MenuItem key="link" disabled>
-                  <LinkOutlined />
-                  Link (Coming Soon)
-                </MenuItem>
-              </Menu>
-            </template>
-          </Dropdown>
-        </div>
-
-        <div class="text-lg font-semibold">Description</div>
-        <div>
-          <TextEditor v-model="task.description" @saved="updateDescription" />
-        </div>
-
-        <div class="mb-4">
-          <TaskAttachmentList
-            :boardId="props.board.id"
-            :taskId="currentTaskId"
-            :attachments="attachments"
-            @delete="deleteAttachment"
-          />
-        </div>
-
-        <div class="mb-4">
-          <SubTaskList
-            :subtasks="subtasks"
-            :boardId="props.board.id"
-            :states="props.states"
-            :members="props.members"
-            @selected="openTask"
-          />
-        </div>
-
-        <Divider />
-
-        <div class="mb-6">
-          <div class="flex gap-2 items-center justify-between mb-2">
-            <div class="text-lg font-semibold mb-2">Activity</div>
-            <div>
-              <RadioGroup
-                v-model:value="selectedCommentType"
-                @change="handleCommentTypeChange"
+    <!-- Scrollable Content Section -->
+    <div class="flex-1 overflow-y-auto mt-4 px-1">
+      <div class="grid grid-cols-12 gap-4">
+        <div class="col-span-9">
+          <div class="mb-5">
+            <Dropdown :trigger="['click']" placement="rightTop">
+              <Button :icon="h(PlusOutlined)" type="primary"
+                ><span class="font-semibold">Add</span></Button
               >
-                <Radio value="all">All</Radio>
-                <Radio value="update">Updates</Radio>
-                <Radio value="activity">Activity</Radio>
-              </RadioGroup>
-            </div>
+              <template #overlay>
+                <Menu>
+                  <MenuItem key="subtask" @click="openSubtaskAddForm">
+                    <SwitcherOutlined />
+                    Subtask
+                  </MenuItem>
+
+                  <MenuItem key="attachment">
+                    <Upload
+                      :multiple="false"
+                      name="file"
+                      :customRequest="createAttachment"
+                    >
+                      <template #itemRender="{ file, actions }">
+                        <!-- Don't render anything -->
+                      </template>
+                      <FileOutlined />
+                      Attachment
+                    </Upload>
+                  </MenuItem>
+
+                  <MenuItem key="checklist" disabled>
+                    <CheckSquareOutlined />
+                    Checklist (Coming Soon)
+                  </MenuItem>
+
+                  <MenuItem key="link" disabled>
+                    <LinkOutlined />
+                    Link (Coming Soon)
+                  </MenuItem>
+                </Menu>
+              </template>
+            </Dropdown>
           </div>
 
-          <TaskCommentAddForm
-            :boardId="props.board.id"
-            :taskId="currentTaskId"
-            @added="addNewComment"
-          />
+          <div class="text-lg font-semibold">Description</div>
+          <div>
+            <TextEditor v-model="task.description" @saved="updateDescription" />
+          </div>
 
-          <TaskCommentList
-            :boardId="props.board.id"
-            :taskId="currentTaskId"
-            :comments="comments"
+          <div class="mb-4">
+            <TaskAttachmentList
+              :boardId="props.board.id"
+              :taskId="currentTaskId"
+              :attachments="attachments"
+              @delete="deleteAttachment"
+            />
+          </div>
+
+          <div class="mb-4">
+            <SubTaskList
+              :subtasks="subtasks"
+              :boardId="props.board.id"
+              :states="props.states"
+              :members="props.members"
+              @selected="openTask"
+            />
+          </div>
+
+          <Divider />
+
+          <div class="mb-6">
+            <div class="flex gap-2 items-center justify-between mb-2">
+              <div class="text-lg font-semibold mb-2">Activity</div>
+              <div>
+                <RadioGroup
+                  v-model:value="selectedCommentType"
+                  @change="handleCommentTypeChange"
+                >
+                  <Radio value="all">All</Radio>
+                  <Radio value="update">Updates</Radio>
+                  <Radio value="activity">Activity</Radio>
+                </RadioGroup>
+              </div>
+            </div>
+
+            <TaskCommentAddForm
+              :boardId="props.board.id"
+              :taskId="currentTaskId"
+              @added="addNewComment"
+            />
+
+            <TaskCommentList
+              :boardId="props.board.id"
+              :taskId="currentTaskId"
+              :comments="comments"
+            />
+          </div>
+        </div>
+
+        <div class="col-span-3">
+          <TaskActionBar
+            :isArchived="isArchived"
+            :task="task"
+            :board="props.board"
+            :members="props.members"
+            :priorities="props.priorities"
+            :states="props.states"
+            @update="updateTaskItem"
           />
         </div>
-      </div>
-
-      <div class="col-span-3">
-        <TaskActionBar
-          :isArchived="isArchived"
-          :task="task"
-          :board="props.board"
-          :members="props.members"
-          :priorities="props.priorities"
-          :states="props.states"
-          @update="updateTaskItem"
-        />
       </div>
     </div>
 
-    <!-- Subtask Add Form -->
+    <!-- Modal remains outside scrollable area -->
     <Modal
       v-model:open="showSubtaskAddForm"
       title="Add subtask"
@@ -490,4 +498,27 @@ const openTask = async (taskId) => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.h-full {
+  height: 100vh;
+}
+
+.overflow-y-auto {
+  max-height: calc(100vh - 200px);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+</style>
