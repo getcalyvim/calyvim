@@ -27,4 +27,7 @@ class LabelsViewSet(BoardMixin, ViewSet):
     def list(self, request, *args, **kwargs):
         labels = Label.objects.filter(board=request.board).order_by("name")
         serializer = LabelSerializer(labels, many=True)
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
+        response_data = {
+            "results": serializer.data,
+        }
+        return Response(data=response_data, status=status.HTTP_200_OK)

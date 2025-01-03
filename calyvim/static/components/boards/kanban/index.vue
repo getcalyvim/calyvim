@@ -9,6 +9,7 @@ import {
   sprintListAPI,
   boardUpdateAPI,
   taskListKanbanAPI,
+  labelListAPI
 } from '@/utils/api'
 import { handleResponseError, generateAvatar } from '@/utils/helpers'
 import { Button, Dropdown, Avatar, Drawer, Tag, Select } from 'ant-design-vue'
@@ -129,12 +130,22 @@ const loadSprints = async () => {
   }
 }
 
+const loadLabels = async () => {
+  try {
+    const { data } = await labelListAPI(props.board.id)
+    store.initializeLabels(data.results)
+  } catch (error) {
+    handleResponseError(error)
+  }
+}
+
 onMounted(async () => {
   isLoading.value = true
   await loadStates()
   await loadPriorities()
   await loadingMembers()
   await loadSprints()
+  await loadLabels()
 
   await store.initializeGroupBy(props.board.currentGroupBy)
 
