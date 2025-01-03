@@ -4,6 +4,8 @@ import { computed, ref } from 'vue'
 import {
   CalendarOutlined,
   DashboardOutlined,
+  LogoutOutlined,
+  ProfileOutlined,
   ProjectOutlined,
   ReadOutlined,
   SettingOutlined,
@@ -109,13 +111,15 @@ const currentUser = computed(() => {
                     class="mt-2 cursor-pointer"
                     @click="redirecToProfilePage"
                   >
-                    Edit profile
+                    <ProfileOutlined />
+                    <span class="ml-2">View profile</span>
                   </div>
                   <div
-                    class="mt-2 cursor-pointer text-red-300"
+                    class="mt-2 cursor-pointer"
                     @click="logoutUser"
                   >
-                    Logout
+                    <LogoutOutlined />
+                    <span class="ml-2">Logout</span>
                   </div>
                 </Card>
               </template>

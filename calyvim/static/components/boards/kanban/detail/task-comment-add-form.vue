@@ -2,7 +2,7 @@
 import { SaveOutlined } from '@ant-design/icons-vue'
 import { Button, Form, FormItem, message, Textarea, Input } from 'ant-design-vue'
 import { h, ref } from 'vue'
-import { handleResponseError } from '@/utils/helpers';
+import { handleResponseError, notify } from '@/utils/helpers';
 import { taskCommentsCreateAPI } from '@/utils/api';
 
 const props = defineProps(['boardId', 'taskId'])
@@ -18,9 +18,8 @@ const onFinish = async (values) => {
         const { data } = await taskCommentsCreateAPI(props.boardId, props.taskId, values)
         formRef.value.resetFields()
 
-        emit('added', data)
-
-        message.success('Comment added')
+        emit('added', data.comment)
+        notify('ADDED', data.detail)
     } catch (error) {
         handleResponseError(error)
     }

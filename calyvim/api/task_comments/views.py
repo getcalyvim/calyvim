@@ -41,7 +41,11 @@ class TaskCommentsViewSet(BoardMixin, ViewSet):
             task=task,
         )
         serializer = TaskCommentSerializer(comment)
-        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        response_data = {
+            "detail": f"{request.user.display_name} added a comment to task {task.name}",
+            "comment": serializer.data,
+        }
+        return Response(data=response_data, status=status.HTTP_201_CREATED)
 
     def list(self, request, *args, **kwargs):
         comment_type = request.query_params.get("comment_type", "all")
