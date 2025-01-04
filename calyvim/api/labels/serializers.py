@@ -12,3 +12,8 @@ class LabelSerializer(serializers.ModelSerializer):
             "color",
             "created_at"
         ]
+
+
+class LabelCreateSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=255)
+    color = serializers.CharField(max_length=7)

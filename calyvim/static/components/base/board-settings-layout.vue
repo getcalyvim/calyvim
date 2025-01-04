@@ -96,7 +96,7 @@ const changePage = (event) => {
               </a>
             </MenuItem>
 
-            <MenuItem key="labels" disabled>
+            <MenuItem key="labels">
               <a
                 :href="`/app/b/${props.board.id}/settings/labels`"
                 class="no-underline text-inherit hover:no-underline hover:text-inherit"
