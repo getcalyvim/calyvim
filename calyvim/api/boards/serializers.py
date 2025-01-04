@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from calyvim.mixins import NameAndSourceSerializerMixin
-from calyvim.models import User, Board, Task
+from calyvim.models import User, Board, Task, Label, Priority, State, Sprint
 
 
 class BoardCreateSerializer(serializers.Serializer):
@@ -72,3 +72,55 @@ class TaskSerializer(serializers.ModelSerializer):
             "summary",
             "created_at",
         ]
+
+
+class StateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = State
+        fields = ["id", "name", "board_id", "sequence", "created_at"]
+
+
+class MemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "avatar",
+            "display_name",
+        ]
+
+
+class PrioritySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Priority
+        fields = ["id", "name", "created_at"]
+
+
+class LabelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Label
+        fields = ["id", "name", "color", "created_at"]
+
+
+class AssigneeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "display_name",
+            "last_name",
+            "avatar",
+        ]
+
+
+class SprintSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Sprint
+        fields = ["id", "name", "start_date", "end_date", "is_active", "created_at"]

@@ -32,3 +32,6 @@ export const boardTemplatesAPI = (workspaceId) =>
       workspaceId,
     },
   })
+
+export const boardMetadataAPI = (boardId) =>
+  client.get(`/boards/${boardId}/metadata`)

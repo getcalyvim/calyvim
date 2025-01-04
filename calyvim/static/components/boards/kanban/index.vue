@@ -10,6 +10,7 @@ import {
   boardUpdateAPI,
   taskListKanbanAPI,
   labelListAPI,
+  boardMetadataAPI
 } from '@/utils/api'
 import { handleResponseError, generateAvatar } from '@/utils/helpers'
 import { Button, Dropdown, Avatar, Drawer, Tag, Select } from 'ant-design-vue'
@@ -76,15 +77,6 @@ const taskLoading = ref(false)
 
 const store = useBoardStore()
 
-const loadStates = async () => {
-  try {
-    const { data } = await stateListAPI(props.board.id)
-    store.initializeStates(data.results)
-  } catch (error) {
-    handleResponseError(error)
-  }
-}
-
 const loadTasks = async (filters = {}) => {
   try {
     taskLoading.value = true
@@ -105,35 +97,17 @@ const loadTasks = async (filters = {}) => {
   }
 }
 
-const loadPriorities = async () => {
+const loadMetadata = async () => {
   try {
-    const { data } = await priorityListAPI(props.board.id)
-    store.initializePriorities(data.results)
-  } catch (error) {
-    handleResponseError(error)
-  }
-}
-
-const loadingMembers = async () => {
-  try {
-    const { data } = await boardMembersListAPI(props.board.id)
-    store.initializeMembers(data.results)
-  } catch (error) {}
-}
-
-const loadSprints = async () => {
-  try {
-    const { data } = await sprintListAPI(props.board.id)
-    store.initializeSprints(data.results)
-  } catch (error) {
-    handleResponseError(error)
-  }
-}
-
-const loadLabels = async () => {
-  try {
-    const { data } = await labelListAPI(props.board.id)
-    store.initializeLabels(data.results)
+    const { data } = await boardMetadataAPI(props.board.id)
+    const metadata = data.metadata
+    
+    store.initializeStates(metadata.states)
+    store.initializeMembers(metadata.members)
+    store.initializePriorities(metadata.priorities)
+    store.initializeLabels(metadata.labels)
+    store.initializeSprints(metadata.sprints)
+    
   } catch (error) {
     handleResponseError(error)
   }
@@ -141,15 +115,11 @@ const loadLabels = async () => {
 
 onMounted(async () => {
   isLoading.value = true
-  await loadStates()
-  await loadPriorities()
-  await loadingMembers()
-  await loadSprints()
-  await loadLabels()
 
+  await loadMetadata()
   await store.initializeGroupBy(props.board.currentGroupBy)
-
   await loadTasks()
+
   isLoading.value = false
 })
 

@@ -58,12 +58,6 @@ class AssigneeSerializer(serializers.ModelSerializer):
         ]
 
 
-class LabelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Label
-        fields = ["id", "name", "color"]
-
-
 class CreatedBySerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -80,12 +74,6 @@ class CreatedBySerializer(serializers.ModelSerializer):
 
 class QuerySerializer(serializers.Serializer):
     assignees = serializers.ListField(child=serializers.UUIDField(), required=False)
-
-
-class PrioritySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Priority
-        fields = ["id", "name", "created_at"]
 
 
 class EstimateSerializer(serializers.ModelSerializer):
@@ -177,9 +165,6 @@ class TaskSequenceUpdateSerializer(serializers.Serializer):
 class TaskUpdateSerializer(serializers.Serializer):
     summary = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
-    assignee_ids = serializers.ListField(
-        child=serializers.UUIDField(), allow_empty=True, required=False
-    )
     priority_id = serializers.UUIDField(required=False, allow_null=True)
     state_id = serializers.UUIDField(required=False)
     task_type = serializers.ChoiceField(choices=Task.TaskType, required=False)

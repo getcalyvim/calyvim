@@ -18,7 +18,6 @@ from calyvim.models import (
     Task,
     BoardPermission,
     BoardPermissionRole,
-    TaskAssignee,
 )
 from calyvim.api.boards.serializers import (
     BoardSerializer,
@@ -27,6 +26,11 @@ from calyvim.api.boards.serializers import (
     BoardDetailSerializer,
     BoardUpdateSerializer,
     TaskSerializer,
+    PrioritySerializer,
+    LabelSerializer,
+    StateSerializer,
+    MemberSerializer,
+    SprintSerializer,
 )
 from calyvim.exceptions import (
     InvalidInputException,
@@ -189,6 +193,31 @@ class BoardViewSet(ViewSet):
 
         serializer = BoardMemberSeralizer(members, many=True)
         response_data = {"results": serializer.data}
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    @action(methods=["GET"], detail=True, url_path="metadata")
+    def metadata(self, request, *args, **kwargs):
+        board = get_object_or_raise_api_404(
+            Board, id=kwargs.get("pk"), message="Board not found."
+        )
+        self.check_for_board_permission(request.user, board)
+
+        states = StateSerializer(board.states.all(), many=True)
+        priorities = PrioritySerializer(board.priorities.all(), many=True)
+        labels = LabelSerializer(board.labels.all(), many=True)
+        members = MemberSerializer(board.members.all(), many=True)
+        sprints = SprintSerializer(board.sprints.all().order_by("-created_at"), many=True)
+
+        response_data = {
+            "metadata": {
+                "states": states.data,
+                "priorities": priorities.data,
+                "labels": labels.data,
+                "members": members.data,
+                "sprints": sprints.data,
+            },
+            "detail": "Metadata for the board",
+        }
         return Response(response_data, status=status.HTTP_200_OK)
 
     @action(methods=["GET"], detail=False, url_path="templates")
