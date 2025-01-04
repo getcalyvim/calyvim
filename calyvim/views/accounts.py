@@ -26,9 +26,11 @@ class UserSerializer(serializers.ModelSerializer):
 class LoginView(View):
     def get(self, request):
         next = request.GET.get("next", "/")
+        session = request.GET.get("session", None)
         context = {
             "props": {
                 "next": next,
+                "session": session,
             }
         }
         return render(request, "accounts/login.html", context)
@@ -44,11 +46,6 @@ class LogoutView(View):
     def get(self, request):
         logout(request)
         return redirect("accounts-login")
-
-
-class GoogleOAuthView(View):
-    def get(self, request):
-        pass
 
 
 class VerifyView(LoginRequiredMixin, View):
@@ -172,5 +169,6 @@ class OAuthGoogleCallbackView(View):
             user.google_id = str(user_data["id"])
             user.save(update_fields=["google_id"])
 
-        login(request, user)
-        return redirect("workspace-index")
+        # Generate access token and redirect to login page
+        redirect_url = reverse("accounts-login") + f"?session={user.session}"
+        return redirect(redirect_url)

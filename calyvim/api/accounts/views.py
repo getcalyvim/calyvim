@@ -1,3 +1,5 @@
+import jwt
+from django.conf import settings
 from django.contrib.auth import login, logout
 from rest_framework import status
 from rest_framework.response import Response
@@ -277,3 +279,36 @@ class AccountsViewSet(ViewSet):
         return Response(
             data={"detail": "Password changed successfull!"}, status=status.HTTP_200_OK
         )
+
+    @action(methods=["GET"], detail=False, url_path="authenticate")
+    def authenticate(self, request):
+        session = request.query_params.get("session", None)
+        if not session:
+            return Response(
+                data={"detail": "Session not found, please login again."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        try:
+            decoded = jwt.decode(session, settings.SECRET_KEY, algorithms=["HS256"])
+        except Exception as e:
+            # Log the exception
+            return Response(
+                data={"detail": "Invalid session, please login again."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        user = User.objects.filter(id=decoded.get("user_id")).first()
+        if not user:
+            return Response(
+                data={"detail": "User not found, please login again."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        login(request, user)
+        
+        response_data = {
+            "detail": "User authenticated successfully!",
+            "user": UserSerializer(user).data,
+        }
+        return Response(data=response_data, status=status.HTTP_200_OK)

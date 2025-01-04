@@ -1,4 +1,5 @@
 import random
+import jwt
 from django.db import models, transaction
 from django.urls import reverse
 from django.conf import settings
@@ -175,3 +176,14 @@ class User(UUIDTimestampModel, AbstractBaseUser):
             "hey.com",
             "mail.ru",
         }
+
+    @property
+    def session(self):
+        return jwt.encode(
+            {
+                "user_id": str(self.id),
+                "exp": timezone.now() + timezone.timedelta(minutes=10),
+            },
+            settings.SECRET_KEY,
+            algorithm="HS256",
+        )

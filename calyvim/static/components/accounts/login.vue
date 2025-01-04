@@ -1,6 +1,6 @@
 <script setup>
 import AccountsLayout from '@/components/base/accounts-layout.vue'
-import { h, ref } from 'vue'
+import { h, onMounted, ref } from 'vue'
 import {
   Button,
   Form,
@@ -10,104 +10,141 @@ import {
   message,
 } from 'ant-design-vue'
 import { GithubOutlined, GoogleOutlined } from '@ant-design/icons-vue'
-import { accountsLoginAPI } from '@/utils/api'
+import { accountsLoginAPI, accountsAuthenticateAPI } from '@/utils/api'
 import GoogleOauthButton from './google-oauth-button.vue'
+import BaseSpinner from '../base/base-spinner.vue'
+import { handleResponseError } from '@/utils/helpers'
+
+const props = defineProps({
+  session: {
+    type: Object,
+    default: null,
+  },
+})
 
 const loginForm = ref({
   email: '',
   password: '',
 })
 
-const loading = ref(false)
+const isSubmitting = ref(false)
+const loading = ref(true)
 
 const onFinish = async (values) => {
   try {
-    loading.value = true
+    isSubmitting.value = true
     const { data } = await accountsLoginAPI(values)
     localStorage.setItem('currentUser', JSON.stringify(data.user))
     window.location.href = `/app/`
   } catch (error) {
-    message.info(error?.response.data?.detail)
+    handleResponseError(error)
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+const authenticate = async (session) => {
+  try {
+    const { data } = await accountsAuthenticateAPI(session)
+    localStorage.setItem('currentUser', JSON.stringify(data.user))
+    window.location.href = `/app/`
+  } catch (error) {
+    handleResponseError(error)
   } finally {
     loading.value = false
   }
 }
+
+onMounted(async () => {
+  if (!!props.session) {
+    await authenticate(props.session)
+  } else {
+    loading.value = false
+  }
+})
 </script>
 
 <template>
   <AccountsLayout>
-    <div class="flex items-center justify-center mb-4">
-      <h1 class="text-2xl font-bold">Log In</h1>
-    </div>
+    <template v-if="loading">
+      <div class="h-96 flex items-center justify-center">
+        <BaseSpinner />
+      </div>
+    </template>
+    <template v-else>
+      <div class="flex items-center justify-center mb-4">
+        <h1 class="text-2xl font-bold">Log In</h1>
+      </div>
 
-    <Form
-      layout="vertical"
-      :model="loginForm"
-      name="loginForm"
-      @finish="onFinish"
-      hide-required-mark
-    >
-      <FormItem
-        label="Email"
-        name="email"
-        :rules="[{ required: true, message: 'Please input your email!' }]"
+      <Form
+        layout="vertical"
+        :model="loginForm"
+        name="loginForm"
+        @finish="onFinish"
+        hide-required-mark
       >
-        <Input
-          v-model:value="loginForm.email"
-          placeholder="alison@company.com"
-        />
-      </FormItem>
-
-      <FormItem
-        label="Password"
-        name="password"
-        :rules="[
-          { required: true, message: 'Please input a strong password!' },
-        ]"
-      >
-        <template #extra>
-          <a class="text-primary hover:text-primary" href="/accounts/reset/"
-            >Forgot Password?</a
-          >
-        </template>
-        <InputPassword
-          v-model:value="loginForm.password"
-          placeholder="***********"
-        />
-      </FormItem>
-
-      <FormItem>
-        <Button
-          :loading="loading"
-          type="primary"
-          class="w-full"
-          html-type="submit"
-          >Log in</Button
+        <FormItem
+          label="Email"
+          name="email"
+          :rules="[{ required: true, message: 'Please input your email!' }]"
         >
-      </FormItem>
-    </Form>
+          <Input
+            v-model:value="loginForm.email"
+            placeholder="alison@company.com"
+          />
+        </FormItem>
 
-    <p class="mt-4 text-center text-sm text-gray-600">
-      Don't have an account?
-      <a href="/app/accounts/register/" class="font-medium text-primary"
-        >Create an account</a
-      >
-    </p>
+        <FormItem
+          label="Password"
+          name="password"
+          :rules="[
+            { required: true, message: 'Please input a strong password!' },
+          ]"
+        >
+          <template #extra>
+            <a class="text-primary hover:text-primary" href="/accounts/reset/"
+              >Forgot Password?</a
+            >
+          </template>
+          <InputPassword
+            v-model:value="loginForm.password"
+            placeholder="***********"
+          />
+        </FormItem>
 
-    <div class="mt-2">
-      <div class="relative">
-        <div class="absolute inset-0 flex items-center">
-          <div class="w-full border-t border-gray-300"></div>
+        <FormItem>
+          <Button
+            :loading="isSubmitting"
+            type="primary"
+            class="w-full"
+            html-type="submit"
+            >Log in</Button
+          >
+        </FormItem>
+      </Form>
+
+      <p class="mt-4 text-center text-sm text-gray-600">
+        Don't have an account?
+        <a href="/app/accounts/register/" class="font-medium text-primary"
+          >Create an account</a
+        >
+      </p>
+
+      <div class="mt-2">
+        <div class="relative">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-300"></div>
+          </div>
+          <div class="relative flex justify-center text-sm mb-2">
+            <span class="px-2 bg-white text-gray-500">Or</span>
+          </div>
         </div>
-        <div class="relative flex justify-center text-sm mb-2">
-          <span class="px-2 bg-white text-gray-500">Or</span>
+
+        <div class="flex justify-center">
+          <GoogleOauthButton />
         </div>
       </div>
-
-      <div class="flex justify-center">
-        <GoogleOauthButton />
-      </div>
-    </div>
+    </template>
   </AccountsLayout>
 </template>
 
