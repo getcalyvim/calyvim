@@ -1,7 +1,11 @@
-<script setup></script>
+<script setup>
+const googleOauth = () => {
+  window.location.href = '/app/accounts/oauth/google/'
+}
+</script>
 
 <template>
-  <button class="gsi-material-button">
+  <button class="gsi-material-button" @click="googleOauth">
     <div class="gsi-material-button-state"></div>
     <div class="gsi-material-button-content-wrapper">
       <div class="gsi-material-button-icon">

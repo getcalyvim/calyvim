@@ -34,6 +34,11 @@ watch(() => createForm.value.name, (newValue) => {
 const redirectToHome = () => {
     window.location.href = '/app'
 }
+
+const logoutUser = () => {
+    localStorage.removeItem("currentUser")
+    window.location.href = '/app/accounts/logout'
+}
 </script>
 
 <template>
@@ -53,7 +58,7 @@ const redirectToHome = () => {
                             <div class="text-sm font-medium text-gray-900">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</div>
                             <div class="text-xs text-gray-500">{{ currentUser?.email }}</div>
                             <div class="mt-1">
-                                <a class="text-xs cursor-pointer underline underline-offset-2" href="/accounts/logout/">Logout</a>
+                                <a class="text-xs cursor-pointer underline underline-offset-2" @click="logoutUser">Logout</a>
                             </div>
                         </div>
                         <Avatar :src="currentUser?.avatar ? currentUser.avatarSrc : generateAvatar(currentUser?.firstName)" alt="Profile" />

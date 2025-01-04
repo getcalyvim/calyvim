@@ -1,11 +1,17 @@
-from django.shortcuts import render, redirect
+import uuid
+import httpx
+from urllib.parse import urlencode
+from django.shortcuts import render, redirect, HttpResponse
+from django.http import Http404
+from django.urls import reverse
 from django.views import View
-from django.shortcuts import redirect
 from django.contrib.auth import logout, login
 from django.http import Http404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
+from django.conf import settings
+
 from rest_framework import serializers
 
 from calyvim.models import User
@@ -93,3 +99,78 @@ class ProfileView(LoginRequiredMixin, View):
 class SecurityView(LoginRequiredMixin, View):
     def get(self, request):
         return render(request, "accounts/security.html")
+
+
+class OAuthGoogleSessionView(View):
+    def get(self, request):
+        print(
+            "REDIRECT URI",
+            settings.BASE_URL + reverse("accounts-oauth-google-callback"),
+        )
+        scopes = [
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile",
+        ]
+        params = {
+            "client_id": settings.GOOGLE_OAUTH_CLIENT_ID,
+            "redirect_uri": settings.BASE_URL
+            + reverse("accounts-oauth-google-callback"),
+            "response_type": "code",
+            "scope": " ".join(scopes),
+            "access_type": "offline",
+            "state": uuid.uuid4().hex,
+            "include_granted_scopes": "true",
+        }
+        redirect_url = (
+            f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(params)}"
+        )
+        print("REDIRECT URL", redirect_url)
+        return redirect(redirect_url)
+
+
+class OAuthGoogleCallbackView(View):
+    def get(self, request):
+        authorization_params = {
+            "client_id": settings.GOOGLE_OAUTH_CLIENT_ID,
+            "client_secret": settings.GOOGLE_OAUTH_CLIENT_SECRET,
+            "code": request.GET.get("code"),
+            "grant_type": "authorization_code",
+            "redirect_uri": settings.BASE_URL
+            + reverse("accounts-oauth-google-callback"),
+        }
+
+        authorization_response = httpx.post(
+            url="https://oauth2.googleapis.com/token", data=authorization_params
+        )
+
+        if authorization_response.status_code != 200:
+            raise Http404("Failed to retrieve authorization token")
+
+        userinfo_response = httpx.get(
+            url="https://www.googleapis.com/oauth2/v2/userinfo",
+            headers={
+                "Authorization": f"Bearer {authorization_response.json()['access_token']}"
+            },
+        )
+
+        if userinfo_response.status_code != 200:
+            raise Http404("Failed to retrieve user info")
+
+        user_data = userinfo_response.json()
+        # Check if user exists
+        user = User.objects.filter(email=user_data["email"]).first()
+        if not user:
+            user = User.objects.create(
+                email=user_data["email"],
+                first_name=user_data.get("given_name", None),
+                last_name=user_data.get("family_name"),
+            )
+        if not user.is_verified:
+            user.verify()
+
+        if not user.google_id:
+            user.google_id = str(user_data["id"])
+            user.save(update_fields=["google_id"])
+
+        login(request, user)
+        return redirect("workspace-index")

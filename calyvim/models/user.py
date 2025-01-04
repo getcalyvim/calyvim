@@ -59,6 +59,10 @@ class User(UUIDTimestampModel, AbstractBaseUser):
     password_reset_id = models.CharField(max_length=64, blank=True, null=True)
     password_reset_sent_at = models.DateTimeField(blank=True, null=True)
 
+    # OAuth Fields
+    google_id = models.CharField(max_length=64, blank=True, null=True)
+    github_id = models.CharField(blank=True, null=True, max_length=64)
+
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = ["email", "first_name"]
     EMAIL_FIELD = "email"

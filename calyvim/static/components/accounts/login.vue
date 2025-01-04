@@ -95,7 +95,7 @@ const onFinish = async (values) => {
     </p>
 
     <div class="mt-2">
-      <!-- <div class="relative">
+      <div class="relative">
         <div class="absolute inset-0 flex items-center">
           <div class="w-full border-t border-gray-300"></div>
         </div>
@@ -106,10 +106,9 @@ const onFinish = async (values) => {
 
       <div class="flex justify-center">
         <GoogleOauthButton />
-      </div> -->
+      </div>
     </div>
   </AccountsLayout>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

@@ -9,7 +9,9 @@ from calyvim.views.accounts import (
     ProfileView,
     ResetView,
     ResetConfirmView,
-    SecurityView
+    SecurityView,
+    OAuthGoogleSessionView,
+    OAuthGoogleCallbackView,
 )
 
 # fmt: off
@@ -22,5 +24,7 @@ urlpatterns = [
     path("profile/", ProfileView.as_view(), name="accounts-profile"),
     path("reset/", ResetView.as_view(), name="accounts-reset"),
     path("reset/<str:password_reset_id>/confirm/", ResetConfirmView.as_view(), name="accounts-reset-confirm"),
-    path("security/", SecurityView.as_view(), name="accounts-security")
+    path("security/", SecurityView.as_view(), name="accounts-security"),
+    path("oauth/google/", OAuthGoogleSessionView.as_view(), name="accounts-oauth-google-session"),
+    path("oauth/google/callback/", OAuthGoogleCallbackView.as_view(), name="accounts-oauth-google-callback"),
 ]
