@@ -39,7 +39,7 @@ const subMenuItems = [
   <WorkspaceLayout :workspace="props.workspace" :page="props.page" :dynamicSubmenu="subMenuItems" dynamicSubmenuKey="boards" :subPage="props.subPage">
     <Tabs v-model:active-key="activeKey" class="pl-1">
       <template #leftExtra>
-        <div class="flex items-center ml-2 mr-5 my-2">
+        <div class="flex items-center ml-2 mr-5 my-3">
           <Avatar
             size="small"
             class="mr-2"

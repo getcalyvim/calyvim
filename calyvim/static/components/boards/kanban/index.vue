@@ -5,10 +5,18 @@ import { h, onMounted, ref } from 'vue'
 import {
   boardUpdateAPI,
   taskListKanbanAPI,
-  boardMetadataAPI
+  boardMetadataAPI,
 } from '@/utils/api'
 import { handleResponseError, generateAvatar } from '@/utils/helpers'
-import { Button, Dropdown, Avatar, Drawer, Tag, Select } from 'ant-design-vue'
+import {
+  Button,
+  Dropdown,
+  Avatar,
+  Drawer,
+  Tag,
+  Select,
+  AvatarGroup,
+} from 'ant-design-vue'
 import {
   FilterOutlined,
   PlusOutlined,
@@ -95,13 +103,12 @@ const loadMetadata = async () => {
   try {
     const { data } = await boardMetadataAPI(props.board.id)
     const metadata = data.metadata
-    
+
     store.initializeStates(metadata.states)
     store.initializeMembers(metadata.members)
     store.initializePriorities(metadata.priorities)
     store.initializeLabels(metadata.labels)
     store.initializeSprints(metadata.sprints)
-    
   } catch (error) {
     handleResponseError(error)
   }
@@ -232,319 +239,330 @@ const addNewTask = (task) => {
 
 <template>
   <div class="min-h-screen">
-      <BoardLayout
-        :workspace="props.workspace"
-        :board="props.board"
-        page="boards"
-        subPage="kanban"
-      >
-        <template #actions>
-          <div class="flex items-center gap-3 mx-2">
-            <div class="flex items-center gap-1">
-              <div class="font-semibold text-xs text-gray-500">Group by</div>
-              <Select
-                v-model:value="store.groupBy"
-                class="w-36"
-                @change="loadTaskAndUpdateCurrentGroupBy"
-              >
-                <Select.Option :value="null">None</Select.Option>
-                <Select.Option value="assignee">
-                  <UserOutlined class="text-primary" />
-                  <span class="ml-2">Assignee</span>
-                </Select.Option>
-                <Select.Option value="priority">
-                  <FlagOutlined class="text-primary" />
-                  <span class="ml-2">Priority</span>
-                </Select.Option>
-                <Select.Option value="sprint" :disabled="!!props.currentSprint">
-                  <CarryOutOutlined class="text-primary" />
-                  <span class="ml-2">Sprint</span>
-                </Select.Option>
-                <Select.Option value="task_type">
-                  <BlockOutlined class="text-primary" />
-                  <span class="ml-2">Task type</span>
-                </Select.Option>
-                <Select.Option value="estimate">
-                  <ClockCircleOutlined class="text-primary" />
-                  <span class="ml-2">Estimate</span>
-                </Select.Option>
-              </Select>
-            </div>
-            <Dropdown
-              :trigger="['click']"
-              placement="bottomRight"
-              v-model:open="openFilterDropdown"
+    <BoardLayout
+      :workspace="props.workspace"
+      :board="props.board"
+      page="boards"
+      subPage="kanban"
+    >
+      <template #actions>
+        <div class="flex items-center gap-3 mx-2">
+          <div class="flex items-center gap-1">
+            <AvatarGroup class="mr-3" :maxCount="7" size="small">
+              <Avatar
+                size="small"
+                v-for="member in store.members"
+                :key="member.id"
+                :src="
+                  !!member.avatar
+                    ? member.avatar
+                    : generateAvatar(member.displayName)
+                "
+                :title="member.displayName"
+              />
+            </AvatarGroup>
+            <div class="font-semibold text-xs text-gray-500">Group by</div>
+            <Select
+              v-model:value="store.groupBy"
+              class="w-36"
+              @change="loadTaskAndUpdateCurrentGroupBy"
             >
-              <Button :icon="h(FilterOutlined)">Filters</Button>
-              <template #overlay>
-                <FilterList
-                  :board="props.board"
-                  @reload="reloadTasks"
-                  :currentSprint="props.currentSprint"
-                />
-              </template>
-            </Dropdown>
-            <Dropdown
-              :trigger="['click']"
-              placement="bottomRight"
-              v-model:open="openTaskAddDropdown"
-            >
-              <Button type="primary" :icon="h(PlusOutlined)">Add task</Button>
-              <template #overlay>
-                <TaskAddForm :board="props.board" @created="addNewTask" />
-              </template>
-            </Dropdown>
+              <Select.Option :value="null">None</Select.Option>
+              <Select.Option value="assignee">
+                <UserOutlined class="text-primary" />
+                <span class="ml-2">Assignee</span>
+              </Select.Option>
+              <Select.Option value="priority">
+                <FlagOutlined class="text-primary" />
+                <span class="ml-2">Priority</span>
+              </Select.Option>
+              <Select.Option value="sprint" :disabled="!!props.currentSprint">
+                <CarryOutOutlined class="text-primary" />
+                <span class="ml-2">Sprint</span>
+              </Select.Option>
+              <Select.Option value="task_type">
+                <BlockOutlined class="text-primary" />
+                <span class="ml-2">Task type</span>
+              </Select.Option>
+              <Select.Option value="estimate">
+                <ClockCircleOutlined class="text-primary" />
+                <span class="ml-2">Estimate</span>
+              </Select.Option>
+            </Select>
           </div>
-        </template>
-        <template #default>
-          <div class="w-full overflow-x-auto">
-            <div class="min-w-max px-1">
-              <StateList :states="store.states" />
-              <template v-if="taskLoading">
-                <div class="task-list">
-                  <StateTaskSkeletonLoader :states="store.states" />
-                </div>
-              </template>
-              <template v-else>
-                <!-- For Group By - Assignee -->
-                <div
-                  v-if="!!store.groupBy && store.groupBy === 'assignee'"
-                  class="task-list"
-                >
-                  <div
-                    class="w-full mb-1"
-                    v-for="item in store.kanban"
-                    :key="item.id"
-                  >
-                    <template v-if="item.groupBy === 'assignee'">
-                      <div class="bg-gray-100 px-2 py-1 rounded">
-                        <Button
-                          type="text"
-                          size="small"
-                          class="mr-2"
-                          @click="toggleGroup(item.groupKey)"
-                        >
-                          <ArrowRightOutlined
-                            v-if="!openedGroups.has(item.groupKey)"
-                            class="text-xs text-gray-500"
-                          />
-                          <ArrowDownOutlined
-                            v-else
-                            class="text-xs text-gray-500"
-                          />
-                        </Button>
-                        <template v-if="!!item.assignee">
-                          <Avatar
-                            :src="
-                              !!item.assignee.avatar
-                                ? item.assignee.avatar
-                                : generateAvatar(item.assignee.displayName)
-                            "
-                            :size="24"
-                          />
-                          <span class="ml-2">{{
-                            item.assignee.displayName
-                          }}</span>
-                        </template>
-                        <template v-else>
-                          <UserOutlined class="text-primary" />
-                          <span class="ml-2">Unassigned</span>
-                        </template>
-                      </div>
-
-                      <StateTasks
-                        v-if="openedGroups.has(item.groupKey)"
-                        :states="item.states"
-                        :board="props.board"
-                        :groupKey="item.groupKey"
-                        @open="openTaskView"
-                        @created="(newTask) => store.addTask(newTask)"
-                      />
-                    </template>
-                  </div>
-                </div>
-
-                <!-- For Group By - Priority -->
-                <div
-                  v-else-if="!!store.groupBy && store.groupBy === 'priority'"
-                  class="task-list"
-                >
-                  <div
-                    class="w-full mb-1"
-                    v-for="item in store.kanban"
-                    :key="item.id"
-                  >
-                    <template v-if="item.groupBy === 'priority'">
-                      <div class="bg-gray-100 px-2 py-1 rounded">
-                        <Button
-                          type="text"
-                          size="small"
-                          class="mr-2"
-                          @click="toggleGroup(item.groupKey)"
-                        >
-                          <ArrowRightOutlined
-                            v-if="!openedGroups.has(item.groupKey)"
-                            class="text-xs text-gray-500"
-                          />
-                          <ArrowDownOutlined
-                            v-else
-                            class="text-xs text-gray-500"
-                          />
-                        </Button>
-                        <FlagOutlined class="text-primary" />
-                        <span class="ml-2 font-semibold" v-if="!!item.priority">
-                          {{ item.priority.name }}
-                        </span>
-                        <span v-else class="font-semibold">
-                          Unprioritized
-                        </span>
-                      </div>
-
-                      <StateTasks
-                        v-if="openedGroups.has(item.groupKey)"
-                        :states="item.states"
-                        :board="props.board"
-                        :groupKey="item.groupKey"
-                        @open="openTaskView"
-                        @created="(newTask) => store.addTask(newTask)"
-                      />
-                    </template>
-                  </div>
-                </div>
-
-                <!-- For Group By - Task Type -->
-                <div
-                  v-else-if="!!store.groupBy && store.groupBy === 'task_type'"
-                  class="task-list"
-                >
-                  <div
-                    class="w-full mb-1"
-                    v-for="item in store.kanban"
-                    :key="item.id"
-                  >
-                    <template v-if="item.groupBy === 'task_type'">
-                      <div class="bg-gray-100 px-2 py-1 rounded">
-                        <Button
-                          type="text"
-                          size="small"
-                          class="mr-2"
-                          @click="toggleGroup(item.groupKey)"
-                        >
-                          <ArrowRightOutlined
-                            v-if="!openedGroups.has(item.groupKey)"
-                            class="text-xs text-gray-500"
-                          />
-                          <ArrowDownOutlined
-                            v-else
-                            class="text-xs text-gray-500"
-                          />
-                        </Button>
-                        <BlockOutlined class="text-primary" />
-                        <span class="ml-2 font-semibold">
-                          {{ item.taskType }}
-                        </span>
-                      </div>
-
-                      <StateTasks
-                        v-if="openedGroups.has(item.groupKey)"
-                        :states="item.states"
-                        :board="props.board"
-                        :groupKey="item.groupKey"
-                        @open="openTaskView"
-                        @created="(newTask) => store.addTask(newTask)"
-                      />
-                    </template>
-                  </div>
-                </div>
-
-                <!-- Group By - Sprint -->
-                <div
-                  v-else-if="!!store.groupBy && store.groupBy === 'sprint'"
-                  class="task-list"
-                >
-                  <div
-                    class="w-full mb-1"
-                    v-for="item in store.kanban"
-                    :key="item.id"
-                  >
-                    <template v-if="item.groupBy === 'sprint'">
-                      <div
-                        class="bg-gray-100 px-2 py-1 rounded flex items-center"
-                      >
-                        <Button
-                          type="text"
-                          size="small"
-                          class="mr-2"
-                          @click="toggleGroup(item.groupKey)"
-                        >
-                          <ArrowRightOutlined
-                            v-if="!openedGroups.has(item.groupKey)"
-                            class="text-xs text-gray-500"
-                          />
-                          <ArrowDownOutlined
-                            v-else
-                            class="text-xs text-gray-500"
-                          />
-                        </Button>
-                        <SyncOutlined class="text-primary" />
-                        <div class="ml-2 font-semibold" v-if="!!item.sprint">
-                          {{ item.sprint.name }}
-                        </div>
-                        <div v-else class="font-semibold ml-2">No Sprint</div>
-                        <Tag
-                          v-if="!!item.sprint && item.sprint.isActive"
-                          :bordered="false"
-                          class="ml-1 text-primary"
-                          >Active</Tag
-                        >
-                      </div>
-
-                      <StateTasks
-                        v-if="openedGroups.has(item.groupKey)"
-                        :states="item.states"
-                        :board="props.board"
-                        :groupKey="item.groupKey"
-                        @open="openTaskView"
-                        @created="(newTask) => store.addTask(newTask)"
-                      />
-                    </template>
-                  </div>
-                </div>
-
-                <!-- For Group By - None (Normal Board) -->
-                <div v-else class="task-list">
-                  <StateTasks
-                    :states="store.kanban"
-                    :board="props.board"
-                    @open="openTaskView"
-                    @created="(newTask) => store.addTask(newTask)"
-                  />
-                </div>
-              </template>
-            </div>
-          </div>
-
-          <!-- TaskViewDrawer -->
-          <Drawer
-            centered
-            v-model:open="showTaskView"
-            destroyOnClose
-            @close="closeTaskView"
-            :header-style="{ display: 'none' }"
-            :width="920"
+          <Dropdown
+            :trigger="['click']"
+            placement="bottomRight"
+            v-model:open="openFilterDropdown"
           >
-            <TaskView
-              :board="props.board"
-              :taskId="taskViewId"
-              :members="store.members"
-              :priorities="store.priorities"
-              :states="store.states"
-              :sprints="store.sprints"
-              @update="updateTask"
-            />
-          </Drawer>
-        </template>
-      </BoardLayout>
+            <Button :icon="h(FilterOutlined)">Filters</Button>
+            <template #overlay>
+              <FilterList
+                :board="props.board"
+                @reload="reloadTasks"
+                :currentSprint="props.currentSprint"
+              />
+            </template>
+          </Dropdown>
+          <Dropdown
+            :trigger="['click']"
+            placement="bottomRight"
+            v-model:open="openTaskAddDropdown"
+          >
+            <Button type="primary" :icon="h(PlusOutlined)">Add task</Button>
+            <template #overlay>
+              <TaskAddForm :board="props.board" @created="addNewTask" />
+            </template>
+          </Dropdown>
+        </div>
+      </template>
+      <template #default>
+        <div class="w-full overflow-x-auto">
+          <div class="min-w-max px-1">
+            <StateList :states="store.states" />
+            <template v-if="taskLoading">
+              <div class="task-list">
+                <StateTaskSkeletonLoader :states="store.states" />
+              </div>
+            </template>
+            <template v-else>
+              <!-- For Group By - Assignee -->
+              <div
+                v-if="!!store.groupBy && store.groupBy === 'assignee'"
+                class="task-list"
+              >
+                <div
+                  class="w-full mb-1"
+                  v-for="item in store.kanban"
+                  :key="item.id"
+                >
+                  <template v-if="item.groupBy === 'assignee'">
+                    <div class="bg-gray-100 px-2 py-1 rounded">
+                      <Button
+                        type="text"
+                        size="small"
+                        class="mr-2"
+                        @click="toggleGroup(item.groupKey)"
+                      >
+                        <ArrowRightOutlined
+                          v-if="!openedGroups.has(item.groupKey)"
+                          class="text-xs text-gray-500"
+                        />
+                        <ArrowDownOutlined
+                          v-else
+                          class="text-xs text-gray-500"
+                        />
+                      </Button>
+                      <template v-if="!!item.assignee">
+                        <Avatar
+                          :src="
+                            !!item.assignee.avatar
+                              ? item.assignee.avatar
+                              : generateAvatar(item.assignee.displayName)
+                          "
+                          :size="24"
+                        />
+                        <span class="ml-2">{{
+                          item.assignee.displayName
+                        }}</span>
+                      </template>
+                      <template v-else>
+                        <UserOutlined class="text-primary" />
+                        <span class="ml-2">Unassigned</span>
+                      </template>
+                    </div>
+
+                    <StateTasks
+                      v-if="openedGroups.has(item.groupKey)"
+                      :states="item.states"
+                      :board="props.board"
+                      :groupKey="item.groupKey"
+                      @open="openTaskView"
+                      @created="(newTask) => store.addTask(newTask)"
+                    />
+                  </template>
+                </div>
+              </div>
+
+              <!-- For Group By - Priority -->
+              <div
+                v-else-if="!!store.groupBy && store.groupBy === 'priority'"
+                class="task-list"
+              >
+                <div
+                  class="w-full mb-1"
+                  v-for="item in store.kanban"
+                  :key="item.id"
+                >
+                  <template v-if="item.groupBy === 'priority'">
+                    <div class="bg-gray-100 px-2 py-1 rounded">
+                      <Button
+                        type="text"
+                        size="small"
+                        class="mr-2"
+                        @click="toggleGroup(item.groupKey)"
+                      >
+                        <ArrowRightOutlined
+                          v-if="!openedGroups.has(item.groupKey)"
+                          class="text-xs text-gray-500"
+                        />
+                        <ArrowDownOutlined
+                          v-else
+                          class="text-xs text-gray-500"
+                        />
+                      </Button>
+                      <FlagOutlined class="text-primary" />
+                      <span class="ml-2 font-semibold" v-if="!!item.priority">
+                        {{ item.priority.name }}
+                      </span>
+                      <span v-else class="font-semibold"> Unprioritized </span>
+                    </div>
+
+                    <StateTasks
+                      v-if="openedGroups.has(item.groupKey)"
+                      :states="item.states"
+                      :board="props.board"
+                      :groupKey="item.groupKey"
+                      @open="openTaskView"
+                      @created="(newTask) => store.addTask(newTask)"
+                    />
+                  </template>
+                </div>
+              </div>
+
+              <!-- For Group By - Task Type -->
+              <div
+                v-else-if="!!store.groupBy && store.groupBy === 'task_type'"
+                class="task-list"
+              >
+                <div
+                  class="w-full mb-1"
+                  v-for="item in store.kanban"
+                  :key="item.id"
+                >
+                  <template v-if="item.groupBy === 'task_type'">
+                    <div class="bg-gray-100 px-2 py-1 rounded">
+                      <Button
+                        type="text"
+                        size="small"
+                        class="mr-2"
+                        @click="toggleGroup(item.groupKey)"
+                      >
+                        <ArrowRightOutlined
+                          v-if="!openedGroups.has(item.groupKey)"
+                          class="text-xs text-gray-500"
+                        />
+                        <ArrowDownOutlined
+                          v-else
+                          class="text-xs text-gray-500"
+                        />
+                      </Button>
+                      <BlockOutlined class="text-primary" />
+                      <span class="ml-2 font-semibold">
+                        {{ item.taskType }}
+                      </span>
+                    </div>
+
+                    <StateTasks
+                      v-if="openedGroups.has(item.groupKey)"
+                      :states="item.states"
+                      :board="props.board"
+                      :groupKey="item.groupKey"
+                      @open="openTaskView"
+                      @created="(newTask) => store.addTask(newTask)"
+                    />
+                  </template>
+                </div>
+              </div>
+
+              <!-- Group By - Sprint -->
+              <div
+                v-else-if="!!store.groupBy && store.groupBy === 'sprint'"
+                class="task-list"
+              >
+                <div
+                  class="w-full mb-1"
+                  v-for="item in store.kanban"
+                  :key="item.id"
+                >
+                  <template v-if="item.groupBy === 'sprint'">
+                    <div
+                      class="bg-gray-100 px-2 py-1 rounded flex items-center"
+                    >
+                      <Button
+                        type="text"
+                        size="small"
+                        class="mr-2"
+                        @click="toggleGroup(item.groupKey)"
+                      >
+                        <ArrowRightOutlined
+                          v-if="!openedGroups.has(item.groupKey)"
+                          class="text-xs text-gray-500"
+                        />
+                        <ArrowDownOutlined
+                          v-else
+                          class="text-xs text-gray-500"
+                        />
+                      </Button>
+                      <SyncOutlined class="text-primary" />
+                      <div class="ml-2 font-semibold" v-if="!!item.sprint">
+                        {{ item.sprint.name }}
+                      </div>
+                      <div v-else class="font-semibold ml-2">No Sprint</div>
+                      <Tag
+                        v-if="!!item.sprint && item.sprint.isActive"
+                        :bordered="false"
+                        class="ml-1 text-primary"
+                        >Active</Tag
+                      >
+                    </div>
+
+                    <StateTasks
+                      v-if="openedGroups.has(item.groupKey)"
+                      :states="item.states"
+                      :board="props.board"
+                      :groupKey="item.groupKey"
+                      @open="openTaskView"
+                      @created="(newTask) => store.addTask(newTask)"
+                    />
+                  </template>
+                </div>
+              </div>
+
+              <!-- For Group By - None (Normal Board) -->
+              <div v-else class="task-list">
+                <StateTasks
+                  :states="store.kanban"
+                  :board="props.board"
+                  @open="openTaskView"
+                  @created="(newTask) => store.addTask(newTask)"
+                />
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- TaskViewDrawer -->
+        <Drawer
+          centered
+          v-model:open="showTaskView"
+          destroyOnClose
+          @close="closeTaskView"
+          :header-style="{ display: 'none' }"
+          :width="920"
+        >
+          <TaskView
+            :board="props.board"
+            :taskId="taskViewId"
+            :members="store.members"
+            :priorities="store.priorities"
+            :states="store.states"
+            :sprints="store.sprints"
+            @update="updateTask"
+          />
+        </Drawer>
+      </template>
+    </BoardLayout>
   </div>
 </template>
 
