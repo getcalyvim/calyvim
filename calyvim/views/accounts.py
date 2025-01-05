@@ -27,10 +27,22 @@ class LoginView(View):
     def get(self, request):
         next = request.GET.get("next", "/")
         session = request.GET.get("session", None)
+
+        has_google_oauth = (
+            settings.GOOGLE_OAUTH_CLIENT_ID is not None
+            and settings.GOOGLE_OAUTH_CLIENT_ID is not None
+        )
+        has_github_oauth = (
+            settings.GITHUB_OAUTH_CLIENT_ID is not None
+            and settings.GITHUB_OAUTH_CLIENT_SECRET is not None
+        )
+
         context = {
             "props": {
                 "next": next,
                 "session": session,
+                "has_google_oauth": has_google_oauth,
+                "has_github_oauth": has_github_oauth,
             }
         }
         return render(request, "accounts/login.html", context)

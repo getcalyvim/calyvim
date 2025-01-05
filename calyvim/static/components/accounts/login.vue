@@ -20,6 +20,14 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  hasGoogleOauth: {
+    type: Boolean,
+    default: false,
+  },
+  hasGithubOauth: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const loginForm = ref({
@@ -135,12 +143,12 @@ onMounted(async () => {
           <div class="absolute inset-0 flex items-center">
             <div class="w-full border-t border-gray-300"></div>
           </div>
-          <div class="relative flex justify-center text-sm mb-2">
+          <div class="relative flex justify-center text-sm mb-2" v-if="hasGithubOauth || hasGoogleOauth">
             <span class="px-2 bg-white text-gray-500">Or</span>
           </div>
         </div>
 
-        <div class="flex justify-center">
+        <div class="flex justify-center" v-if="hasGoogleOauth">
           <GoogleOauthButton />
         </div>
       </div>
