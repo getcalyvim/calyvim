@@ -88,7 +88,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <WorkspaceSettingsLayout :workspace="props.workspace" page="members">
+    <WorkspaceSettingsLayout :workspace="props.workspace" page="settings" subPage="members">
         <Tabs type="card" v-model:activeKey="activeTab">
             <TabPane key="active_members">
                 <template #tab>

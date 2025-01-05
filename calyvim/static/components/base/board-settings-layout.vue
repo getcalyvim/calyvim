@@ -17,7 +17,7 @@ import {
 } from 'ant-design-vue'
 import { ref } from 'vue'
 
-const props = defineProps(['workspace', 'board', 'page'])
+const props = defineProps(['workspace', 'board', 'page', 'subPage'])
 const collapsed = ref(false)
 const selectedKeys = ref([props.page])
 
@@ -34,7 +34,8 @@ const changePage = (event) => {
   <BoardLayout
     :workspace="props.workspace"
     :board="props.board"
-    page="settings"
+    :page="props.page"
+    :subPage="props.subPage"
   >
     <div class="container mx-auto">
       <Layout v-model:collapsed="collapsed" :trigger="null" collapsible>

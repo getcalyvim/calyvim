@@ -80,7 +80,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <WorkspaceSettingsLayout :workspace="props.workspace" page="teams">
+    <WorkspaceSettingsLayout :workspace="props.workspace" page="settings" subPage="teams">
         <div class="mb-3 text-primary" @click="redirectToTeamsPage">
             <BackwardOutlined />
             <span class="hover:underline hover:underline-offset-4 hover:cursor-pointer ml-1">Back to teams</span>

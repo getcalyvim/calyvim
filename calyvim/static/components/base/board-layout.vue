@@ -1,27 +1,45 @@
 <script setup>
-import {
-  TableOutlined,
-  CalendarOutlined,
-  CarryOutOutlined,
-  SettingOutlined,
-  LeftOutlined,
-  AppstoreOutlined,
-} from '@ant-design/icons-vue'
-import { TabPane, Tabs, Avatar } from 'ant-design-vue'
+import { Tabs, Avatar } from 'ant-design-vue'
 import { ref } from 'vue'
-import BaseLayout from '@/components/base/base-layout.vue'
+import WorkspaceLayout from './workspace-layout.vue'
 import { generateAvatar } from '@/utils/helpers'
-
-const props = defineProps(['board', 'workspace', 'page'])
+import {
+  Grid,
+  CalendarClock,
+  Settings2,
+} from 'lucide-vue-next'
+const props = defineProps(['board', 'workspace', 'page', 'subPage'])
 
 const activeKey = ref(props.page)
+
+const subMenuItems = [
+  {
+    label: 'Kanban',
+    icon: Grid,
+    key: 'kanban',
+    redirectPath: `/app/b/${props.board.id}`
+  },
+  {
+    label: 'Sprint',
+    icon: CalendarClock,
+    key: 'sprints',
+    redirectPath: `/app/b/${props.board.id}/sprints`
+  },
+   
+  {
+    label: 'Settings',
+    icon: Settings2,
+    key: 'settings',
+    redirectPath: `/app/b/${props.board.id}/settings`
+  }
+]
 </script>
 
 <template>
-  <BaseLayout>
-    <Tabs v-model:active-key="activeKey" class="pl-5">
+  <WorkspaceLayout :workspace="props.workspace" :page="props.page" :dynamicSubmenu="subMenuItems" dynamicSubmenuKey="boards" :subPage="props.subPage">
+    <Tabs v-model:active-key="activeKey" class="pl-1">
       <template #leftExtra>
-        <div class="flex items-center ml-2 mr-5">
+        <div class="flex items-center ml-2 mr-5 my-2">
           <Avatar
             size="small"
             class="mr-2"
@@ -35,73 +53,13 @@ const activeKey = ref(props.page)
           <div class="font-semibold">{{ props.board.name }}</div>
         </div>
       </template>
-      <TabPane key="kanban">
-        <template #tab>
-          <a
-            :href="`/app/b/${props.board.id}/`"
-            class="no-underline text-inherit hover:no-underline hover:text-inherit"
-            :class="{
-              'text-primary hover:text-primary': activeKey === 'kanban',
-            }"
-          >
-            <span>
-              <AppstoreOutlined />
-              Kanban
-            </span>
-          </a>
-        </template>
-      </TabPane>
-
-      <!-- <TabPane key="table">
-        <template #tab>
-          <TableOutlined />
-          Table
-        </template>
-      </TabPane> -->
-
-      <TabPane key="sprints">
-        <template #tab>
-          <a
-            :href="`/app/b/${props.board.id}/sprints/`"
-            class="no-underline text-inherit hover:no-underline hover:text-inherit"
-            :class="{
-              'text-primary hover:text-primary': activeKey === 'sprints',
-            }"
-          >
-            <CarryOutOutlined />
-            Sprints
-          </a>
-        </template>
-      </TabPane>
-
-      <TabPane key="timeline" disabled>
-        <template #tab>
-          <CalendarOutlined />
-          Timeline
-        </template>
-      </TabPane>
-
-      <TabPane key="settings">
-        <template #tab>
-          <a
-            :href="`/app/b/${props.board.id}/settings/`"
-            class="no-underline text-inherit hover:no-underline hover:text-inherit"
-            :class="{
-              'text-primary hover:text-primary': activeKey === 'settings',
-            }"
-          >
-            <SettingOutlined />
-            Settings
-          </a>
-        </template>
-      </TabPane>
 
       <template #rightExtra>
-        <slot name="actions"></slot>
+          <slot name="actions"></slot>
       </template>
     </Tabs>
-    <div class="pl-5">
+    <div class="pl-2">
       <slot></slot>
     </div>
-  </BaseLayout>
+  </WorkspaceLayout>
 </template>

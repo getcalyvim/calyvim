@@ -113,86 +113,58 @@ onMounted(() => {
 </script>
 
 <template>
-  <WorkspaceLayout :workspace="workspace" page="boards">
-    <BoardSettingsLayout
-      :workspace="props.workspace"
-      :board="props.board"
-      page="general"
-    >
-      <div class="mx-auto px-4">
-        <div class="max-w-3xl mx-auto">
-          <Form
-            :model="boardForm"
-            layout="vertical"
-            @finish="onFinish"
-            :disabled="!props.hasEditPermission"
-          >
-            <div class="relative w-full mb-4">
+  <BoardSettingsLayout
+    :workspace="props.workspace"
+    :board="props.board"
+    page="boards"
+    subPage="settings"
+  >
+    <div class="mx-auto px-4">
+      <div class="max-w-3xl mx-auto">
+        <Form
+          :model="boardForm"
+          layout="vertical"
+          @finish="onFinish"
+          :disabled="!props.hasEditPermission"
+        >
+          <div class="relative w-full mb-4">
+            <div
+              class="w-full h-32 md:h-40 lg:h-48 bg-gray-100 overflow-hidden rounded-lg"
+            >
               <div
-                class="w-full h-32 md:h-40 lg:h-48 bg-gray-100 overflow-hidden rounded-lg"
+                class="w-full h-full bg-gradient-to-r from-gray-400 to-primary"
               >
-                <div
-                  class="w-full h-full bg-gradient-to-r from-gray-400 to-primary"
-                >
-                  <img
-                    v-if="!!boardForm.coverSrc"
-                    :src="boardForm.coverSrc"
-                    class="w-full h-full object-cover"
-                    alt="Banner"
-                  />
-                </div>
+                <img
+                  v-if="!!boardForm.coverSrc"
+                  :src="boardForm.coverSrc"
+                  class="w-full h-full object-cover"
+                  alt="Banner"
+                />
               </div>
+            </div>
 
-              <div class="absolute bottom-4 left-4 z-10">
+            <div class="absolute bottom-4 left-4 z-10">
+              <div
+                class="w-20 h-20 rounded-lg shadow-lg flex items-center justify-center relative"
+              >
+                <Avatar
+                  :src="
+                    !!boardForm.logoSrc
+                      ? boardForm.logoSrc
+                      : generateAvatar(boardForm.name, 12)
+                  "
+                  shape="square"
+                  :size="84"
+                />
+
                 <div
-                  class="w-20 h-20 rounded-lg shadow-lg flex items-center justify-center relative"
+                  class="absolute inset-0 flex items-center justify-center gap-1 opacity-0 hover:opacity-100 bg-white/20 transition-opacity duration-200"
                 >
-                  <Avatar
-                    :src="
-                      !!boardForm.logoSrc
-                        ? boardForm.logoSrc
-                        : generateAvatar(boardForm.name, 12)
-                    "
-                    shape="square"
-                    :size="84"
-                  />
-
-                  <div
-                    class="absolute inset-0 flex items-center justify-center gap-1 opacity-0 hover:opacity-100 bg-white/20 transition-opacity duration-200"
-                  >
-                    <FormItem name="logo" class="p-0 m-0">
-                      <Upload
-                        :multiple="false"
-                        name="file"
-                        :customRequest="handleLogoUpload"
-                        :show-upload-list="false"
-                      >
-                        <Button
-                          type="text"
-                          class="flex items-center justify-center"
-                        >
-                          <template #icon><EditOutlined /></template>
-                        </Button>
-                      </Upload>
-                    </FormItem>
-                    <Button
-                      type="text"
-                      class="flex items-center justify-center"
-                      @click="removeLogo"
-                    >
-                      <template #icon><DeleteOutlined /></template>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              <div class="absolute bottom-4 right-4 z-10 flex space-x-0">
-                <div>
-                  <FormItem name="cover" class="p-0 m-0">
+                  <FormItem name="logo" class="p-0 m-0">
                     <Upload
                       :multiple="false"
                       name="file"
-                      :customRequest="handleCoverUpload"
+                      :customRequest="handleLogoUpload"
                       :show-upload-list="false"
                     >
                       <Button
@@ -203,95 +175,117 @@ onMounted(() => {
                       </Button>
                     </Upload>
                   </FormItem>
+                  <Button
+                    type="text"
+                    class="flex items-center justify-center"
+                    @click="removeLogo"
+                  >
+                    <template #icon><DeleteOutlined /></template>
+                  </Button>
                 </div>
-
-                <Button
-                  type="text"
-                  class="flex items-center justify-center"
-                  @click="removeCover"
-                >
-                  <template #icon><DeleteOutlined /></template>
-                </Button>
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-              <FormItem label="Name" name="name">
-                <Input v-model:value="boardForm.name" />
-              </FormItem>
+            <div class="absolute bottom-4 right-4 z-10 flex space-x-0">
+              <div>
+                <FormItem name="cover" class="p-0 m-0">
+                  <Upload
+                    :multiple="false"
+                    name="file"
+                    :customRequest="handleCoverUpload"
+                    :show-upload-list="false"
+                  >
+                    <Button
+                      type="text"
+                      class="flex items-center justify-center"
+                    >
+                      <template #icon><EditOutlined /></template>
+                    </Button>
+                  </Upload>
+                </FormItem>
+              </div>
 
-              <FormItem label="Board ID" name="slug">
-                <Input v-model:value="boardForm.slug" />
-              </FormItem>
+              <Button
+                type="text"
+                class="flex items-center justify-center"
+                @click="removeCover"
+              >
+                <template #icon><DeleteOutlined /></template>
+              </Button>
             </div>
+          </div>
 
-            <FormItem label="Description" name="description">
-              <Textarea v-model:value="boardForm.description" :rows="4" />
+          <div class="grid grid-cols-2 gap-4">
+            <FormItem label="Name" name="name">
+              <Input v-model:value="boardForm.name" />
             </FormItem>
 
-            <div class="grid grid-cols-2 gap-4">
-              <FormItem label="Task prefix" name="taskPrefix">
-                <Input v-model:value="boardForm.taskPrefix" />
-              </FormItem>
-            </div>
+            <FormItem label="Board ID" name="slug">
+              <Input v-model:value="boardForm.slug" />
+            </FormItem>
+          </div>
 
-            <div class="flex justify-end">
-              <FormItem>
-                <Button
-                  type="primary"
-                  html-type="submit"
-                  :icon="h(SaveOutlined)"
-                  >Update board</Button
-                >
-              </FormItem>
-            </div>
-          </Form>
+          <FormItem label="Description" name="description">
+            <Textarea v-model:value="boardForm.description" :rows="4" />
+          </FormItem>
 
-          <Divider />
-          <Collapse v-model:activeKey="activeKey" ghost>
-            <CollapsePanel key="leave" header="Leave board">
-              <div class="text-gray-500">
-                Please proceed with caution. Leaving this board will result in
-                the loss of access to all associated tasks. If you wish to
-                rejoin in the future, you will need to be added by an existing
-                member. Ensure you are certain of this decision before
-                proceeding.
-              </div>
-              <Button
-                danger
-                class="mt-2"
-                :icon="h(LogoutOutlined)"
-                @click="showLeaveConfirmationModal"
-                >Leave board</Button
+          <div class="grid grid-cols-2 gap-4">
+            <FormItem label="Task prefix" name="taskPrefix">
+              <Input v-model:value="boardForm.taskPrefix" />
+            </FormItem>
+          </div>
+
+          <div class="flex justify-end">
+            <FormItem>
+              <Button type="primary" html-type="submit" :icon="h(SaveOutlined)"
+                >Update board</Button
               >
-            </CollapsePanel>
+            </FormItem>
+          </div>
+        </Form>
 
-            <CollapsePanel
-              key="delete"
-              header="Delete board"
-              :collapsible="hasEditPermission ? 'header' : 'disabled'"
+        <Divider />
+        <Collapse v-model:activeKey="activeKey" ghost>
+          <CollapsePanel key="leave" header="Leave board">
+            <div class="text-gray-500">
+              Please proceed with caution. Leaving this board will result in the
+              loss of access to all associated tasks. If you wish to rejoin in
+              the future, you will need to be added by an existing member.
+              Ensure you are certain of this decision before proceeding.
+            </div>
+            <Button
+              danger
+              class="mt-2"
+              :icon="h(LogoutOutlined)"
+              @click="showLeaveConfirmationModal"
+              >Leave board</Button
             >
-              <div class="text-gray-500">
-                Please proceed with extreme caution. Deleting this workspace
-                will permanently erase all associated data, tasks. Members will
-                lose access immediately, and the workspace cannot be recovered.
-                If you are certain of this decision, please confirm before
-                proceeding.
-              </div>
-              <Button
-                danger
-                class="mt-2"
-                :icon="h(DeleteOutlined)"
-                type="primary"
-                @click="showDeleteConfirmationModal"
-                >Delete board</Button
-              >
-            </CollapsePanel>
-          </Collapse>
-        </div>
+          </CollapsePanel>
+
+          <CollapsePanel
+            key="delete"
+            header="Delete board"
+            :collapsible="hasEditPermission ? 'header' : 'disabled'"
+          >
+            <div class="text-gray-500">
+              Please proceed with extreme caution. Deleting this workspace will
+              permanently erase all associated data, tasks. Members will lose
+              access immediately, and the workspace cannot be recovered. If you
+              are certain of this decision, please confirm before proceeding.
+            </div>
+            <Button
+              danger
+              class="mt-2"
+              :icon="h(DeleteOutlined)"
+              type="primary"
+              @click="showDeleteConfirmationModal"
+              >Delete board</Button
+            >
+          </CollapsePanel>
+        </Collapse>
       </div>
-    </BoardSettingsLayout>
-  </WorkspaceLayout>
+    </div>
+  </BoardSettingsLayout>
 
   <Modal
     v-model:open="openLeaveConfirmationModal"

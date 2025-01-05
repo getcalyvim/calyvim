@@ -4,9 +4,7 @@ import { stateListAPI, boardMembersListAPI, priorityListAPI } from '@/utils/api'
 import { handleResponseError } from '@/utils/helpers'
 import { useNProgress } from '@vueuse/integrations/useNProgress'
 import TaskView from '@/components/boards/kanban/detail/task-view.vue'
-import WorkspaceLayout from '@/components/base/workspace-layout.vue'
 import BoardLayout from '@/components/base/board-layout.vue'
-import { Card } from 'ant-design-vue'
 
 const { isLoading } = useNProgress(null, { minimum: '0.5', initial: true })
 
@@ -74,22 +72,25 @@ onMounted(async () => {
 
 <template>
   <div class="min-h-screen">
-    <WorkspaceLayout :workspace="props.workspace" page="boards">
-      <BoardLayout :workspace="props.workspace" :board="props.board">
-        <template #default>
-          <div v-if="!isLoading" class="flex justify-center">
-            <div class="w-3/4 max-w-5xl">
-              <TaskView
-                :members="members"
-                :states="states"
-                :priorities="priorities"
-                :board="props.board"
-                :taskId="props.task.id"
-              />
-            </div>
+    <BoardLayout
+      :workspace="props.workspace"
+      :board="props.board"
+      page="boards"
+      subPage="kanban"
+    >
+      <template #default>
+        <div v-if="!isLoading" class="flex justify-center">
+          <div class="w-3/4 max-w-5xl">
+            <TaskView
+              :members="members"
+              :states="states"
+              :priorities="priorities"
+              :board="props.board"
+              :taskId="props.task.id"
+            />
           </div>
-        </template>
-      </BoardLayout>
-    </WorkspaceLayout>
+        </div>
+      </template>
+    </BoardLayout>
   </div>
 </template>

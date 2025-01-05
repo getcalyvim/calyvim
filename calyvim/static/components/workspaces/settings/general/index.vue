@@ -65,7 +65,7 @@ const removeLogo = () => {
 </script>
 
 <template>
-    <WorkspaceSettingsLayout :workspace="props.workspace" :currentUser="props.currentUser" page="general">
+    <WorkspaceSettingsLayout :workspace="props.workspace" :currentUser="props.currentUser" page="settings" subPage="general">
         <div class="grid grid-cols-2 px-5 mt-3">
             <div class="font-semibold">General Setting</div>
             <div>

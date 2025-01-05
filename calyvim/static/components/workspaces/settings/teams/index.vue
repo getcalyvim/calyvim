@@ -75,7 +75,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <WorkspaceSettingsLayout :workspace="props.workspace" page="teams">
+    <WorkspaceSettingsLayout :workspace="props.workspace" page="settings" subPage="teams">
         <div class="flex justify-between mb-4">
             <div class="text-2xl">Teams</div>
 

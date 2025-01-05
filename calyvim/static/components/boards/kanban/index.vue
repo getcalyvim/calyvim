@@ -3,13 +3,8 @@ import BoardLayout from '@/components/base/board-layout.vue'
 import { useBoardStore } from '@/stores/board'
 import { h, onMounted, ref } from 'vue'
 import {
-  stateListAPI,
-  boardMembersListAPI,
-  priorityListAPI,
-  sprintListAPI,
   boardUpdateAPI,
   taskListKanbanAPI,
-  labelListAPI,
   boardMetadataAPI
 } from '@/utils/api'
 import { handleResponseError, generateAvatar } from '@/utils/helpers'
@@ -27,7 +22,6 @@ import {
   ClockCircleOutlined,
 } from '@ant-design/icons-vue'
 import { useNProgress } from '@vueuse/integrations/useNProgress'
-import WorkspaceLayout from '@/components/base/workspace-layout.vue'
 import FilterList from '@/components/boards/kanban/filters/filter-list.vue'
 import TaskAddForm from '@/components/boards/kanban/task-add-form.vue'
 import TaskView from '@/components/boards/kanban/detail/task-view.vue'
@@ -238,11 +232,11 @@ const addNewTask = (task) => {
 
 <template>
   <div class="min-h-screen">
-    <WorkspaceLayout :workspace="props.workspace" page="boards">
       <BoardLayout
         :workspace="props.workspace"
         :board="props.board"
-        :page="props.currentTab"
+        page="boards"
+        subPage="kanban"
       >
         <template #actions>
           <div class="flex items-center gap-3 mx-2">
@@ -551,7 +545,6 @@ const addNewTask = (task) => {
           </Drawer>
         </template>
       </BoardLayout>
-    </WorkspaceLayout>
   </div>
 </template>
 
