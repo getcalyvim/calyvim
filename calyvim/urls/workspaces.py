@@ -12,7 +12,8 @@ from calyvim.views.workspaces import (
     WorkspaceIndexView,
     WorkspaceDeleteView,
     WorkspaceBoardsView,
-    WorkspaceNewslinesView
+    WorkspaceNewslinesView,
+    WorkspaceTodosView
 )
 
 # fmt: off
@@ -21,6 +22,7 @@ urlpatterns = [
     path("<str:workspace_slug>/", WorkspaceDashboardView.as_view(), name="workspaces-dashboard"),
     path("<str:workspace_slug>/boards/", WorkspaceBoardsView.as_view(), name="workspace-boards"),
     path("<str:workspace_slug>/newslines/", WorkspaceNewslinesView.as_view(), name="workspace-newslines"),
+    path("<str:workspace_slug>/todos/", WorkspaceTodosView.as_view(), name="workspace-todos"),
     path("<str:workspace_slug>/settings/", WorkspaceSettingsGeneralView.as_view(), name="workspaces-settings-general"),
     path("<str:workspace_slug>/settings/billing/", WorkspaceSettingsBillingView.as_view(), name="workspaces-settings-billing"),
     path("<str:workspace_slug>/settings/members/", WorkspaceMembersView.as_view(), name="workspaces-members"),
