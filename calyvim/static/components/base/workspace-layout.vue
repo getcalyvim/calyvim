@@ -1,6 +1,14 @@
 # WorkspaceLayout.vue
 <script setup>
-import { Layout, Avatar, Dropdown, Card, Flex } from 'ant-design-vue'
+import {
+  Layout,
+  Avatar,
+  Dropdown,
+  Card,
+  Flex,
+  Menu,
+  MenuItem,
+} from 'ant-design-vue'
 import { ref, onMounted } from 'vue'
 import {
   LayoutDashboard,
@@ -31,7 +39,7 @@ import {
   CalendarCheck,
   Calendar,
   List,
-  SlidersVertical
+  SlidersVertical,
 } from 'lucide-vue-next'
 
 import BaseLayout from '@/components/base/base-layout.vue'
@@ -228,6 +236,21 @@ const handleNavigation = (path) => {
 const redirectToProfilePage = () => {
   window.location.href = '/app/accounts/profile'
 }
+
+const logoutUser = () => {
+  localStorage.removeItem('currentUser')
+  window.location.href = '/app/accounts/logout'
+}
+
+const openWorkspaceMenu = ref(false)
+const showWorkspaceMenu = () => {
+  openWorkspaceMenu.value = true
+}
+
+const openProfileMenu = ref(false)
+const showProfileMenu = () => {
+  openProfileMenu.value = true
+}
 </script>
 
 <template>
@@ -242,33 +265,68 @@ const redirectToProfilePage = () => {
       >
         <div class="flex flex-col h-full bg-gray-50">
           <!-- Header section -->
-          <div class="p-4 border-b border-gray-200">
+          <div class="p-3 border-b border-gray-200">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <Avatar
-                  shape="square"
-                  :size="24"
-                  :src="
-                    !!props.workspace.logo
-                      ? props.workspace.logoSrc
-                      : generateAvatar(props.workspace.name, 10)
-                  "
-                />
-                <span class="font-medium text-gray-900">{{
-                  props.workspace.name
-                }}</span>
+                <Dropdown
+                  :trigger="['click']"
+                  v-model:open="openWorkspaceMenu"
+                  placement="bottomRight"
+                >
+                  <template #overlay>
+                    <WorkspaceMenu :workspace="props.workspace" />
+                  </template>
+                  <div class="flex items-center gap-1 hover:bg-gray-100 p-1">
+                    <Avatar
+                      shape="square"
+                      :size="24"
+                      :src="
+                        !!props.workspace.logo
+                          ? props.workspace.logoSrc
+                          : generateAvatar(props.workspace.name, 10)
+                      "
+                    />
+                    <div class="font-medium text-gray-900 ml-2">
+                      {{ props.workspace.name }}
+                    </div>
+                  </div>
+                </Dropdown>
               </div>
 
-              <Avatar
-                v-if="currentUser"
-                :size="28"
-                :src="
-                  currentUser.avatar ||
-                  generateAvatar(currentUser.name || 'User', 10)
-                "
-                class="cursor-pointer"
-                @click="redirectToProfilePage"
-              />
+              <Dropdown
+                :trigger="['click']"
+                placement="bottomRight"
+                v-model:open="openProfileMenu"
+              >
+                <Avatar
+                  v-if="currentUser"
+                  :size="24"
+                  :src="
+                    currentUser.avatarSrc ||
+                    generateAvatar(currentUser.name || 'User', 10)
+                  "
+                  class="cursor-pointer"
+                  shape="square"
+                />
+                <template #overlay>
+                  <Card class="w-72" size="small">
+                    <div class="flex flex-col gap-2">
+                      <div class="flex flex-col gap-0 mb-2">
+                        <div class="font-semibold">{{ currentUser.displayName }}</div>
+                        <div class="text-xs">{{ currentUser.email }}</div>
+                      </div>
+                      <div class="flex items-center gap-1 cursor-pointer" @click="redirectToProfilePage">
+                        <User class="w-4 h-4 text-gray-500" />
+                        <div>Profile</div>
+                      </div>
+                      <div class="flex items-center gap-1 cursor-pointer" @click="logoutUser">
+                        <LogOut class="w-4 h-4 text-gray-500" />
+                        <div>Logout</div>
+                      </div>
+                    </div>
+                  </Card>
+                </template>
+              </Dropdown>
             </div>
           </div>
 
