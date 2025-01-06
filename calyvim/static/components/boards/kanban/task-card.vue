@@ -8,7 +8,9 @@ import {
   MinusCircleOutlined,
   SyncOutlined,
 } from '@ant-design/icons-vue'
+import { CalendarClock } from 'lucide-vue-next'
 import { useBoardStore } from '@/stores/board'
+
 
 // const props = defineProps(['board', 'task'])
 const props = defineProps({
@@ -31,9 +33,9 @@ const store = useBoardStore()
 
 <template>
   <div class="flex justify-between items-center">
-    <div class="text-xs font-semibold mb-1">
+    <div class="text-xs font-semibold mb-1 flex items-center">
       <TaskTypeIcon :taskType="props.task.taskType" />
-      <span class="ml-1">{{ props.task.name }}</span>
+      <div class="ml-1">{{ props.task.name }}</div>
     </div>
 
     <div
@@ -60,11 +62,11 @@ const store = useBoardStore()
 
       <Tag
         :bordered="false"
-        class="text-xs font-semibold"
+        class="text-xs font-semibold flex items-center gap-1"
         v-if="!!props.task.sprint && (!store.groupBy || store.groupBy !== 'sprint')"
       >
-        <SyncOutlined />
-        <span>{{ props.task?.sprint.name }}</span>
+        <CalendarClock class="h-3 w-3" />
+        <div>{{ props.task?.sprint.name }}</div>
       </Tag>
     </div>
     <Avatar

@@ -1,12 +1,13 @@
 <script setup>
-import { CheckSquareTwoTone, PlaySquareTwoTone, DownSquareTwoTone, PlusSquareTwoTone } from '@ant-design/icons-vue';
+import { CheckCircle, PlayCircle, BugPlay, PlusCircle } from 'lucide-vue-next'
 
-const props = defineProps(['taskType'])
+BugPlay
+const props = defineProps(['taskType']);
 </script>
 
 <template>
-    <CheckSquareTwoTone two-tone-color="#7D52E9" v-if="props.taskType === 'issue'" />
-    <PlaySquareTwoTone two-tone-color="#7D52E9" v-else-if="props.taskType === 'story'" />
-    <DownSquareTwoTone two-tone-color="#7D52E9" v-else-if="props.taskType === 'bug'" />
-    <PlusSquareTwoTone two-tone-color="#7D52E9" v-else-if="props.taskType === 'feature'" />
+  <CheckCircle class="text-primary w-3 h-3" v-if="props.taskType === 'issue'" />
+  <PlayCircle class="text-primary w-3 h-3" v-else-if="props.taskType === 'story'" />
+  <BugPlay class="text-primary w-3 h-3" v-else-if="props.taskType === 'bug'" />
+  <PlusCircle class="text-primary w-3 h-3" v-else-if="props.taskType === 'feature'" />
 </template>

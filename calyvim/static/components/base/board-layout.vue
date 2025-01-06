@@ -4,7 +4,7 @@ import { ref } from 'vue'
 import WorkspaceLayout from './workspace-layout.vue'
 import { generateAvatar } from '@/utils/helpers'
 import {
-  Grid,
+  Kanban,
   CalendarClock,
   Settings2,
 } from 'lucide-vue-next'
@@ -15,7 +15,7 @@ const activeKey = ref(props.page)
 const subMenuItems = [
   {
     label: 'Kanban',
-    icon: Grid,
+    icon: Kanban,
     key: 'kanban',
     redirectPath: `/app/b/${props.board.id}`
   },

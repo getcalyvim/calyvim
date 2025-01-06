@@ -26,6 +26,7 @@ import {
   Calendar,
   List,
   SlidersVertical,
+  Grid
 } from 'lucide-vue-next'
 
 import BaseLayout from '@/components/base/base-layout.vue'
@@ -68,7 +69,7 @@ const baseMenuItems = ref([
   {
     key: 'boards',
     label: 'Boards',
-    icon: Kanban,
+    icon: Grid,
     redirectPath: `/app/${props.workspace.slug}/boards`,
     submenu: [
       {
@@ -303,7 +304,7 @@ const showProfileMenu = () => {
                       </div>
                       <div class="flex items-center gap-1 cursor-pointer" @click="redirectToProfilePage">
                         <User class="w-4 h-4 text-gray-500" />
-                        <div>Profile</div>
+                        <div>Accounts</div>
                       </div>
                       <div class="flex items-center gap-1 cursor-pointer" @click="logoutUser">
                         <LogOut class="w-4 h-4 text-gray-500" />
