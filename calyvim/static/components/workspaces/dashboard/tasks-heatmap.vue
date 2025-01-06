@@ -27,11 +27,11 @@ const drawHeatmap = () => {
     //     .scaleSequential(d3.interpolateGreens)
     //     .domain([0, d3.max(Object.values(props.data)) || 1]);
 
-    // Define a custom color scale using shades of #8B5CF6
+    // Define a custom color scale using shades of #7D52E9
     const colorScale = d3
         .scaleLinear()
         .domain([0, d3.max(Object.values(props.data)) || 1])
-        .range(["#FFFFFF", "#8B5CF6"]); // Light to primary color
+        .range(["#FFFFFF", "#7D52E9"]); // Light to primary color
 
     // Create a day scale and axis for day labels
     const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

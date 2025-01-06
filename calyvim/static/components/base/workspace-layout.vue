@@ -322,7 +322,7 @@ const showProfileMenu = () => {
               <div
                 class="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer text-gray-600 hover:bg-gray-100 transition-colors"
                 :class="{
-                  'bg-gray-100 text-purple-600': item.key === props.page,
+                  'bg-gray-100 text-primary': item.key === props.page,
                 }"
                 @click="
                   item.submenu
@@ -334,7 +334,7 @@ const showProfileMenu = () => {
                   :is="item.icon"
                   v-if="item.icon"
                   class="text-gray-500 w-4 h-4"
-                  :class="{ 'text-purple-600': isMenuItemActive(item.key) }"
+                  :class="{ 'text-primary': isMenuItemActive(item.key) }"
                 />
                 <span class="font-medium">{{ item.label }}</span>
                 <span
@@ -360,16 +360,16 @@ const showProfileMenu = () => {
                   v-for="subItem in item.submenu"
                   :key="subItem.key"
                   @click="handleNavigation(subItem.redirectPath)"
-                  class="pl-9 pr-3 py-2 text-sm text-gray-500 hover:text-purple-600 cursor-pointer flex items-center gap-2"
+                  class="pl-9 pr-3 py-2 text-sm text-gray-500 hover:text-primary cursor-pointer flex items-center gap-2"
                   :class="{
-                    'text-purple-600 bg-gray-50': props.subPage === subItem.key,
+                    'text-primary bg-gray-50': props.subPage === subItem.key,
                   }"
                 >
                   <component
                     :is="subItem.icon"
                     class="w-3.5 h-3.5 text-gray-400"
                     :class="{
-                      'text-purple-600': props.subPage === subItem.key,
+                      'text-primary': props.subPage === subItem.key,
                     }"
                   />
                   {{ subItem.label }}

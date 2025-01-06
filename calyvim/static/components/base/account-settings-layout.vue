@@ -63,7 +63,7 @@ const redirectBackToDashboard = () => {
 .ant-layout-sider {
     min-height: 100vh;
     background: #fff;
-    border-right: 2px solid #8B5CF6;
+    border-right: 2px solid #7D52E9;
 }
 
 .ant-layout-content {

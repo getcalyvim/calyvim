@@ -171,7 +171,7 @@ export const notify = (
     style: {
       width: '350px',
       padding: '16px',
-      borderLeft: `12px solid ${type === 'success' ? '#8B5CF6' : '#CBD5E1'}`,
+      borderLeft: `12px solid ${type === 'success' ? '#7D52E9' : '#CBD5E1'}`,
     },
   })
 }
