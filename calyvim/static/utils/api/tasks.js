@@ -7,6 +7,13 @@ export const taskListAPI = (boardId, filters = {}) =>
     params: filters,
   })
 
+export const taskDetailAPI = (boardId, taskId, filters = {}) =>
+  client.get(`/boards/${boardId}/tasks/${taskId}`, {
+    params: {
+      ...filters,
+    },
+  })
+
 export const taskListKanbanAPI = (boardId, filters = {}) =>
   client.get(`/boards/${boardId}/tasks/kanban`, {
     params: filters,

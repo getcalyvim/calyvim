@@ -9,6 +9,7 @@ from calyvim.models import (
     Estimate,
     Sprint,
     State,
+    TaskAttachment
 )
 
 
@@ -188,6 +189,20 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 
 class TaskCommentSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer()
+
+    class Meta:
+        model = TaskComment
+        fields = ["id", "content", "author", "comment_type", "created_at"]
+
+
+class AttachmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TaskAttachment
+        fields = ["id", "attachment", "filename", "mime_type", "created_at"]
+
+
+class CommentSerializer(serializers.ModelSerializer):
     author = AuthorSerializer()
 
     class Meta:

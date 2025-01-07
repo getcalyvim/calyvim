@@ -106,19 +106,6 @@ const showSubtaskAddForm = ref(false)
 const openDescriptionActionButton = ref(false)
 const isArchived = ref(false)
 
-// Task Management
-const loadTask = async (taskId) => {
-  try {
-    const { data } = await taskDetailAPI(props.board.id, taskId)
-    task.value = {
-      ...data,
-      oldStateId: data.stateId,
-    }
-  } catch (error) {
-    handleResponseError(error)
-  }
-}
-
 // Comments Management
 const loadComments = async (taskId) => {
   try {
@@ -159,15 +146,6 @@ const handleCommentTypeChange = () => {
 }
 
 // Attachments Management
-const loadAttachments = async (taskId) => {
-  try {
-    const { data } = await taskAttachmentsListAPI(props.board.id, taskId)
-    attachments.value = data
-  } catch (error) {
-    handleResponseError(error)
-  }
-}
-
 const createAttachment = async (options) => {
   const { fileKey, fileSrc } = await uploadRequestHandler(
     options,
@@ -244,17 +222,6 @@ const closeSubtaskAddForm = () => {
   showSubtaskAddForm.value = false
 }
 
-const loadSubTasks = async (taskId) => {
-  try {
-    const { data } = await taskListAPI(props.board.id, {
-      parentId: taskId,
-    })
-    subtasks.value = data.results
-  } catch (error) {
-    handleResponseError(error)
-  }
-}
-
 const addTaskToSubtask = (data) => {
   closeSubtaskAddForm()
   subtasks.value.push(data)
@@ -262,12 +229,20 @@ const addTaskToSubtask = (data) => {
 
 // Loading and Initialization
 const loadTaskDetails = async (taskId) => {
-  loading.value = true
-  await loadTask(taskId)
-  await loadComments(taskId)
-  await loadAttachments(taskId)
-  await loadSubTasks(taskId)
-  loading.value = false
+  try {
+    loading.value = true
+    const { data } = await taskDetailAPI(props.board.id, taskId, { include: ['attachments', 'subtasks', 'comments'] })
+    task.value = {
+      ...data.task,
+    }
+    attachments.value = data.attachments
+    comments.value = data.comments
+    subtasks.value = data.subtasks
+  } catch (error) {
+    handleResponseError(error)
+  } finally {
+    loading.value = false
+  }
 }
 
 // Lifecycle Hooks

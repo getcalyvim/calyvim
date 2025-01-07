@@ -1,6 +1,6 @@
 <script setup>
 import { Tabs, Avatar } from 'ant-design-vue'
-import { ref } from 'vue'
+import { ref, h } from 'vue'
 import WorkspaceLayout from './workspace-layout.vue'
 import { generateAvatar } from '@/utils/helpers'
 import {
@@ -39,7 +39,7 @@ const subMenuItems = [
   <WorkspaceLayout :workspace="props.workspace" :page="props.page" :dynamicSubmenu="subMenuItems" dynamicSubmenuKey="boards" :subPage="props.subPage">
     <Tabs v-model:active-key="activeKey" class="pl-1">
       <template #leftExtra>
-        <div class="flex items-center ml-2 mr-5 my-3">
+        <div class="flex items-center ml-2 mr-5 my-3 gap-1">
           <Avatar
             size="small"
             class="mr-2"

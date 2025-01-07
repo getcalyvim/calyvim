@@ -30,6 +30,8 @@ from calyvim.api.tasks.serializers import (
     PrioritySerializer,
     LabelSerializer,
     SprintSerializer,
+    AttachmentSerializer,
+    CommentSerializer,
 )
 from calyvim.permissions import BoardGenericPermission
 from calyvim.exceptions import (
@@ -143,7 +145,32 @@ class TasksViewSet(BoardMixin, ViewSet):
             raise TaskNotFoundException
 
         serializer = TaskSerializer(task)
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
+        response_data = {
+            "task": serializer.data,
+        }
+
+        if request.query_params.getlist("include[]"):
+            for item in request.query_params.getlist("include[]"):
+                match item:
+                    case "attachments":
+                        attachments = task.attachments.all()
+                        response_data["attachments"] = AttachmentSerializer(
+                            attachments, many=True
+                        ).data
+                    case "subtasks":
+                        subtasks = task.subtasks.all()
+                        response_data["subtasks"] = TaskSerializer(
+                            subtasks, many=True
+                        ).data
+                    case "comments":
+                        comments = TaskComment.objects.filter(
+                            task=task, comment_type="update"
+                        ).order_by("-created_at")
+                        response_data["comments"] = CommentSerializer(
+                            comments, many=True
+                        ).data
+
+        return Response(response_data, status=status.HTTP_200_OK)
 
     def list(self, request, *args, **kwargs):
         parent_id = request.query_params.get("parent_id", None)
