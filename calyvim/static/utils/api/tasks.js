@@ -59,3 +59,6 @@ export const taskBulkStateUpdateAPI = (boardId, stateId, taskIds) =>
 
 export const taskUpdateSequenceAPI = (boardId, taskId, data) =>
   client.patch(`/boards/${boardId}/tasks/${taskId}/update-sequence`, data)
+
+export const taskShareLinkAPI = (boardId, taskId) =>
+  client.get(`/boards/${boardId}/tasks/${taskId}/share-link`)

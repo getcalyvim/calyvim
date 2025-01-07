@@ -1,5 +1,6 @@
 from django.db import transaction
 from django.db.models import Q
+from django.conf import settings
 from rest_framework import status
 from rest_framework.viewsets import ViewSet
 from rest_framework.permissions import IsAuthenticated
@@ -103,6 +104,18 @@ class TasksViewSet(BoardMixin, ViewSet):
                             BoardPermissionRole.ADMIN,
                             BoardPermissionRole.MAINTAINER,
                             BoardPermissionRole.COLLABORATOR,
+                        ]
+                    ),
+                ]
+            case "share_link":
+                return [
+                    IsAuthenticated(),
+                    BoardGenericPermission(
+                        allowed_roles=[
+                            BoardPermissionRole.ADMIN,
+                            BoardPermissionRole.MAINTAINER,
+                            BoardPermissionRole.COLLABORATOR,
+                            BoardPermissionRole.GUEST
                         ]
                     ),
                 ]
@@ -647,5 +660,20 @@ class TasksViewSet(BoardMixin, ViewSet):
                 "detail": f"Tasks ({task_names}) state changed to {state.name}",
                 "tasks": serializer.data,
             },
+            status=status.HTTP_200_OK,
+        )
+
+    @action(methods=["GET"], detail=True, url_path="share-link")
+    def share_link(self, request, *args, **kwargs):
+        task = get_object_or_raise_api_404(
+            Task, board=request.board, id=kwargs.get("pk")
+        )
+        shareable_link = f"{settings.BASE_URL}/app/b/{task.board.id}/tasks/{task.name}"
+        response_data = {
+            "detail": f"Shareable link for {task.name} generated successfully.",
+            "share_link": shareable_link,
+        }
+        return Response(
+            data=response_data,
             status=status.HTTP_200_OK,
         )

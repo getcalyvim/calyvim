@@ -9,6 +9,8 @@ import {
   InboxOutlined,
   SyncOutlined,
 } from '@ant-design/icons-vue'
+import { CalendarClock } from 'lucide-vue-next'
+
 import { h } from 'vue'
 
 const props = defineProps({
@@ -98,20 +100,28 @@ const emit = defineEmits(['update'])
     @change="(taskType) => emit('update', { taskType })"
   >
     <SelectOption value="issue">
-      <TaskTypeIcon taskType="issue" />
-      <span class="ml-1">Issue</span>
+      <div class="flex items-center">
+        <TaskTypeIcon taskType="issue" />
+        <div class="ml-1">Issue</div>
+      </div>
     </SelectOption>
     <SelectOption value="bug">
-      <TaskTypeIcon taskType="bug" />
-      <span class="ml-1">Bug</span>
+      <div class="flex items-center">
+        <TaskTypeIcon taskType="bug" />
+        <div class="ml-1">Bug</div>
+      </div>
     </SelectOption>
     <SelectOption value="story">
-      <TaskTypeIcon taskType="story" />
-      <span class="ml-1">Story</span>
+      <div class="flex items-center">
+        <TaskTypeIcon taskType="story" />
+        <div class="ml-1">Story</div>
+      </div>
     </SelectOption>
     <SelectOption value="feature">
-      <TaskTypeIcon taskType="feature" />
-      <span class="ml-1">Feature</span>
+      <div class="flex items-center">
+        <TaskTypeIcon taskType="feature" />
+        <div class="ml-1">Feature</div>
+      </div>
     </SelectOption>
   </Select>
 
@@ -165,14 +175,16 @@ const emit = defineEmits(['update'])
       @change="(sprintId) => emit('update', { sprintId })"
       class="w-full"
     >
-      <SelectOption :value="null">-</SelectOption>
+      <SelectOption :value="null">None</SelectOption>
       <SelectOption
         :value="sprint.id"
         v-for="sprint in props.sprints"
         :key="sprint.id"
       >
-        <SyncOutlined />
-        <span class="ml-1">{{ sprint.name }}</span>
+        <div class="flex items-center">
+          <CalendarClock class="h-3 w-3 text-primary" />
+          <div class="ml-1">{{ sprint.name }}</div>
+        </div>
       </SelectOption>
     </Select>
   </template>

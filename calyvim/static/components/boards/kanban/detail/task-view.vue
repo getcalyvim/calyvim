@@ -57,6 +57,7 @@ import {
   taskAttachmentsListAPI,
   taskListAPI,
   taskArchiveApi,
+  taskShareLinkAPI
 } from '@/utils/api'
 import TaskTypeIcon from '../../../icons/task-type-icon.vue'
 
@@ -274,6 +275,16 @@ const openTask = async (taskId) => {
   currentTaskId.value = taskId
   await loadTaskDetails(taskId)
 }
+
+const shareCopyToClipboard = async () => {
+  try {
+    const { data } = await taskShareLinkAPI(props.board.id, currentTaskId.value)
+    await navigator.clipboard.writeText(data.shareLink)
+    message.success('Link copied to clipboard')
+  } catch (error) {
+    handleResponseError(error)
+  }
+}
 </script>
 
 <template>
@@ -310,7 +321,7 @@ const openTask = async (taskId) => {
             <SyncOutlined />
             <span class="ml-2">Saving</span>
           </div>
-          <Button :icon="h(ShareAltOutlined)" type="text">Share</Button>
+          <Button :icon="h(ShareAltOutlined)" type="text" @click="shareCopyToClipboard">Share</Button>
           <Button :icon="h(EllipsisOutlined)" type="text"></Button>
         </div>
       </div>
