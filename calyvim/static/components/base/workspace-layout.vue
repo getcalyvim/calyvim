@@ -61,19 +61,19 @@ const baseMenuItems = ref([
     key: 'dashboard',
     label: 'Dashboard',
     icon: LayoutDashboard,
-    redirectPath: `/app/${props.workspace.slug}/`,
+    redirectPath: `/${props.workspace.slug}/`,
   },
   {
     key: 'boards',
     label: 'Boards',
     icon: Grid,
-    redirectPath: `/app/${props.workspace.slug}/boards`,
+    redirectPath: `/${props.workspace.slug}/boards`,
     submenu: [
       {
         key: 'view-all-boards',
         label: 'View all boards',
         icon: List,
-        redirectPath: `/app/${props.workspace.slug}/boards`,
+        redirectPath: `/${props.workspace.slug}/boards`,
       },
     ],
   },
@@ -81,13 +81,13 @@ const baseMenuItems = ref([
     key: 'documents',
     label: 'Documents',
     icon: FileCheck2,
-    redirectPath: `/app/${props.workspace.slug}/documents`,
+    redirectPath: `/${props.workspace.slug}/documents`,
     submenu: [
       {
         key: 'view-all-documents',
         label: 'View all docs',
         icon: FileStack,
-        redirectPath: `/app/${props.workspace.slug}/documents`,
+        redirectPath: `/${props.workspace.slug}/documents`,
       },
     ],
   },
@@ -95,13 +95,13 @@ const baseMenuItems = ref([
     key: 'newslines',
     label: 'Newslines',
     icon: Newspaper,
-    redirectPath: `/app/${props.workspace.slug}/newslines`,
+    redirectPath: `/${props.workspace.slug}/newslines`,
   },
   {
     key: 'todos',
     label: 'To-dos',
     icon: ListTodo,
-    redirectPath: `/app/${props.workspace.slug}/todos`,
+    redirectPath: `/${props.workspace.slug}/todos`,
   },
   {
     key: 'meetings',
@@ -113,7 +113,7 @@ const baseMenuItems = ref([
         key: 'view-all-meetings',
         label: 'View all meetings',
         icon: Calendar,
-        redirectPath: `/app/${props.workspace.slug}/meetings`,
+        redirectPath: `/${props.workspace.slug}/meetings`,
       },
     ],
   },
@@ -121,13 +121,13 @@ const baseMenuItems = ref([
     key: 'templates',
     label: 'Templates',
     icon: Files,
-    redirectPath: `/app/${props.workspace.slug}/templates`,
+    redirectPath: `/${props.workspace.slug}/templates`,
   },
   {
     key: 'integrations',
     label: 'Integrations',
     icon: Puzzle,
-    redirectPath: `/app/${props.workspace.slug}/integrations`,
+    redirectPath: `/${props.workspace.slug}/integrations`,
   },
   {
     key: 'notifications',
@@ -171,19 +171,19 @@ const baseMenuItems = ref([
         key: 'general',
         label: 'General',
         icon: Settings,
-        redirectPath: `/app/${props.workspace.slug}/settings`,
+        redirectPath: `/${props.workspace.slug}/settings`,
       },
       {
         key: 'members',
         label: 'Members',
         icon: Users,
-        redirectPath: `/app/${props.workspace.slug}/settings/members`,
+        redirectPath: `/${props.workspace.slug}/settings/members`,
       },
       {
         key: 'teams',
         label: 'Teams',
         icon: Building2,
-        redirectPath: `/app/${props.workspace.slug}/settings/teams`,
+        redirectPath: `/${props.workspace.slug}/settings/teams`,
       },
       // {
       //   key: 'other',
@@ -199,7 +199,7 @@ onMounted(() => {
   // Get current user from localStorage
   const currentUserString = localStorage.getItem('currentUser')
   if (!currentUserString) {
-    window.location.href = '/app/accounts/login'
+    window.location.href = '/accounts/login'
     return
   }
   currentUser.value = JSON.parse(currentUserString)
@@ -232,12 +232,12 @@ const handleNavigation = (path) => {
 }
 
 const redirectToProfilePage = () => {
-  window.location.href = '/app/accounts/profile'
+  window.location.href = '/accounts/profile'
 }
 
 const logoutUser = () => {
   localStorage.removeItem('currentUser')
-  window.location.href = '/app/accounts/logout'
+  window.location.href = '/accounts/logout'
 }
 
 const openWorkspaceMenu = ref(false)

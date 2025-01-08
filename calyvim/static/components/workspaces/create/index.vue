@@ -17,7 +17,7 @@ const props = defineProps(['baseUrl'])
 const onFinish = async (values) => {
     try {
         const { data } = await workspaceCreareAPI(values)
-        window.location.href = `/app/${data.slug}/boards`
+        window.location.href = `/${data.slug}/boards`
     } catch (error) {
         handleResponseError(error)
     }
@@ -32,12 +32,12 @@ watch(() => createForm.value.name, (newValue) => {
 })
 
 const redirectToHome = () => {
-    window.location.href = '/app'
+    window.location.href = ''
 }
 
 const logoutUser = () => {
     localStorage.removeItem("currentUser")
-    window.location.href = '/app/accounts/logout'
+    window.location.href = '/accounts/logout'
 }
 </script>
 

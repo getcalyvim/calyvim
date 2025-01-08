@@ -10,7 +10,7 @@ const disabled = computed(() => {
 })
 
 const deleteBoard = () => {
-  window.location.href = `/app/b/${props.board.id}/delete/`
+  window.location.href = `/boards/${props.board.id}/delete/`
 }
 </script>
 

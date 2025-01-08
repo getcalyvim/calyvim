@@ -43,7 +43,7 @@ const onFinish = async (values) => {
     isSubmitting.value = true
     const { data } = await accountsLoginAPI(values)
     localStorage.setItem('currentUser', JSON.stringify(data.user))
-    window.location.href = `/app/`
+    window.location.href = `/`
   } catch (error) {
     handleResponseError(error)
   } finally {
@@ -55,7 +55,7 @@ const authenticate = async (session) => {
   try {
     const { data } = await accountsAuthenticateAPI(session)
     localStorage.setItem('currentUser', JSON.stringify(data.user))
-    window.location.href = `/app/`
+    window.location.href = `/`
   } catch (error) {
     handleResponseError(error)
   } finally {
@@ -133,7 +133,7 @@ onMounted(async () => {
 
       <p class="mt-4 text-center text-sm text-gray-600">
         Don't have an account?
-        <a href="/app/accounts/register/" class="font-medium text-primary"
+        <a href="/accounts/register/" class="font-medium text-primary"
           >Create an account</a
         >
       </p>

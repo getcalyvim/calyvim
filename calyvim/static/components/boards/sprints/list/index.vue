@@ -57,7 +57,7 @@ const addSprint = (sprint) => {
 }
 
 const openSprintTasks = (sprintId) => {
-  window.location.href = `/app/b/${props.board.id}/sprints/${sprintId}/`
+  window.location.href = `/boards/${props.board.id}/sprints/${sprintId}/`
 }
 
 const openSprintAddDropdown = ref(false)

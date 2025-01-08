@@ -38,7 +38,7 @@ const handleResend = async () => {
             <div class="mt-1">
               <a
                 class="text-xs cursor-pointer underline underline-offset-2"
-                href="/app/accounts/logout/"
+                href="/accounts/logout/"
                 >Logout</a
               >
             </div>

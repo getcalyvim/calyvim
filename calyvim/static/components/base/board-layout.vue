@@ -18,20 +18,20 @@ const subMenuItems = [
     label: 'Kanban',
     icon: Kanban,
     key: 'kanban',
-    redirectPath: `/app/b/${props.board.id}`
+    redirectPath: `/boards/${props.board.id}`
   },
   {
     label: 'Sprint',
     icon: CalendarClock,
     key: 'sprints',
-    redirectPath: `/app/b/${props.board.id}/sprints`
+    redirectPath: `/boards/${props.board.id}/sprints`
   },
    
   {
     label: 'Settings',
     icon: Settings2,
     key: 'settings',
-    redirectPath: `/app/b/${props.board.id}/settings`
+    redirectPath: `/boards/${props.board.id}/settings`
   }
 ]
 </script>
