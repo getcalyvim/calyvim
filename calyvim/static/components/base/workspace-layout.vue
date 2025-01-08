@@ -1,11 +1,6 @@
 # WorkspaceLayout.vue
 <script setup>
-import {
-  Layout,
-  Avatar,
-  Dropdown,
-  Card,
-} from 'ant-design-vue'
+import { Layout, Avatar, Dropdown, Card } from 'ant-design-vue'
 import { ref, onMounted } from 'vue'
 import {
   LayoutDashboard,
@@ -26,7 +21,9 @@ import {
   Calendar,
   List,
   SlidersVertical,
-  Grid
+  Grid,
+  FileCheck2,
+  FileStack,
 } from 'lucide-vue-next'
 
 import BaseLayout from '@/components/base/base-layout.vue'
@@ -77,6 +74,20 @@ const baseMenuItems = ref([
         label: 'View all boards',
         icon: List,
         redirectPath: `/app/${props.workspace.slug}/boards`,
+      },
+    ],
+  },
+  {
+    key: 'documents',
+    label: 'Documents',
+    icon: FileCheck2,
+    redirectPath: `/app/${props.workspace.slug}/documents`,
+    submenu: [
+      {
+        key: 'view-all-documents',
+        label: 'View all docs',
+        icon: FileStack,
+        redirectPath: `/app/${props.workspace.slug}/documents`,
       },
     ],
   },
@@ -299,14 +310,22 @@ const showProfileMenu = () => {
                   <Card class="w-72" size="small">
                     <div class="flex flex-col gap-2">
                       <div class="flex flex-col gap-0 mb-2">
-                        <div class="font-semibold">{{ currentUser.displayName }}</div>
+                        <div class="font-semibold">
+                          {{ currentUser.displayName }}
+                        </div>
                         <div class="text-xs">{{ currentUser.email }}</div>
                       </div>
-                      <div class="flex items-center gap-1 cursor-pointer" @click="redirectToProfilePage">
+                      <div
+                        class="flex items-center gap-1 cursor-pointer"
+                        @click="redirectToProfilePage"
+                      >
                         <User class="w-4 h-4 text-gray-500" />
                         <div>Accounts</div>
                       </div>
-                      <div class="flex items-center gap-1 cursor-pointer" @click="logoutUser">
+                      <div
+                        class="flex items-center gap-1 cursor-pointer"
+                        @click="logoutUser"
+                      >
                         <LogOut class="w-4 h-4 text-gray-500" />
                         <div>Logout</div>
                       </div>
@@ -361,19 +380,35 @@ const showProfileMenu = () => {
                   v-for="subItem in item.submenu"
                   :key="subItem.key"
                   @click="handleNavigation(subItem.redirectPath)"
-                  class="pl-9 pr-3 py-2 text-sm text-gray-500 hover:text-primary cursor-pointer flex items-center gap-2"
+                  class="pl-9 pr-3 py-2 text-sm flex flex-col gap-2"
                   :class="{
                     'text-primary bg-gray-50': props.subPage === subItem.key,
                   }"
                 >
-                  <component
-                    :is="subItem.icon"
-                    class="w-3.5 h-3.5 text-gray-400"
-                    :class="{
-                      'text-primary': props.subPage === subItem.key,
-                    }"
-                  />
-                  {{ subItem.label }}
+                  <div
+                    v-if="!!subItem?.heading"
+                    class="text-xs text-gray-500 font-bold"
+                  >
+                    {{ subItem.heading }}
+                  </div>
+                  <div
+                    class="flex items-center gap-2 cursor-pointer text-gray-500 hover:text-primary"
+                  >
+                    <component
+                      :is="subItem.icon"
+                      class="w-3.5 h-3.5 text-gray-400"
+                      :class="{
+                        'text-primary': props.subPage === subItem.key,
+                      }"
+                    />
+                    <div
+                      :class="{
+                        'text-primary': props.subPage === subItem.key,
+                      }"
+                    >
+                      {{ subItem.label }}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

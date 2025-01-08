@@ -14,6 +14,7 @@ const activeKey = ref(props.page)
 
 const subMenuItems = [
   {
+    heading: `${props.board.name}`,
     label: 'Kanban',
     icon: Kanban,
     key: 'kanban',

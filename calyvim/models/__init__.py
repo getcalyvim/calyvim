@@ -16,3 +16,5 @@ from .newsline import (
     NewslineComment,
     NewslineRead
 )
+from .document import Document
+from .block import Block
