@@ -41,11 +41,11 @@ import debounce from 'lodash/debounce'
 // Component imports
 import TaskCommentList from './task-comment-list.vue'
 import SubTaskAddForm from './sub-task-add-form.vue'
-import TextEditor from '@/components/base/text-editor.vue'
 import TaskActionBar from './task-action-bar.vue'
 import TaskCommentAddForm from './task-comment-add-form.vue'
 import TaskAttachmentList from './task-attachment-list.vue'
 import SubTaskList from './sub-task-list.vue'
+import TipTapEditor from '@/components/base/tip-tap-editor.vue'
 
 // API imports
 import {
@@ -91,6 +91,8 @@ const props = defineProps({
     default: () => [],
   },
 })
+
+const content = ref('Hello')
 
 const currentTaskId = ref(props.taskId)
 const emit = defineEmits(['update', 'selected'])
@@ -397,7 +399,7 @@ const shareCopyToClipboard = async () => {
 
           <div class="text-lg font-semibold">Description</div>
           <div>
-            <TextEditor v-model="task.description" @saved="updateDescription" />
+            <TipTapEditor v-model="task.description" @saved="updateDescription" />
           </div>
 
           <div class="mb-4">
