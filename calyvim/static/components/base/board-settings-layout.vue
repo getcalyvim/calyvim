@@ -23,9 +23,9 @@ const selectedKeys = ref([props.page])
 
 const changePage = (event) => {
   if (event.key === 'general') {
-    window.location.href = `/app/b/${props.board.id}/settings`
+    window.location.href = `/boards/${props.board.id}/settings`
   } else {
-    window.location.href = `/app/b/${props.board.id}/settings/${event.key}/`
+    window.location.href = `/boards/${props.board.id}/settings/${event.key}/`
   }
 }
 </script>
@@ -43,7 +43,7 @@ const changePage = (event) => {
           <Menu v-model:selectedKeys="selectedKeys" mode="inline">
             <MenuItem key="general">
               <a
-                :href="`/app/b/${props.board.id}/settings`"
+                :href="`/boards/${props.board.id}/settings`"
                 class="no-underline text-inherit hover:no-underline hover:text-inherit"
                 :class="{
                   'text-primary hover:text-primary':
@@ -57,7 +57,7 @@ const changePage = (event) => {
 
             <MenuItem key="collaborators">
               <a
-                :href="`/app/b/${props.board.id}/settings/collaborators`"
+                :href="`/boards/${props.board.id}/settings/collaborators`"
                 class="no-underline text-inherit hover:no-underline hover:text-inherit"
                 :class="{
                   'text-primary hover:text-primary':
@@ -71,7 +71,7 @@ const changePage = (event) => {
 
             <MenuItem key="states">
               <a
-                :href="`/app/b/${props.board.id}/settings/states`"
+                :href="`/boards/${props.board.id}/settings/states`"
                 class="no-underline text-inherit hover:no-underline hover:text-inherit"
                 :class="{
                   'text-primary hover:text-primary':
@@ -85,7 +85,7 @@ const changePage = (event) => {
 
             <MenuItem key="priorities">
               <a
-                :href="`/app/b/${props.board.id}/settings/priorities`"
+                :href="`/boards/${props.board.id}/settings/priorities`"
                 class="no-underline text-inherit hover:no-underline hover:text-inherit"
                 :class="{
                   'text-primary hover:text-primary':
@@ -99,7 +99,7 @@ const changePage = (event) => {
 
             <MenuItem key="labels">
               <a
-                :href="`/app/b/${props.board.id}/settings/labels`"
+                :href="`/boards/${props.board.id}/settings/labels`"
                 class="no-underline text-inherit hover:no-underline hover:text-inherit"
                 :class="{
                   'text-primary hover:text-primary':

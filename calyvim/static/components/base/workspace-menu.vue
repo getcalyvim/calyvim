@@ -28,11 +28,11 @@ onMounted(() => {
 })
 
 const redirectToWorkspace = (workspaceSlug) => {
-    window.location.href = `/app/${workspaceSlug}`
+    window.location.href = `/${workspaceSlug}`
 }
 
 const redirectToCreatePage = () => {
-    window.location.href = `/app/create`
+    window.location.href = `/create`
 }
 </script>
 

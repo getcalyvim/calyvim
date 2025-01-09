@@ -1,6 +1,6 @@
 <script setup>
 const googleOauth = () => {
-  window.location.href = '/app/accounts/oauth/google/'
+  window.location.href = '/accounts/oauth/google/'
 }
 </script>
 

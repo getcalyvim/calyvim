@@ -1,11 +1,6 @@
 # WorkspaceLayout.vue
 <script setup>
-import {
-  Layout,
-  Avatar,
-  Dropdown,
-  Card,
-} from 'ant-design-vue'
+import { Layout, Avatar, Dropdown, Card } from 'ant-design-vue'
 import { ref, onMounted } from 'vue'
 import {
   LayoutDashboard,
@@ -26,7 +21,9 @@ import {
   Calendar,
   List,
   SlidersVertical,
-  Grid
+  Grid,
+  FileCheck2,
+  FileStack,
 } from 'lucide-vue-next'
 
 import BaseLayout from '@/components/base/base-layout.vue'
@@ -64,19 +61,33 @@ const baseMenuItems = ref([
     key: 'dashboard',
     label: 'Dashboard',
     icon: LayoutDashboard,
-    redirectPath: `/app/${props.workspace.slug}/`,
+    redirectPath: `/${props.workspace.slug}/`,
   },
   {
     key: 'boards',
     label: 'Boards',
     icon: Grid,
-    redirectPath: `/app/${props.workspace.slug}/boards`,
+    redirectPath: `/${props.workspace.slug}/boards`,
     submenu: [
       {
         key: 'view-all-boards',
         label: 'View all boards',
         icon: List,
-        redirectPath: `/app/${props.workspace.slug}/boards`,
+        redirectPath: `/${props.workspace.slug}/boards`,
+      },
+    ],
+  },
+  {
+    key: 'documents',
+    label: 'Documents',
+    icon: FileCheck2,
+    redirectPath: `/${props.workspace.slug}/documents`,
+    submenu: [
+      {
+        key: 'view-all-documents',
+        label: 'View all docs',
+        icon: FileStack,
+        redirectPath: `/${props.workspace.slug}/documents`,
       },
     ],
   },
@@ -84,13 +95,13 @@ const baseMenuItems = ref([
     key: 'newslines',
     label: 'Newslines',
     icon: Newspaper,
-    redirectPath: `/app/${props.workspace.slug}/newslines`,
+    redirectPath: `/${props.workspace.slug}/newslines`,
   },
   {
     key: 'todos',
     label: 'To-dos',
     icon: ListTodo,
-    redirectPath: `/app/${props.workspace.slug}/todos`,
+    redirectPath: `/${props.workspace.slug}/todos`,
   },
   {
     key: 'meetings',
@@ -102,7 +113,7 @@ const baseMenuItems = ref([
         key: 'view-all-meetings',
         label: 'View all meetings',
         icon: Calendar,
-        redirectPath: `/app/${props.workspace.slug}/meetings`,
+        redirectPath: `/${props.workspace.slug}/meetings`,
       },
     ],
   },
@@ -110,13 +121,13 @@ const baseMenuItems = ref([
     key: 'templates',
     label: 'Templates',
     icon: Files,
-    redirectPath: `/app/${props.workspace.slug}/templates`,
+    redirectPath: `/${props.workspace.slug}/templates`,
   },
   {
     key: 'integrations',
     label: 'Integrations',
     icon: Puzzle,
-    redirectPath: `/app/${props.workspace.slug}/integrations`,
+    redirectPath: `/${props.workspace.slug}/integrations`,
   },
   {
     key: 'notifications',
@@ -160,19 +171,19 @@ const baseMenuItems = ref([
         key: 'general',
         label: 'General',
         icon: Settings,
-        redirectPath: `/app/${props.workspace.slug}/settings`,
+        redirectPath: `/${props.workspace.slug}/settings`,
       },
       {
         key: 'members',
         label: 'Members',
         icon: Users,
-        redirectPath: `/app/${props.workspace.slug}/settings/members`,
+        redirectPath: `/${props.workspace.slug}/settings/members`,
       },
       {
         key: 'teams',
         label: 'Teams',
         icon: Building2,
-        redirectPath: `/app/${props.workspace.slug}/settings/teams`,
+        redirectPath: `/${props.workspace.slug}/settings/teams`,
       },
       // {
       //   key: 'other',
@@ -188,7 +199,7 @@ onMounted(() => {
   // Get current user from localStorage
   const currentUserString = localStorage.getItem('currentUser')
   if (!currentUserString) {
-    window.location.href = '/app/accounts/login'
+    window.location.href = '/accounts/login'
     return
   }
   currentUser.value = JSON.parse(currentUserString)
@@ -221,12 +232,12 @@ const handleNavigation = (path) => {
 }
 
 const redirectToProfilePage = () => {
-  window.location.href = '/app/accounts/profile'
+  window.location.href = '/accounts/profile'
 }
 
 const logoutUser = () => {
   localStorage.removeItem('currentUser')
-  window.location.href = '/app/accounts/logout'
+  window.location.href = '/accounts/logout'
 }
 
 const openWorkspaceMenu = ref(false)
@@ -299,14 +310,22 @@ const showProfileMenu = () => {
                   <Card class="w-72" size="small">
                     <div class="flex flex-col gap-2">
                       <div class="flex flex-col gap-0 mb-2">
-                        <div class="font-semibold">{{ currentUser.displayName }}</div>
+                        <div class="font-semibold">
+                          {{ currentUser.displayName }}
+                        </div>
                         <div class="text-xs">{{ currentUser.email }}</div>
                       </div>
-                      <div class="flex items-center gap-1 cursor-pointer" @click="redirectToProfilePage">
+                      <div
+                        class="flex items-center gap-1 cursor-pointer"
+                        @click="redirectToProfilePage"
+                      >
                         <User class="w-4 h-4 text-gray-500" />
                         <div>Accounts</div>
                       </div>
-                      <div class="flex items-center gap-1 cursor-pointer" @click="logoutUser">
+                      <div
+                        class="flex items-center gap-1 cursor-pointer"
+                        @click="logoutUser"
+                      >
                         <LogOut class="w-4 h-4 text-gray-500" />
                         <div>Logout</div>
                       </div>
@@ -361,19 +380,35 @@ const showProfileMenu = () => {
                   v-for="subItem in item.submenu"
                   :key="subItem.key"
                   @click="handleNavigation(subItem.redirectPath)"
-                  class="pl-9 pr-3 py-2 text-sm text-gray-500 hover:text-primary cursor-pointer flex items-center gap-2"
+                  class="pl-9 pr-3 py-2 text-sm flex flex-col gap-2"
                   :class="{
                     'text-primary bg-gray-50': props.subPage === subItem.key,
                   }"
                 >
-                  <component
-                    :is="subItem.icon"
-                    class="w-3.5 h-3.5 text-gray-400"
-                    :class="{
-                      'text-primary': props.subPage === subItem.key,
-                    }"
-                  />
-                  {{ subItem.label }}
+                  <div
+                    v-if="!!subItem?.heading"
+                    class="text-xs text-gray-500 font-bold"
+                  >
+                    {{ subItem.heading }}
+                  </div>
+                  <div
+                    class="flex items-center gap-2 cursor-pointer text-gray-500 hover:text-primary"
+                  >
+                    <component
+                      :is="subItem.icon"
+                      class="w-3.5 h-3.5 text-gray-400"
+                      :class="{
+                        'text-primary': props.subPage === subItem.key,
+                      }"
+                    />
+                    <div
+                      :class="{
+                        'text-primary': props.subPage === subItem.key,
+                      }"
+                    >
+                      {{ subItem.label }}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

@@ -13,14 +13,11 @@ import {
   Upload,
   message,
   Modal,
-  Alert,
 } from 'ant-design-vue'
 import {
   EllipsisOutlined,
-  SaveOutlined,
   ShareAltOutlined,
   SyncOutlined,
-  LeftSquareOutlined,
   PlusOutlined,
   SwitcherOutlined,
   LinkOutlined,
@@ -41,11 +38,11 @@ import debounce from 'lodash/debounce'
 // Component imports
 import TaskCommentList from './task-comment-list.vue'
 import SubTaskAddForm from './sub-task-add-form.vue'
-import TextEditor from '@/components/base/text-editor.vue'
 import TaskActionBar from './task-action-bar.vue'
 import TaskCommentAddForm from './task-comment-add-form.vue'
 import TaskAttachmentList from './task-attachment-list.vue'
 import SubTaskList from './sub-task-list.vue'
+import TipTapEditor from '@/components/base/tip-tap-editor.vue'
 
 // API imports
 import {
@@ -57,7 +54,7 @@ import {
   taskAttachmentsListAPI,
   taskListAPI,
   taskArchiveApi,
-  taskShareLinkAPI
+  taskShareLinkAPI,
 } from '@/utils/api'
 import TaskTypeIcon from '../../../icons/task-type-icon.vue'
 
@@ -193,18 +190,8 @@ const deleteAttachment = async (attachmentId) => {
   }
 }
 
-// Description Management
-const showDescriptionActionButton = () => {
-  openDescriptionActionButton.value = true
-}
-
-const closeDescriptionActionButton = () => {
-  openDescriptionActionButton.value = false
-}
-
 const updateDescription = () => {
   updateTaskItem({ description: task.value.description })
-  closeDescriptionActionButton()
 }
 
 // Summary Management
@@ -232,7 +219,9 @@ const addTaskToSubtask = (data) => {
 const loadTaskDetails = async (taskId) => {
   try {
     loading.value = true
-    const { data } = await taskDetailAPI(props.board.id, taskId, { include: ['attachments', 'subtasks', 'comments'] })
+    const { data } = await taskDetailAPI(props.board.id, taskId, {
+      include: ['attachments', 'subtasks', 'comments'],
+    })
     task.value = {
       ...data.task,
     }
@@ -290,18 +279,7 @@ const shareCopyToClipboard = async () => {
 <template>
   <div v-if="!!task && !loading" class="flex flex-col h-full">
     <!-- Fixed Header Section -->
-    <div class="flex-none">
-      <!-- Archive Banner -->
-      <div
-        v-if="isArchived"
-        class="bg-gray-300 border-l-4 border-gray-500 text-gray-700 px-2 py-3 flex items-center rounded"
-        role="alert"
-      >
-        <div class="font-semibold">
-          <span class="font-bold">Warning: </span> This task has been archived.
-        </div>
-      </div>
-
+    <div class="flex-none px-1 pt-4">
       <div
         v-if="!!task.parentId"
         class="cursor-pointer mb-2"
@@ -321,7 +299,12 @@ const shareCopyToClipboard = async () => {
             <SyncOutlined />
             <span class="ml-2">Saving</span>
           </div>
-          <Button :icon="h(ShareAltOutlined)" type="text" @click="shareCopyToClipboard">Share</Button>
+          <Button
+            :icon="h(ShareAltOutlined)"
+            type="text"
+            @click="shareCopyToClipboard"
+            >Share</Button
+          >
           <Button :icon="h(EllipsisOutlined)" type="text"></Button>
         </div>
       </div>
@@ -352,7 +335,7 @@ const shareCopyToClipboard = async () => {
     </div>
 
     <!-- Scrollable Content Section -->
-    <div class="flex-1 overflow-y-auto mt-4 px-1">
+    <div class="flex-1 overflow-y-auto px-1">
       <div class="grid grid-cols-12 gap-4">
         <div class="col-span-9">
           <div class="mb-5">
@@ -397,7 +380,10 @@ const shareCopyToClipboard = async () => {
 
           <div class="text-lg font-semibold">Description</div>
           <div>
-            <TextEditor v-model="task.description" @saved="updateDescription" />
+            <TipTapEditor
+              v-model="task.description"
+              @saved="updateDescription"
+            />
           </div>
 
           <div class="mb-4">
@@ -421,9 +407,9 @@ const shareCopyToClipboard = async () => {
 
           <Divider />
 
-          <div class="mb-6">
+          <div class="mb-4">
             <div class="flex gap-2 items-center justify-between mb-2">
-              <div class="text-lg font-semibold mb-2">Activity</div>
+              <div class="text-lg font-semibold">Activity</div>
               <div>
                 <RadioGroup
                   v-model:value="selectedCommentType"
@@ -436,17 +422,15 @@ const shareCopyToClipboard = async () => {
               </div>
             </div>
 
-            <TaskCommentAddForm
-              :boardId="props.board.id"
-              :taskId="currentTaskId"
-              @added="addNewComment"
-            />
-
             <TaskCommentList
               :boardId="props.board.id"
               :taskId="currentTaskId"
               :comments="comments"
             />
+          </div>
+
+          <div class="mb-24">
+            <!-- Added padding bottom for comment form -->
           </div>
         </div>
 
@@ -463,6 +447,15 @@ const shareCopyToClipboard = async () => {
           />
         </div>
       </div>
+    </div>
+
+    <!-- Fixed Comment Form at Bottom -->
+    <div class="flex-none bg-white border-t px-1">
+      <TaskCommentAddForm
+        :boardId="props.board.id"
+        :taskId="currentTaskId"
+        @added="addNewComment"
+      />
     </div>
 
     <!-- Modal remains outside scrollable area -->
@@ -491,11 +484,11 @@ const shareCopyToClipboard = async () => {
 
 <style scoped>
 .h-full {
-  height: 100vh;
+  height: 100%;
+  max-height: 100vh;
 }
 
 .overflow-y-auto {
-  max-height: calc(100vh - 200px);
   scrollbar-width: thin;
   scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
 }

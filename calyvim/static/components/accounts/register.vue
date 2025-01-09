@@ -27,7 +27,7 @@ const onFinish = async (values) => {
 
         const { data } = await accountsRegisterAPI(values)
         localStorage.setItem('currentUser', JSON.stringify(data.user))
-        window.location.href = `/app/`
+        window.location.href = `/`
     } catch (error) {
         message.info(error?.response.data?.detail)
     } finally {
@@ -72,7 +72,7 @@ const onFinish = async (values) => {
 
         <p class="mt-4 text-center text-sm text-gray-600">
             Already have an account account?
-            <a href="/app/accounts/login" class="font-medium text-primary">Log in</a>
+            <a href="/accounts/login" class="font-medium text-primary">Log in</a>
         </p>
 
         <div class="mt-2" v-if="!!!props.invitationId">

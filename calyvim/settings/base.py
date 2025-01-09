@@ -145,4 +145,4 @@ DEFAULT_NOTIFICATION_EMAIL = os.environ.get("DEFAULT_NOTIFICATION_EMAIL")
 # Google Analytics
 GA_ID = os.environ.get("GA_ID", None)
 
-LOGIN_URL = "/app/accounts/login"
+LOGIN_URL = "/accounts/login"

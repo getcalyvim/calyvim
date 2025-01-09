@@ -34,7 +34,7 @@ const columns = [
           </div>
           <div class="whitespace-nowrap overflow-hidden text-ellipsis">
             <a
-              :href="`/app/b/${record.board.id}/tasks/${record.name}`"
+              :href="`/boards/${record.board.id}/tasks/${record.name}`"
               target="_blank"
               class="hover:underline hover:underline-offset-1 text-primary cursor-pointer hover:text-primary"
             >

@@ -312,3 +312,23 @@ class WorkspaceTodosView(LoginRequiredMixin, PermissionCheckMixin, View):
             }
         }
         return render(request, "workspaces/todos.html", context)
+    
+
+class WorkspaceDocumentsView(LoginRequiredMixin, PermissionCheckMixin, View):
+    def get(self, request, workspace_slug):
+        workspace = Workspace.objects.filter(slug=workspace_slug).first()
+        if not workspace:
+            raise Http404
+
+        workspace_membership = self.check_and_get_workpace_permssion(
+            workspace, request.user
+        )
+
+        context = {
+            "props": {
+                "workspace": WorkspaceSerializer(workspace).data,
+                "current_user": ProfileSerializer(request.user).data,
+                "membership_role": workspace_membership.role,
+            }
+        }
+        return render(request, "workspaces/documents.html", context)

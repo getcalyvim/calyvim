@@ -668,7 +668,7 @@ class TasksViewSet(BoardMixin, ViewSet):
         task = get_object_or_raise_api_404(
             Task, board=request.board, id=kwargs.get("pk")
         )
-        shareable_link = f"{settings.BASE_URL}/app/b/{task.board.id}/tasks/{task.name}"
+        shareable_link = f"{settings.BASE_URL}/boards/{task.board.id}/tasks/{task.name}"
         response_data = {
             "detail": f"Shareable link for {task.name} generated successfully.",
             "share_link": shareable_link,

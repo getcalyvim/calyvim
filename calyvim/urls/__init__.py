@@ -10,9 +10,9 @@ urlpatterns = [
     path("up/", UpView.as_view(), name="up"),
     path("api/", include("calyvim.api")),
     path("admin/", admin.site.urls),
-    path("app/accounts/", include("calyvim.urls.accounts")),
-    path("app/b/<uuid:board_id>/", include("calyvim.urls.boards")),
-    path("app/", include("calyvim.urls.workspaces")),
+    path("accounts/", include("calyvim.urls.accounts")),
+    path("boards/<uuid:board_id>/", include("calyvim.urls.boards")),
+    path("", include("calyvim.urls.workspaces")),
 ]
 
 if settings.DEBUG:
