@@ -13,14 +13,11 @@ import {
   Upload,
   message,
   Modal,
-  Alert,
 } from 'ant-design-vue'
 import {
   EllipsisOutlined,
-  SaveOutlined,
   ShareAltOutlined,
   SyncOutlined,
-  LeftSquareOutlined,
   PlusOutlined,
   SwitcherOutlined,
   LinkOutlined,
@@ -91,8 +88,6 @@ const props = defineProps({
     default: () => [],
   },
 })
-
-const content = ref('Hello')
 
 const currentTaskId = ref(props.taskId)
 const emit = defineEmits(['update', 'selected'])
@@ -195,18 +190,8 @@ const deleteAttachment = async (attachmentId) => {
   }
 }
 
-// Description Management
-const showDescriptionActionButton = () => {
-  openDescriptionActionButton.value = true
-}
-
-const closeDescriptionActionButton = () => {
-  openDescriptionActionButton.value = false
-}
-
 const updateDescription = () => {
   updateTaskItem({ description: task.value.description })
-  closeDescriptionActionButton()
 }
 
 // Summary Management
