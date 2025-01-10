@@ -22,7 +22,7 @@ import { useBoardStore } from '@/stores/board'
 import { generateAvatar, handleResponseError, notify } from '@/utils/helpers'
 import { taskCreateAPI } from '@/utils/api'
 
-const props = defineProps(['board'])
+const props = defineProps(['board', 'currentSprint'])
 const emit = defineEmits(['created'])
 
 const store = useBoardStore()
@@ -33,7 +33,7 @@ const taskAddForm = ref({
   stateId: store.states.length > 0 ? store.states[0].id : '',
   assigneeId: null,
   priorityId: null,
-  sprintId: null,
+  sprintId: !!props.currentSprint ? props.currentSprint.id : null,
   taskType: 'issue',
 })
 const formRef = ref()
@@ -44,6 +44,7 @@ const resetFields = () => {
 
 const submitForm = async (values) => {
   try {
+    console.log('Values --> ', values)
     const { data } = await taskCreateAPI(props.board.id, values)
     resetFields()
     notify('CREATED', data.detail)

@@ -311,7 +311,11 @@ const addNewTask = (task) => {
           >
             <Button type="primary" :icon="h(PlusOutlined)">Add task</Button>
             <template #overlay>
-              <TaskAddForm :board="props.board" @created="addNewTask" />
+              <TaskAddForm
+                :board="props.board"
+                @created="addNewTask"
+                :currentSprint="props.currentSprint"
+              />
             </template>
           </Dropdown>
         </div>
@@ -379,6 +383,7 @@ const addNewTask = (task) => {
                       :groupKey="item.groupKey"
                       @open="openTaskView"
                       @created="(newTask) => store.addTask(newTask)"
+                      :currentSprint="props.currentSprint"
                     />
                   </template>
                 </div>
@@ -425,6 +430,7 @@ const addNewTask = (task) => {
                       :groupKey="item.groupKey"
                       @open="openTaskView"
                       @created="(newTask) => store.addTask(newTask)"
+                      :currentSprint="props.currentSprint"
                     />
                   </template>
                 </div>
@@ -470,6 +476,7 @@ const addNewTask = (task) => {
                       :groupKey="item.groupKey"
                       @open="openTaskView"
                       @created="(newTask) => store.addTask(newTask)"
+                      :currentSprint="props.currentSprint"
                     />
                   </template>
                 </div>
@@ -524,6 +531,7 @@ const addNewTask = (task) => {
                       :groupKey="item.groupKey"
                       @open="openTaskView"
                       @created="(newTask) => store.addTask(newTask)"
+                      :currentSprint="props.currentSprint"
                     />
                   </template>
                 </div>
@@ -536,6 +544,7 @@ const addNewTask = (task) => {
                   :board="props.board"
                   @open="openTaskView"
                   @created="(newTask) => store.addTask(newTask)"
+                  :currentSprint="props.currentSprint"
                 />
               </div>
             </template>

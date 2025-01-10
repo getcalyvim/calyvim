@@ -23,6 +23,10 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  currentSprint: {
+    type: Object,
+    default: null,
+  },
 })
 
 const store = useBoardStore()
@@ -85,6 +89,10 @@ const createTask = async (stateId, title) => {
       stateId,
       summary: title,
       taskType: 'issue',
+    }
+
+    if(!!props.currentSprint) {
+      newData['sprintId'] = props.currentSprint.id
     }
 
     if(!!props.groupKey && !!store.groupBy) {
