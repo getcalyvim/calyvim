@@ -91,11 +91,11 @@ def setup_initial_project(sender, instance, created, **kwargs):
             # 1. Creating initial set of states
             State.objects.bulk_create(
                 [
-                    State(board=instance, name="Backlog", sequence=10000),
-                    State(board=instance, name="Todo", sequence=20000),
-                    State(board=instance, name="In-progress", sequence=30000),
-                    State(board=instance, name="Review", sequence=40000),
-                    State(board=instance, name="Done", sequence=50000),
+                    State(board=instance, name="Backlog", sequence=10000, category=State.Category.OPEN),
+                    State(board=instance, name="Todo", sequence=20000, category=State.Category.OPEN),
+                    State(board=instance, name="In-progress", sequence=30000, category=State.Category.ACTIVE),
+                    State(board=instance, name="Review", sequence=40000, category=State.Category.ACTIVE),
+                    State(board=instance, name="Done", sequence=50000, category=State.Category.COMPLETED),
                 ]
             )
 

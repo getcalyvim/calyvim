@@ -5,10 +5,18 @@ from calyvim.models.base import UUIDTimestampModel
 
 
 class State(UUIDTimestampModel):
+    class Category(models.TextChoices):
+        OPEN = ("open", "Open")
+        ACTIVE = ("active", "Active")
+        COMPLETED = ("completed", "Completed")
+
     board = models.ForeignKey("Board", on_delete=models.CASCADE, related_name="states")
     name = models.CharField(max_length=124)
     description = models.TextField(blank=True, null=True)
     sequence = models.FloatField(default=10000)
+    category = models.CharField(
+        max_length=24, default=Category.OPEN, choices=Category.choices
+    )
 
     class Meta:
         db_table = "states"

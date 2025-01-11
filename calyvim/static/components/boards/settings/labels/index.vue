@@ -1,6 +1,5 @@
 <script setup>
 import BoardSettingsLayout from '@/components/base/board-settings-layout.vue'
-import WorkspaceLayout from '@/components/base/workspace-layout.vue'
 import { CloseOutlined, PlusOutlined, TagFilled } from '@ant-design/icons-vue'
 import { Button, List, ListItem, Form, FormItem, Input } from 'ant-design-vue'
 import { h, onMounted, ref } from 'vue'
@@ -82,73 +81,65 @@ onMounted(() => {
 </script>
 
 <template>
-  <WorkspaceLayout :workspace="workspace" page="boards">
-    <BoardSettingsLayout
-      :workspace="props.workspace"
-      :board="props.board"
-      page="labels"
-    >
-      <div class="flex justify-between items-center mb-2">
-        <div class="font-semibold text-lg">Labels</div>
-        <Button :icon="h(PlusOutlined)" type="primary" @click="showAddLabelForm"
-          >Add label</Button
-        >
-      </div>
+  <BoardSettingsLayout
+    :workspace="props.workspace"
+    :board="props.board"
+    page="boards"
+    subPage="settings"
+  >
+    <div class="flex justify-between items-center mb-2">
+      <div class="font-semibold text-lg">Labels</div>
+      <Button :icon="h(PlusOutlined)" type="primary" @click="showAddLabelForm"
+        >Add label</Button
+      >
+    </div>
 
-      <div>
-        <Form
-          :model="labelAddForm"
-          @finish="onSubmit"
-          v-if="openAddLabelForm"
-          layout="inline"
-        >
-          <div class="flex gap-2 mx-3">
-            <FormItem class="m-0 p-0" name="color" label="Color">
-              <Input
-                v-model:value="labelAddForm.color"
-                placeholder="Label name"
-                type="color"
-              />
-            </FormItem>
-            <FormItem class="m-0 p-0" name="name">
-              <Input
-                v-model:value="labelAddForm.name"
-                placeholder="Label name"
-              />
-            </FormItem>
-            <FormItem class="m-0 p-0">
-              <Button type="primary" html-type="submit">Add</Button>
-            </FormItem>
-          </div>
-        </Form>
-      </div>
+    <div>
+      <Form
+        :model="labelAddForm"
+        @finish="onSubmit"
+        v-if="openAddLabelForm"
+        layout="inline"
+      >
+        <div class="flex gap-2 mx-3">
+          <FormItem class="m-0 p-0" name="color" label="Color">
+            <Input
+              v-model:value="labelAddForm.color"
+              placeholder="Label name"
+              type="color"
+            />
+          </FormItem>
+          <FormItem class="m-0 p-0" name="name">
+            <Input v-model:value="labelAddForm.name" placeholder="Label name" />
+          </FormItem>
+          <FormItem class="m-0 p-0">
+            <Button type="primary" html-type="submit">Add</Button>
+          </FormItem>
+        </div>
+      </Form>
+    </div>
 
-      <List :dataSource="labels">
-        <template #renderItem="{ item }">
-          <ListItem class="group">
-            <div class="w-full">
-              <div class="flex items-center justify-between">
-                <div>
-                  <TagFilled :style="{ color: item.color }" />
-                  <span class="ml-2 font-semibold">{{ item.name }}</span>
-                </div>
+    <List :dataSource="labels">
+      <template #renderItem="{ item }">
+        <ListItem class="group">
+          <div class="w-full">
+            <div class="flex items-center justify-between">
+              <div>
+                <TagFilled :style="{ color: item.color }" />
+                <span class="ml-2 font-semibold">{{ item.name }}</span>
+              </div>
 
-                <div
-                  class="flex items-center gap-2 invisible group-hover:visible"
-                >
-                  <Button
-                    size="small"
-                    type="text"
-                    @click="deleteLabel(item.id)"
-                  >
-                    <CloseOutlined @click="" class="text-xs text-red-400" />
-                  </Button>
-                </div>
+              <div
+                class="flex items-center gap-2 invisible group-hover:visible"
+              >
+                <Button size="small" type="text" @click="deleteLabel(item.id)">
+                  <CloseOutlined @click="" class="text-xs text-red-400" />
+                </Button>
               </div>
             </div>
-          </ListItem>
-        </template>
-      </List>
-    </BoardSettingsLayout>
-  </WorkspaceLayout>
+          </div>
+        </ListItem>
+      </template>
+    </List>
+  </BoardSettingsLayout>
 </template>

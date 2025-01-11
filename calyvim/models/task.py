@@ -68,6 +68,7 @@ class Task(UUIDTimestampModel):
         null=True,
         related_name="estimate_tasks",
     )
+    completed_at = models.DateTimeField(blank=True, null=True)
 
     # Archived
     is_archived = models.BooleanField(default=False, db_index=True)

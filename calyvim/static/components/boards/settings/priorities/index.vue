@@ -4,7 +4,11 @@ import WorkspaceLayout from '@/components/base/workspace-layout.vue'
 import { h, onMounted, ref } from 'vue'
 import { useNProgress } from '@vueuse/integrations/useNProgress'
 
-import { priorityListAPI, priorityUpdateAPI, priorityDeleteAPI } from '@/utils/api'
+import {
+  priorityListAPI,
+  priorityUpdateAPI,
+  priorityDeleteAPI,
+} from '@/utils/api'
 import { handleResponseError, notify } from '@/utils/helpers'
 import { List, ListItem, Button, Divider, Dropdown } from 'ant-design-vue'
 import {
@@ -78,47 +82,65 @@ onMounted(() => {
 </script>
 
 <template>
-  <WorkspaceLayout :workspace="workspace" page="boards">
-    <BoardSettingsLayout
-      :workspace="props.workspace"
-      :board="props.board"
-      page="priorities"
-    >
-      <div class="flex items-center justify-between">
-        <div class="text-xl font-semibold">Priorities</div>
-        <Dropdown :trigger="['click']" v-model:open="openPriorityAddDropdown" placement="bottomRight">
-          <Button type="primary" @click="showPriorityAddDropdown">Add priority</Button>
-          <template #overlay>
-            <PriorityAdd :boardId="props.board.id" @created="addNewPriority" />
-          </template>
-        </Dropdown>
-      </div>
-      <Divider class="my-4" />
-      <List :dataSource="priorities">
-        <template #renderItem="{ item }">
-          <ListItem class="group">
-            <div class="w-full">
-              <PriorityEdit v-if="!!selectedPriority && selectedPriority === item.id" :board="props.board" :priority="item" @close="closeEditForm" @update="updatePriority" />
-              <div class="flex items-center justify-between" v-else>
-                <div>
-                  <FlagOutlined class="text-primary" />
-                  <span class="ml-2 font-semibold">{{ item.name }}</span>
-                </div>
+  <BoardSettingsLayout
+    :workspace="props.workspace"
+    :board="props.board"
+    page="boards"
+    subPage="settings"
+  >
+    <div class="flex items-center justify-between">
+      <div class="text-xl font-semibold">Priorities</div>
+      <Dropdown
+        :trigger="['click']"
+        v-model:open="openPriorityAddDropdown"
+        placement="bottomRight"
+      >
+        <Button type="primary" @click="showPriorityAddDropdown"
+          >Add priority</Button
+        >
+        <template #overlay>
+          <PriorityAdd :boardId="props.board.id" @created="addNewPriority" />
+        </template>
+      </Dropdown>
+    </div>
+    <Divider class="my-4" />
+    <List :dataSource="priorities">
+      <template #renderItem="{ item }">
+        <ListItem class="group">
+          <div class="w-full">
+            <PriorityEdit
+              v-if="!!selectedPriority && selectedPriority === item.id"
+              :board="props.board"
+              :priority="item"
+              @close="closeEditForm"
+              @update="updatePriority"
+            />
+            <div class="flex items-center justify-between" v-else>
+              <div>
+                <FlagOutlined class="text-primary" />
+                <span class="ml-2 font-semibold">{{ item.name }}</span>
+              </div>
 
-                <div class="flex items-center gap-2 invisible group-hover:visible">
-                  <Button :icon="h(EditOutlined)" size="small" type="text" @click="openPriorityEditForm(item.id)"></Button>
-                  <Button
-                    size="small"
-                    type="text"
-                  >
-                  <CloseOutlined @click="deletePriority(item.id)" class="text-xs text-red-400" />
+              <div
+                class="flex items-center gap-2 invisible group-hover:visible"
+              >
+                <Button
+                  :icon="h(EditOutlined)"
+                  size="small"
+                  type="text"
+                  @click="openPriorityEditForm(item.id)"
+                ></Button>
+                <Button size="small" type="text">
+                  <CloseOutlined
+                    @click="deletePriority(item.id)"
+                    class="text-xs text-red-400"
+                  />
                 </Button>
-                </div>
               </div>
             </div>
-          </ListItem>
-        </template>
-      </List>
-    </BoardSettingsLayout>
-  </WorkspaceLayout>
+          </div>
+        </ListItem>
+      </template>
+    </List>
+  </BoardSettingsLayout>
 </template>

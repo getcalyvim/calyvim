@@ -279,7 +279,7 @@ const shareCopyToClipboard = async () => {
 <template>
   <div v-if="!!task && !loading" class="flex flex-col h-full">
     <!-- Fixed Header Section -->
-    <div class="flex-none px-1 pt-4">
+    <div class="flex-none px-1 pt-4 mb-2">
       <div
         v-if="!!task.parentId"
         class="cursor-pointer mb-2"

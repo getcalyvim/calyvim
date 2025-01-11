@@ -143,6 +143,7 @@ class TaskSerializer(serializers.ModelSerializer):
             "estimate",
             "links",
             "checklists",
+            "completed_at",
             "created_by",
             "created_at",
         ]

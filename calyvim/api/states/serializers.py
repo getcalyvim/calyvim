@@ -6,7 +6,7 @@ from calyvim.models import State
 class StateSerializer(serializers.ModelSerializer):
     class Meta:
         model = State
-        fields = ["id", "name", "description", "sequence", "created_at"]
+        fields = ["id", "name", "description", "sequence", "category", "created_at"]
 
 
 class StateSequenceUpdateSerializer(serializers.Serializer):

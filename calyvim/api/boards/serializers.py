@@ -77,7 +77,7 @@ class TaskSerializer(serializers.ModelSerializer):
 class StateSerializer(serializers.ModelSerializer):
     class Meta:
         model = State
-        fields = ["id", "name", "board_id", "sequence", "created_at"]
+        fields = ["id", "name", "board_id", "sequence", "category", "created_at"]
 
 
 class MemberSerializer(serializers.ModelSerializer):
