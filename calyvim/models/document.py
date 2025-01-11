@@ -13,7 +13,7 @@ class Document(UUIDTimestampModel):
         "User", on_delete=models.SET_NULL, related_name="created_documents", null=True
     )
     description = models.TextField(blank=True, null=True)
-    content = ArrayField(base_field=models.UUIDField(), default=list)
+    content = ArrayField(base_field=models.UUIDField(), default=list, blank=True)
 
     class Meta:
         db_table = "documents"

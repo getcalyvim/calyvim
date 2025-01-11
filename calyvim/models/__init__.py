@@ -14,7 +14,7 @@ from .newsline import (
     NewslinePermission,
     NewslineTeamPermission,
     NewslineComment,
-    NewslineRead
+    NewslineRead,
 )
-from .document import Document
+from .document import Document, DocumentPermission, DocumentTeamPermission
 from .block import Block

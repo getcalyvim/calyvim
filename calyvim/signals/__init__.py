@@ -17,6 +17,9 @@ from calyvim.models import (
     Newsline,
     NewslinePermission,
     Estimate,
+    Document,
+    DocumentTeamPermission,
+    DocumentPermission,
 )
 from calyvim.tasks import file_archive
 
@@ -83,6 +86,22 @@ def create_or_update_board_permission(sender, instance, created, **kwargs):
         ).update(role=instance.role)
 
 
+@receiver(post_save, sender=Document)
+def create_document_permission(sender, instance, created, **kwargs):
+    if created:
+        workspace_membership = WorkspaceMembership.objects.filter(
+            user=instance.author, workspace=instance.workspace
+        ).first()
+        if not workspace_membership:
+            raise ObjectDoesNotExist("No membership found for the user")
+
+        DocumentPermission.objects.create(
+            document=instance,
+            user=instance.author,
+            workspace_membership=workspace_membership,
+        )
+
+
 @receiver(post_save, sender=Board)
 def setup_initial_project(sender, instance, created, **kwargs):
     if created:
@@ -91,11 +110,36 @@ def setup_initial_project(sender, instance, created, **kwargs):
             # 1. Creating initial set of states
             State.objects.bulk_create(
                 [
-                    State(board=instance, name="Backlog", sequence=10000, category=State.Category.OPEN),
-                    State(board=instance, name="Todo", sequence=20000, category=State.Category.OPEN),
-                    State(board=instance, name="In-progress", sequence=30000, category=State.Category.ACTIVE),
-                    State(board=instance, name="Review", sequence=40000, category=State.Category.ACTIVE),
-                    State(board=instance, name="Done", sequence=50000, category=State.Category.COMPLETED),
+                    State(
+                        board=instance,
+                        name="Backlog",
+                        sequence=10000,
+                        category=State.Category.OPEN,
+                    ),
+                    State(
+                        board=instance,
+                        name="Todo",
+                        sequence=20000,
+                        category=State.Category.OPEN,
+                    ),
+                    State(
+                        board=instance,
+                        name="In-progress",
+                        sequence=30000,
+                        category=State.Category.ACTIVE,
+                    ),
+                    State(
+                        board=instance,
+                        name="Review",
+                        sequence=40000,
+                        category=State.Category.ACTIVE,
+                    ),
+                    State(
+                        board=instance,
+                        name="Done",
+                        sequence=50000,
+                        category=State.Category.COMPLETED,
+                    ),
                 ]
             )
 
@@ -122,7 +166,7 @@ def setup_initial_project(sender, instance, created, **kwargs):
             )
         else:
             template_board = instance.template
-            print('Template Board --> ', template_board)
+            print("Template Board --> ", template_board)
 
 
 def get_file_fields(instance):

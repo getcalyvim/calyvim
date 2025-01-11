@@ -1,13 +1,34 @@
 <script setup>
 import WorkspaceLayout from '@/components/base/workspace-layout.vue'
 import { PlusOutlined } from '@ant-design/icons-vue'
-import { Button } from 'ant-design-vue'
+import { Button, Card } from 'ant-design-vue'
 import { h, onMounted, ref } from 'vue'
-import {  } from '../../../utils/api/newslines'
+import { documentListAPI } from '../../../utils/api'
 import { handleResponseError } from '../../../utils/helpers'
-import { Newspaper } from 'lucide-vue-next'
+import { File, EllipsisVertical } from 'lucide-vue-next'
+import { useNProgress } from '@vueuse/integrations/useNProgress'
+const { isLoading } = useNProgress(null, { minimum: '0.5' })
+
 const props = defineProps(['workspace', 'currentUser'])
 
+const documents = ref([])
+
+const loadDocuments = async () => {
+  try {
+    const { data } = await documentListAPI(props.workspace.id)
+    documents.value = data.results
+  } catch (error) {
+    handleResponseError(error)
+  }
+}
+
+const openDocument = (documentId) => {
+  window.location.href = `/documents/${documentId}`
+}
+
+onMounted(() => {
+  loadDocuments()
+})
 </script>
 
 <template>
@@ -16,16 +37,26 @@ const props = defineProps(['workspace', 'currentUser'])
     :currentUser="props.currentUser"
     page="documents"
   >
-    <div class="flex justify-center items-center h-[90vh]">
-      <div class="text-center mt-5">
-        <Newspaper class="text-primary h-12 w-12" />
-        <h2 class="text-xl font-bold">Documents</h2>
-        <h2 class="text-lg font-semibold">
-          This feature is currently being developed, we will be right back soon.
-        </h2>
-        <p class="text">
-          Manage all your documents at one place.
-        </p>
+    <div class="py-2 px-4">
+      <div class="flex justify-between items-center">
+        <div class="text-lg font-semibold">Documents</div>
+        <Button type="primary" :icon="h(PlusOutlined)">Create document</Button>
+      </div>
+      <div class="grid grid-cols-4">
+        <Card size="small" v-for="document in documents" :key="document.id" class="cursor-pointer" @click="openDocument(document.id)">
+          <div class="flex justify-between items-center">
+            <div class="flex gap-2 items-center">
+              <File class="w-4 h-4 text-primary" />
+              <div class="text-md font-semibold">{{ document.name }}</div>
+            </div>
+            <Button type="text" size="small">
+              <template #icon>
+                <EllipsisVertical class="w-3 h-3 align-middle" />
+              </template>
+            </Button>
+          </div>
+          <div class="text-sm text-gray-500">{{ document.description }}</div>
+        </Card>
       </div>
     </div>
   </WorkspaceLayout>

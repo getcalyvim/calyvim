@@ -12,6 +12,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("calyvim.urls.accounts")),
     path("boards/<uuid:board_id>/", include("calyvim.urls.boards")),
+    path("documents/<uuid:document_id>/", include("calyvim.urls.documents")),
     path("", include("calyvim.urls.workspaces")),
 ]
 

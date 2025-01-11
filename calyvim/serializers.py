@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from calyvim.mixins import NameAndSourceSerializerMixin
-from calyvim.models import Workspace, User, Team, Board, Sprint, Task
+from calyvim.models import Workspace, User, Team, Board, Sprint, Task, Document
 
 
 class ProfileSerializer(NameAndSourceSerializerMixin, serializers.ModelSerializer):
@@ -68,4 +68,17 @@ class MinimalTaskSerializer(serializers.ModelSerializer):
             "name",
             "number",
             "created_at"
+        ]
+
+
+class DocumentSerializer(serializers.ModelSerializer):
+    author = ProfileSerializer()
+
+    class Meta:
+        model = Document
+        fields = [
+            "id",
+            "name",
+            "author",
+            "created_at",
         ]

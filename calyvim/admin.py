@@ -26,7 +26,8 @@ from calyvim.models import (
     NewslineTeamPermission,
     NewslinePermission,
     Estimate,
-    Sprint
+    Sprint,
+    Document
 )
 
 
@@ -217,6 +218,11 @@ class NewslinePermissionInline(admin.StackedInline):
 class NewslineAdmin(admin.ModelAdmin):
     list_display = ["title", "author", "created_at"]
     inlines = [NewslinePermissionInline]
+
+@admin.register(Document)
+class DocumentAdmin(admin.ModelAdmin):
+    list_display = ["name", "author", "created_at"]
+    raw_id_fields = ["author"]
 
 
 # Now register the new UserAdmin...

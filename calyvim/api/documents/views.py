@@ -13,22 +13,22 @@ from calyvim.exceptions import InvalidInputException
 class DocumentsViewSet(ViewSet):
     permission_classes = [IsAuthenticated]
 
-    def get_permissions(self):
-        match self.action:
-            case "list":
-                return [IsAuthenticated(), BoardGenericPermission()]
-            case "create":
-                return [
-                    IsAuthenticated(),
-                    BoardGenericPermission(allowed_roles=["admin", "maintainer"]),
-                ]
-            case "destroy":
-                return [
-                    IsAuthenticated(),
-                    BoardGenericPermission(allowed_roles=["admin", "maintainer"]),
-                ]
-            case _:
-                return super().get_permissions()
+    # def get_permissions(self):
+    #     match self.action:
+    #         case "list":
+    #             return [IsAuthenticated(), BoardGenericPermission()]
+    #         case "create":
+    #             return [
+    #                 IsAuthenticated(),
+    #                 BoardGenericPermission(allowed_roles=["admin", "maintainer"]),
+    #             ]
+    #         case "destroy":
+    #             return [
+    #                 IsAuthenticated(),
+    #                 BoardGenericPermission(allowed_roles=["admin", "maintainer"]),
+    #             ]
+    #         case _:
+    #             return super().get_permissions()
 
     def get_workspace_membership(self, user, workspace):
         workspace_membership = get_object_or_raise_api_404(
@@ -47,11 +47,12 @@ class DocumentsViewSet(ViewSet):
             request.user, workspace=workspace
         )
         if workspace_membership.role == "admin":
-            documents = Document.objects.filter(workspace=workspace)
+            documents = Document.objects.filter(workspace=workspace).select_related("author")
         else:
             documents = (
                 Document.objects.filter(workspace=workspace)
                 .filter(permissions__user=request.user)
+                .select_related("author")
                 .distinct()
             )
 
