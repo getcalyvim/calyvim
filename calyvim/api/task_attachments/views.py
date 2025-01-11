@@ -36,7 +36,7 @@ class TaskAttachementsViewSet(BoardMixin, ViewSet):
         comment = TaskComment.objects.create(
             task=task,
             author=request.user,
-            content=f"added {data.get("filename")} as an attachment",
+            content=f"added {data.get('filename')} as an attachment",
             comment_type=TaskComment.CommentType.ACTIVITY,
         )
         file_promote.delay(data.get("attachment"))
