@@ -19,6 +19,7 @@ from calyvim.api.task_attachments.views import TaskAttachementsViewSet
 from calyvim.api.newslines.views import NewslinesViewSet
 from calyvim.api.estimates.views import EstimatesViewSets
 from calyvim.api.sprints.views import SprintsViewSet
+from calyvim.api.documents.views import DocumentsViewSet
 
 router = SimpleRouter(trailing_slash=False, use_regex_path=False)
 
@@ -51,5 +52,8 @@ router.register("boards/<uuid:board_id>/sprints", SprintsViewSet, basename="spri
 
 # Newslines
 router.register("newslines", NewslinesViewSet, basename="newsline")
+
+# Documents
+router.register("documents", DocumentsViewSet, basename="document")
 
 urlpatterns = router.urls

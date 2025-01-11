@@ -249,8 +249,11 @@ class WorkspaceMemberConfirmationView(View):
         except Exception as e:
             print(e)
 
-        login(request, user)
-        return redirect("workspaces-dashboard", workspace_slug=invite.workspace.slug)
+        # login(request, user)
+        # return redirect("workspaces-dashboard", workspace_slug=invite.workspace.slug)
+        # Generate access token and redirect to login page
+        redirect_url = reverse("accounts-login") + f"?session={user.session}"
+        return redirect(redirect_url)
 
 
 class WorkspaceLeaveView(LoginRequiredMixin, View):

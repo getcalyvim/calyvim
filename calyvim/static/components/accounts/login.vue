@@ -56,9 +56,9 @@ const authenticate = async (session) => {
     const { data } = await accountsAuthenticateAPI(session)
     localStorage.setItem('currentUser', JSON.stringify(data.user))
     window.location.href = `/`
+    loading.value = false
   } catch (error) {
     handleResponseError(error)
-  } finally {
     loading.value = false
   }
 }

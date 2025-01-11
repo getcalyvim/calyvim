@@ -81,8 +81,10 @@ class VerifyConfirmView(View):
             raise Http404
 
         user.verify_confirm()
-        login(request, user)
-        return redirect("workspace-index")
+        
+        # Generate access token and redirect to login page
+        redirect_url = reverse("accounts-login") + f"?session={user.session}"
+        return redirect(redirect_url)
 
 
 class ResetView(View):
