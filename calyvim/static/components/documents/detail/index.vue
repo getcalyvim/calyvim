@@ -1,13 +1,23 @@
 <script setup>
-import { blockListAPI } from '@/utils/api'
+import { blockListAPI, blockOperationsAPI } from '@/utils/api'
 import DocumentLayout from '@/components/base/document-layout.vue'
-import { onMounted, ref, nextTick } from 'vue'
+import { onMounted, ref, nextTick, computed } from 'vue'
 import { Button, Textarea, Dropdown, Menu, MenuItem } from 'ant-design-vue'
-import { DeleteIcon, EllipsisVertical, Heading1, Heading2, Heading3, Text, List, Trash2 } from 'lucide-vue-next'
+import {
+  EllipsisVertical,
+  Heading1,
+  Heading2,
+  Heading3,
+  Text,
+  List,
+  Trash2,
+} from 'lucide-vue-next'
+import { debounce } from 'lodash'
 
 const props = defineProps(['document', 'workspace'])
 
 const blocks = ref([])
+const blockOrder = computed(() => blocks.value.map((block) => block.id))
 const document = ref(props.document)
 
 const loadBlocks = async () => {
@@ -17,23 +27,22 @@ const loadBlocks = async () => {
 
 const textareaRefs = ref([])
 
+const pendingUpdates = ref(new Map())
+
 const handleKeyDown = async (event, index) => {
   if (event.key === 'Enter' && !event.shiftKey) {
     event.preventDefault()
     const newBlock = {
       id: crypto.randomUUID(),
       blockType: 'paragraph',
-      properties: {
-        text: '',
-      },
+      properties: { text: '' },
     }
-
-    console.log(newBlock)
 
     blocks.value.splice(index + 1, 0, newBlock)
 
     await nextTick()
     textareaRefs.value[index + 1]?.focus()
+    debouncedSave()
   } else if (
     event.key === 'Backspace' &&
     blocks.value[index].properties.text === '' &&
@@ -49,7 +58,35 @@ const handleKeyDown = async (event, index) => {
 const removeBlock = (index) => {
   if (blocks.value.length > 1) {
     blocks.value.splice(index, 1)
+    debouncedSave()
   }
+}
+
+const debouncedSave = debounce(async () => {
+  const hasChanges = pendingUpdates.value.size > 0
+
+  if (!hasChanges) return
+
+  const updatedData = { updates: {}, content: blockOrder.value }
+
+  await pendingUpdates.value.forEach((value, key) => {
+    if (blockOrder.value.includes(key)) {
+      updatedData.updates[key] = value
+    }
+  })
+
+  try {
+    const { data } = await blockOperationsAPI(document.value.id, updatedData)
+
+    pendingUpdates.value = new Map()
+  } catch (error) {
+    console.error('Failed to save blocks:', error)
+  }
+}, 3000)
+
+const saveBlockChanges = (id, payload) => {
+  pendingUpdates.value.set(id, payload)
+  debouncedSave()
 }
 
 onMounted(async () => {
@@ -78,6 +115,13 @@ onMounted(async () => {
             :autoSize="{ minRows: 1 }"
             :bordered="false"
             class="block w-full resize-none bg-transparent hover:bg-gray-50 p-2 rounded focus:ring-2"
+            @change="
+              (e) => {
+                saveBlockChanges(block.id, {
+                  properties: { text: e.target.value },
+                })
+              }
+            "
             :ref="
               (el) => {
                 if (el) textareaRefs[index] = el
