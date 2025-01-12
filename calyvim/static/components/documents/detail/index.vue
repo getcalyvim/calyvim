@@ -76,8 +76,7 @@ const debouncedSave = debounce(async () => {
   })
 
   try {
-    const { data } = await blockOperationsAPI(document.value.id, updatedData)
-
+    await blockOperationsAPI(document.value.id, updatedData)
     pendingUpdates.value = new Map()
   } catch (error) {
     console.error('Failed to save blocks:', error)

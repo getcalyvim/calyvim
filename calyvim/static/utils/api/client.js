@@ -7,6 +7,14 @@ const options = {
   ignoreHeaders: true,
 }
 
+export const http = axios.create({
+  baseURL: '/api',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-CSRFToken': Cookies.get('csrftoken'),
+  },
+})
+
 export const client = applyCaseMiddleware(
   axios.create({
     baseURL: '/api',

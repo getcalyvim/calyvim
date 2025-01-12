@@ -14,3 +14,8 @@ class BlockSerializer(serializers.ModelSerializer):
             "properties",
             "created_at",
         ]
+
+
+class OperationsSerializer(serializers.Serializer):
+    updates = serializers.JSONField()
+    content = serializers.ListField(child=serializers.UUIDField())

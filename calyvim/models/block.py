@@ -5,6 +5,10 @@ from calyvim.models.base import UUIDTimestampModel
 
 
 class Block(UUIDTimestampModel):
+    class ActiveBlockManager(models.Manager):
+        def get_queryset(self):
+            return super().get_queryset().filter(is_archived=False)
+
     class BlockType(models.TextChoices):
         HEADING_1 = ("heading_1", "Heading 1")
         HEADING_2 = ("heading_2", "Heading 2")
@@ -36,6 +40,12 @@ class Block(UUIDTimestampModel):
     created_by = models.ForeignKey(
         "User", on_delete=models.SET_NULL, null=True, related_name="created_blocks"
     )
+
+    is_archived = models.BooleanField(default=False, db_index=True)
+    archived_at = models.DateTimeField(null=True, blank=True)
+
+    objects = ActiveBlockManager()
+    all_objects = models.Manager()
 
     class Meta:
         db_table = "blocks"
