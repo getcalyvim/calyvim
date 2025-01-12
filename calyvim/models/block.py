@@ -28,7 +28,9 @@ class Block(UUIDTimestampModel):
         blank=True,
         related_name="page_blocks",
     )
-    block_type = models.CharField(max_length=24)
+    block_type = models.CharField(
+        max_length=24, choices=BlockType.choices, default=BlockType.PARAGRAPH
+    )
     content = ArrayField(base_field=models.UUIDField(), default=list)
     properties = models.JSONField()
     created_by = models.ForeignKey(

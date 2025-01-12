@@ -32,6 +32,12 @@ class BoardNotFoundException(APIException):
     default_code = "no_board_found"
 
 
+class DocumentNotFoundException(APIException):
+    status_code = HTTP_400_BAD_REQUEST
+    default_detail = "No document found."
+    default_code = "no_document_found"
+
+
 class WorkspaceMembershipNotFoundException(APIException):
     status_code = HTTP_400_BAD_REQUEST
     default_detail = "No workspace membership found."

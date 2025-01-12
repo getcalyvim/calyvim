@@ -20,6 +20,7 @@ from calyvim.models import (
     Document,
     DocumentTeamPermission,
     DocumentPermission,
+    Block,
 )
 from calyvim.tasks import file_archive
 
@@ -99,7 +100,21 @@ def create_document_permission(sender, instance, created, **kwargs):
             document=instance,
             user=instance.author,
             workspace_membership=workspace_membership,
+            role="editor",
         )
+
+
+@receiver(post_save, sender=Document)
+def create_document_block(sender, instance, created, **kwargs):
+    if created:
+        block = Block.objects.create(
+            document=instance,
+            block_type=Block.BlockType.PARAGRAPH,
+            properties={"text": ""},
+            created_by=instance.author,
+        )
+        instance.content = [block.id]
+        instance.save(update_fields=["content"])
 
 
 @receiver(post_save, sender=Board)

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
 from calyvim.models.base import UUIDTimestampModel
+from calyvim.models.choice import DocumentPermissionRole
 
 
 class Document(UUIDTimestampModel):
@@ -28,6 +29,11 @@ class DocumentTeamPermission(UUIDTimestampModel):
     )
     team = models.ForeignKey(
         "Team", on_delete=models.CASCADE, related_name="team_document_team_memberships"
+    )
+    role = models.CharField(
+        max_length=20,
+        choices=DocumentPermissionRole.choices,
+        default=DocumentPermissionRole.VIEWER,
     )
 
     class Meta:
@@ -61,6 +67,11 @@ class DocumentPermission(UUIDTimestampModel):
         on_delete=models.CASCADE,
         blank=True,
         null=True,
+    )
+    role = models.CharField(
+        max_length=20,
+        choices=DocumentPermissionRole.choices,
+        default=DocumentPermissionRole.VIEWER,
     )
 
     class Meta:

@@ -7,25 +7,27 @@ import {
   Kanban,
   CalendarClock,
   Settings2,
+  BookOpen,
+  ImageDown
 } from 'lucide-vue-next'
 const props = defineProps(['document', 'workspace', 'page', 'subPage'])
 
 const activeKey = ref(props.page)
 
 const subMenuItems = [
-//   {
-//     heading: `${props.board.name}`,
-//     label: 'Kanban',
-//     icon: Kanban,
-//     key: 'kanban',
-//     redirectPath: `/boards/${props.board.id}`
-//   },
-//   {
-//     label: 'Sprint',
-//     icon: CalendarClock,
-//     key: 'sprints',
-//     redirectPath: `/boards/${props.board.id}/sprints`
-//   },
+  {
+    heading: `${props.document.name}`,
+    label: 'Page',
+    icon: BookOpen,
+    key: 'page',
+    redirectPath: `/documents/${props.document.id}`
+  },
+  {
+    label: 'Media',
+    icon: ImageDown,
+    key: 'media',
+    redirectPath: `/boards/${props.document.id}/media`
+  },
    
 //   {
 //     label: 'Settings',

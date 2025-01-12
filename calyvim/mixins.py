@@ -7,8 +7,15 @@ from calyvim.models import (
     WorkspaceMembership,
     BoardPermission,
     BoardPermissionRole,
+    Document,
+    DocumentPermission,
+    DocumentPermissionRole,
 )
-from calyvim.exceptions import BoardNotFoundException, WorkspaceNotFoundException
+from calyvim.exceptions import (
+    BoardNotFoundException,
+    WorkspaceNotFoundException,
+    DocumentNotFoundException,
+)
 from calyvim.utils import get_object_or_404
 
 
@@ -27,6 +34,18 @@ class BoardMixin:
             if not board:
                 raise BoardNotFoundException
             request.board = board
+        return request
+
+
+class DocumentMixin:
+    def initialize_request(self, request, *args, **kwargs):
+        request = super().initialize_request(request, *args, **kwargs)
+        document_id = kwargs.get("document_id")
+        if document_id:
+            document = Document.objects.filter(id=document_id).first()
+            if not document:
+                raise DocumentNotFoundException
+            request.document = document
         return request
 
 
@@ -142,5 +161,21 @@ class BoardPermissionMixin:
 
         permission_queryset = BoardPermission.objects.filter(
             user=user, board=board, role__in=allowed_roles
+        )
+        return permission_queryset.exists()
+
+
+class DocumentPermissionMixin:
+    def get_workspace_membership(self, workspace, user):
+        workspace_membership = get_object_or_404(
+            WorkspaceMembership, workspace=workspace, user=user
+        )
+        return workspace_membership
+
+    def has_valid_document_permission(
+        self, document, user, allowed_roles=DocumentPermissionRole.values
+    ):
+        permission_queryset = DocumentPermission.objects.filter(
+            document=document, user=user, role__in=allowed_roles
         )
         return permission_queryset.exists()

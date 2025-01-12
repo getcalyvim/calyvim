@@ -20,6 +20,7 @@ from calyvim.api.newslines.views import NewslinesViewSet
 from calyvim.api.estimates.views import EstimatesViewSets
 from calyvim.api.sprints.views import SprintsViewSet
 from calyvim.api.documents.views import DocumentsViewSet
+from calyvim.api.blocks.views import BlocksViewst
 
 router = SimpleRouter(trailing_slash=False, use_regex_path=False)
 
@@ -55,5 +56,6 @@ router.register("newslines", NewslinesViewSet, basename="newsline")
 
 # Documents
 router.register("documents", DocumentsViewSet, basename="document")
+router.register("documents/<uuid:document_id>/blocks", BlocksViewst, basename="block")
 
 urlpatterns = router.urls

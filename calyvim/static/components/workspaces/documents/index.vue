@@ -42,7 +42,7 @@ onMounted(() => {
         <div class="text-lg font-semibold">Documents</div>
         <Button type="primary" :icon="h(PlusOutlined)">Create document</Button>
       </div>
-      <div class="grid grid-cols-4">
+      <div class="grid grid-cols-4 gap-2">
         <Card size="small" v-for="document in documents" :key="document.id" class="cursor-pointer" @click="openDocument(document.id)">
           <div class="flex justify-between items-center">
             <div class="flex gap-2 items-center">

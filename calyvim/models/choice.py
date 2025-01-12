@@ -6,3 +6,8 @@ class BoardPermissionRole(models.TextChoices):
     COLLABORATOR = ("collaborator", "Collaborator")
     MAINTAINER = ("maintainer", "Maintainer")
     GUEST = ("guest", "Guest")
+
+
+class DocumentPermissionRole(models.TextChoices):
+    EDITOR = ("editor", "Editor")
+    VIEWER = ("viewer", "Viewer")
