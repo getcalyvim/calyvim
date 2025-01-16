@@ -21,6 +21,8 @@ from calyvim.models import (
     DocumentTeamPermission,
     DocumentPermission,
     Block,
+    Team,
+    TeamMembership
 )
 from calyvim.tasks import file_archive
 
@@ -182,6 +184,20 @@ def setup_initial_project(sender, instance, created, **kwargs):
         else:
             template_board = instance.template
             print("Template Board --> ", template_board)
+
+
+@receiver(post_save, sender=TeamMembership)
+def assign_board_permissions_on_team_membership_creation(sender, instance, created, **kwargs):
+    if created:
+        board_team_permissions = BoardTeamPermission.objects.filter(team=instance.team)
+        for board_team_permission in board_team_permissions:
+            BoardPermission.objects.create(
+                board=board_team_permission.board,
+                role=board_team_permission.role,
+                team_permission=board_team_permission,
+                team_membership=instance,
+                user=instance.user,
+            )
 
 
 def get_file_fields(instance):
