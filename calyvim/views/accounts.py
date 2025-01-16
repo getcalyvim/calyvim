@@ -50,7 +50,21 @@ class LoginView(View):
 
 class RegisterView(View):
     def get(self, request):
-        context = {"props": {"invitation_id": request.GET.get("invitation_id", None)}}
+        has_google_oauth = (
+            settings.GOOGLE_OAUTH_CLIENT_ID is not None
+            and settings.GOOGLE_OAUTH_CLIENT_ID is not None
+        )
+        has_github_oauth = (
+            settings.GITHUB_OAUTH_CLIENT_ID is not None
+            and settings.GITHUB_OAUTH_CLIENT_SECRET is not None
+        )
+        context = {
+            "props": {
+                "invitation_id": request.GET.get("invitation_id", None),
+                "has_google_oauth": has_google_oauth,
+                "has_github_oauth": has_github_oauth,
+            }
+        }
         return render(request, "accounts/register.html", context)
 
 
@@ -81,7 +95,7 @@ class VerifyConfirmView(View):
             raise Http404
 
         user.verify_confirm()
-        
+
         # Generate access token and redirect to login page
         redirect_url = reverse("accounts-login") + f"?session={user.session}"
         return redirect(redirect_url)
