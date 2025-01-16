@@ -2,7 +2,7 @@
 import { blockListAPI, blockOperationsAPI } from '@/utils/api'
 import DocumentLayout from '@/components/base/document-layout.vue'
 import { onMounted, ref, nextTick, computed } from 'vue'
-import { Button, Textarea, Dropdown, Menu, MenuItem } from 'ant-design-vue'
+import { Button, Dropdown, Menu, MenuItem } from 'ant-design-vue'
 import {
   EllipsisVertical,
   Heading1,
@@ -30,7 +30,85 @@ const textareaRefs = ref([])
 const pendingUpdates = ref(new Map())
 
 const handleKeyDown = async (event, index) => {
-  if (event.key === 'Enter' && !event.shiftKey) {
+  if (event.key === 'ArrowUp') {
+    if (index === 0) return
+
+    event.preventDefault()
+    const selection = window.getSelection()
+    const currentPosition = selection.anchorOffset
+    const prevDiv = textareaRefs.value[index - 1]
+
+    // TODO: handle the case where the current block has newline
+
+    prevDiv?.focus()
+    const range = new Range()
+    let textNode = prevDiv.firstChild
+    if (!textNode) {
+      textNode = document.createTextNode('')
+      prevDiv.appendChild(textNode)
+    }
+    const position = Math.min(currentPosition, textNode.length)
+
+    try {
+      range.setStart(textNode, position)
+      range.setEnd(textNode, position)
+      selection.removeAllRanges()
+      selection.addRange(range)
+    } catch (error) {
+      console.error('Range error:', error)
+    }
+  } else if (event.key === 'ArrowDown') {
+    if (index >= blocks.value.length - 1) return
+
+    event.preventDefault()
+    const selection = window.getSelection()
+    const currentPosition = selection.anchorOffset
+    const nextDiv = textareaRefs.value[index + 1]
+
+    // TODO: handle the case where the current block has newline
+
+    nextDiv?.focus()
+    const range = new Range()
+    let textNode = nextDiv.firstChild
+    if (!textNode) {
+      textNode = document.createTextNode('')
+      nextDiv.appendChild(textNode)
+    }
+    const position = Math.min(currentPosition, textNode.length)
+
+    try {
+      range.setStart(textNode, position)
+      range.setEnd(textNode, position)
+      selection.removeAllRanges()
+      selection.addRange(range)
+    } catch (error) {
+      console.error('Range error:', error)
+    }
+  } else if (event.key === 'Enter') {
+    if (event.shiftKey) {
+      event.preventDefault()
+      const selection = window.getSelection()
+      const currentPosition = selection.anchorOffset
+      const range = selection.getRangeAt(0)
+      const textNode = range.startContainer
+
+      const beforeText = textNode.textContent.slice(0, currentPosition)
+      const afterText = textNode.textContent.slice(currentPosition)
+      textNode.textContent = beforeText + '\n' + afterText
+
+      range.setStart(textNode, currentPosition + 1)
+      range.setEnd(textNode, currentPosition + 1)
+      selection.removeAllRanges()
+      selection.addRange(range)
+
+      const block = blocks.value[index]
+      block.properties.text = event.target.textContent
+      saveBlockChanges(block.id, {
+        properties: { text: event.target.textContent },
+      })
+      return
+    }
+
     event.preventDefault()
     const newBlock = {
       id: crypto.randomUUID(),
@@ -39,13 +117,12 @@ const handleKeyDown = async (event, index) => {
     }
 
     blocks.value.splice(index + 1, 0, newBlock)
-
     await nextTick()
     textareaRefs.value[index + 1]?.focus()
     debouncedSave()
   } else if (
     event.key === 'Backspace' &&
-    blocks.value[index].properties.text === '' &&
+    !event.target.textContent &&
     blocks.value.length > 1
   ) {
     event.preventDefault()
@@ -53,6 +130,13 @@ const handleKeyDown = async (event, index) => {
     await nextTick()
     textareaRefs.value[index - 1]?.focus()
   }
+}
+
+const handleInput = (event, block) => {
+  block.properties.text = event.target.textContent
+  saveBlockChanges(block.id, {
+    properties: { text: event.target.textContent },
+  })
 }
 
 const removeBlock = (index) => {
@@ -101,7 +185,6 @@ onMounted(async () => {
     page="documents"
     subPage="page"
   >
-    <!-- Todo  -->
     <div class="max-w-4xl mx-auto p-8">
       <div class="space-y-2">
         <div
@@ -109,53 +192,58 @@ onMounted(async () => {
           :key="block.id"
           class="relative group"
         >
-          <Textarea
-            v-model:value="block.properties.text"
-            :autoSize="{ minRows: 1 }"
-            :bordered="false"
-            class="block w-full resize-none bg-transparent hover:bg-gray-50 p-2 rounded focus:ring-2"
-            @change="
-              (e) => {
-                saveBlockChanges(block.id, {
-                  properties: { text: e.target.value },
-                })
-              }
-            "
+          <div
             :ref="
               (el) => {
                 if (el) textareaRefs[index] = el
               }
             "
+            :contenteditable="true"
+            class="block w-full min-h-[1.5em] bg-transparent hover:bg-gray-50 p-2 rounded focus:outline-none whitespace-pre-wrap"
+            @input="(e) => handleInput(e, block)"
             @keydown="handleKeyDown($event, index)"
+            v-text="block.properties.text"
           />
           <div
             class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-8 opacity-0 group-hover:opacity-100 transition-opacity"
           >
             <Dropdown :trigger="['click']">
               <Button type="text" class="mr-1">
-                <template #icon><EllipsisVertical class="h-3 w-3 align-middle" /></template>
+                <template #icon>
+                  <EllipsisVertical class="h-3 w-3 align-middle" />
+                </template>
               </Button>
               <template #overlay>
                 <Menu>
                   <MenuItem>
-                    <template #icon><Heading1 class="h-3 w-3 align-middle" /></template>
+                    <template #icon>
+                      <Heading1 class="h-3 w-3 align-middle" />
+                    </template>
                     Heading 1
                   </MenuItem>
                   <MenuItem>
-                    <template #icon><Heading2 class="h-3 w-3 align-middle" /></template>
+                    <template #icon>
+                      <Heading2 class="h-3 w-3 align-middle" />
+                    </template>
                     Heading 2
                   </MenuItem>
                   <MenuItem>
-                    <template #icon><Heading3 class="h-3 w-3 align-middle" /></template>
+                    <template #icon>
+                      <Heading3 class="h-3 w-3 align-middle" />
+                    </template>
                     Heading 3
                   </MenuItem>
                   <Menu-divider />
                   <MenuItem>
-                    <template #icon><Text class="h-3 w-3 align-middle" /></template>
+                    <template #icon>
+                      <Text class="h-3 w-3 align-middle" />
+                    </template>
                     Text
                   </MenuItem>
                   <MenuItem>
-                    <template #icon><List class="h-3 w-3 align-middle" /></template>
+                    <template #icon>
+                      <List class="h-3 w-3 align-middle" />
+                    </template>
                     Bullet List
                   </MenuItem>
                   <Menu-divider />
@@ -163,7 +251,9 @@ onMounted(async () => {
                     @click="removeBlock(index)"
                     v-if="blocks.length > 1"
                   >
-                    <template #icon><Trash2 class="h-3 w-3 align-middle" /></template>
+                    <template #icon>
+                      <Trash2 class="h-3 w-3 align-middle" />
+                    </template>
                     Delete
                   </MenuItem>
                 </Menu>
