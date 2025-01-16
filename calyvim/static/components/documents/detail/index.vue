@@ -99,10 +99,8 @@ const handleKeyDown = async (event, index) => {
 
         try {
           const beforeText = textNode.textContent.slice(0, currentPosition)
-          const afterText = textNode.textContent.slice(currentPosition)
+          const afterText = textNode.textContent.slice(currentPosition) || '\n'
           textNode.textContent = beforeText + '\n' + afterText
-
-          // TODO: handle the case where currentPosition is at the end of the text
 
           range.setStart(textNode, currentPosition + 1)
           range.setEnd(textNode, currentPosition + 1)
