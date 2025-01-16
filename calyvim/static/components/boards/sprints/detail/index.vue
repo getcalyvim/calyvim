@@ -9,6 +9,6 @@ import KanbanBoard from '@/components/boards/kanban/index.vue'
     :board="props.board"
     :workspace="props.workspace"
     :currentSprint="props.sprint"
-    currentTab="sprints"
+    subPage="sprints"
   />
 </template>

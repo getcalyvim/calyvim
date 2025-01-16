@@ -56,6 +56,7 @@ class Task(UUIDTimestampModel):
     name = models.CharField(max_length=10, blank=True, editable=False)
     summary = models.CharField(max_length=225)
     description = models.TextField(blank=True, null=True)
+    description_raw = models.TextField(blank=True, null=True)
     sequence = models.FloatField(default=50000, blank=True)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)

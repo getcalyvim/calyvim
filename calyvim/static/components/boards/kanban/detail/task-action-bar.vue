@@ -11,7 +11,7 @@ import {
 } from '@ant-design/icons-vue'
 import { CalendarClock } from 'lucide-vue-next'
 
-import { h } from 'vue'
+import { h, computed } from 'vue'
 
 const props = defineProps({
   task: {
@@ -49,6 +49,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update'])
+
+const memberIds = computed(() => props.members.map((member) => member.id))
+const priorityIds = computed(() => props.priorities.map((priority) => priority.id))
 </script>
 
 <template>
@@ -76,6 +79,21 @@ const emit = defineEmits(['update'])
     class="w-full"
   >
     <SelectOption :value="null">None</SelectOption>
+    <SelectOption
+      :value="task.assigneeId"
+      v-if="!memberIds.includes(task.assigneeId)"
+      disabled
+    >
+      <Avatar
+        :size="22"
+        :src="
+          !!task?.assignee?.avatar
+            ? task.assignee.avatar
+            : generateAvatar(task?.assignee.displayName)
+        "
+      />
+      <span class="ml-2">{{ task?.assignee.displayName }} </span>
+    </SelectOption>
     <SelectOption
       :value="member.id"
       v-for="member in props.members"

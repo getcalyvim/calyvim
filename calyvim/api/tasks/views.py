@@ -2,6 +2,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.conf import settings
 from django.utils import timezone
+from django.utils.html import strip_tags
 from rest_framework import status
 from rest_framework.viewsets import ViewSet
 from rest_framework.permissions import IsAuthenticated
@@ -517,6 +518,11 @@ class TasksViewSet(BoardMixin, ViewSet):
 
             setattr(task, key, value)
         task.save(update_fields=data.keys())
+        
+        if "description" in data:
+            task.description_raw = strip_tags(data["description"])
+            task.save(update_fields=["description_raw"])
+
         if assignee_ids:
             current_assignees = set(task.assignees.values_list("id", flat=True))
             new_assignees = set(assignee_ids)
@@ -548,7 +554,6 @@ class TasksViewSet(BoardMixin, ViewSet):
                 author=request.user,
                 comment_type=TaskComment.CommentType.ACTIVITY,
             )
-        # task_serializer = TaskSerializer(task)
         response_data = {
             "detail": "Task updated successfully.",
             "log": ", ".join(task_updates),
