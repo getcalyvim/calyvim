@@ -101,11 +101,6 @@ const handleKeyDown = async (event, index) => {
       selection.removeAllRanges()
       selection.addRange(range)
 
-      const block = blocks.value[index]
-      block.properties.text = event.target.textContent
-      saveBlockChanges(block.id, {
-        properties: { text: event.target.textContent },
-      })
       return
     }
 
