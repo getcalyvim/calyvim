@@ -30,100 +30,118 @@ const textareaRefs = ref([])
 const pendingUpdates = ref(new Map())
 
 const handleKeyDown = async (event, index) => {
-  if (event.key === 'ArrowUp') {
-    if (index === 0) return
+  const selection = window.getSelection()
+  const currentPosition = selection.anchorOffset
 
-    event.preventDefault()
-    const selection = window.getSelection()
-    const currentPosition = selection.anchorOffset
-    const prevDiv = textareaRefs.value[index - 1]
+  switch (event.key) {
+    case 'ArrowUp': {
+      if (index === 0) return
 
-    // TODO: handle the case where the current block has newline
-
-    prevDiv?.focus()
-    const range = new Range()
-    let textNode = prevDiv.firstChild
-    if (!textNode) {
-      textNode = document.createTextNode('')
-      prevDiv.appendChild(textNode)
-    }
-    const position = Math.min(currentPosition, textNode.length)
-
-    try {
-      range.setStart(textNode, position)
-      range.setEnd(textNode, position)
-      selection.removeAllRanges()
-      selection.addRange(range)
-    } catch (error) {
-      console.error('Range error:', error)
-    }
-  } else if (event.key === 'ArrowDown') {
-    if (index >= blocks.value.length - 1) return
-
-    event.preventDefault()
-    const selection = window.getSelection()
-    const currentPosition = selection.anchorOffset
-    const nextDiv = textareaRefs.value[index + 1]
-
-    // TODO: handle the case where the current block has newline
-
-    nextDiv?.focus()
-    const range = new Range()
-    let textNode = nextDiv.firstChild
-    if (!textNode) {
-      textNode = document.createTextNode('')
-      nextDiv.appendChild(textNode)
-    }
-    const position = Math.min(currentPosition, textNode.length)
-
-    try {
-      range.setStart(textNode, position)
-      range.setEnd(textNode, position)
-      selection.removeAllRanges()
-      selection.addRange(range)
-    } catch (error) {
-      console.error('Range error:', error)
-    }
-  } else if (event.key === 'Enter') {
-    if (event.shiftKey) {
       event.preventDefault()
-      const selection = window.getSelection()
-      const currentPosition = selection.anchorOffset
-      const range = selection.getRangeAt(0)
-      const textNode = range.startContainer
+      const prevDiv = textareaRefs.value[index - 1]
 
-      const beforeText = textNode.textContent.slice(0, currentPosition)
-      const afterText = textNode.textContent.slice(currentPosition)
-      textNode.textContent = beforeText + '\n' + afterText
+      // TODO: handle the case where the current block has newline
 
-      range.setStart(textNode, currentPosition + 1)
-      range.setEnd(textNode, currentPosition + 1)
-      selection.removeAllRanges()
-      selection.addRange(range)
+      prevDiv?.focus()
+      const range = new Range()
+      let textNode = prevDiv.firstChild
+      if (!textNode) {
+        textNode = document.createTextNode('')
+        prevDiv.appendChild(textNode)
+      }
+      const position = Math.min(currentPosition, textNode.length)
 
-      return
+      try {
+        range.setStart(textNode, position)
+        range.setEnd(textNode, position)
+        selection.removeAllRanges()
+        selection.addRange(range)
+      } catch (error) {
+        console.error('Range error:', error)
+      }
+      break
     }
 
-    event.preventDefault()
-    const newBlock = {
-      id: crypto.randomUUID(),
-      blockType: 'paragraph',
-      properties: { text: '' },
+    case 'ArrowDown': {
+      if (index >= blocks.value.length - 1) return
+
+      event.preventDefault()
+      const nextDiv = textareaRefs.value[index + 1]
+
+      // TODO: handle the case where the current block has newline
+
+      nextDiv?.focus()
+      const range = new Range()
+      let textNode = nextDiv.firstChild
+      if (!textNode) {
+        textNode = document.createTextNode('')
+        nextDiv.appendChild(textNode)
+      }
+      const position = Math.min(currentPosition, textNode.length)
+
+      try {
+        range.setStart(textNode, position)
+        range.setEnd(textNode, position)
+        selection.removeAllRanges()
+        selection.addRange(range)
+      } catch (error) {
+        console.error('Range error:', error)
+      }
+      break
     }
 
-    blocks.value.splice(index + 1, 0, newBlock)
-    await nextTick()
-    textareaRefs.value[index + 1]?.focus()
-    debouncedSave()
-  } else if (
-    event.key === 'Backspace' &&
-    !event.target.textContent &&
-    blocks.value.length > 1
-  ) {
-    event.preventDefault()
-    removeBlock(index)
-    await nextTick()
-    textareaRefs.value[index - 1]?.focus()
+    case 'Enter': {
+      event.preventDefault()
+
+      if (event.shiftKey) {
+        const range = selection.getRangeAt(0)
+        const textNode = range.startContainer
+
+        try {
+          const beforeText = textNode.textContent.slice(0, currentPosition)
+          const afterText = textNode.textContent.slice(currentPosition)
+          textNode.textContent = beforeText + '\n' + afterText
+
+          // TODO: handle the case where currentPosition is at the end of the text
+
+          range.setStart(textNode, currentPosition + 1)
+          range.setEnd(textNode, currentPosition + 1)
+          selection.removeAllRanges()
+          selection.addRange(range)
+        } catch (error) {
+          console.error('Error handling soft newline:', error)
+        }
+
+        break
+      }
+
+      const newBlock = {
+        id: crypto.randomUUID(),
+        blockType: 'paragraph',
+        properties: { text: '' },
+      }
+
+      try {
+        blocks.value.splice(index + 1, 0, newBlock)
+        await nextTick()
+        textareaRefs.value[index + 1]?.focus()
+        debouncedSave()
+      } catch (error) {
+        console.error('Error creating new block:', error)
+      }
+
+      break
+    }
+
+    case 'Backspace': {
+      if (!event.target.textContent && blocks.value.length > 1) {
+        event.preventDefault()
+        removeBlock(index)
+        await nextTick()
+        textareaRefs.value[index - 1]?.focus()
+      }
+      break
+    }
   }
 }
 
