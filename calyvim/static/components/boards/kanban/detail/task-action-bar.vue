@@ -1,5 +1,5 @@
 <script setup>
-import { Avatar, Divider, Select, SelectOption, Button } from 'ant-design-vue'
+import { Avatar, Divider, Select, SelectOption, Button, Tag } from 'ant-design-vue'
 import { generateAvatar } from '@/utils/helpers'
 
 import TaskTypeIcon from '../../../icons/task-type-icon.vue'
@@ -9,7 +9,7 @@ import {
   InboxOutlined,
   SyncOutlined,
 } from '@ant-design/icons-vue'
-import { CalendarClock } from 'lucide-vue-next'
+import { CalendarClock, CircleDashed, Lock } from 'lucide-vue-next'
 
 import { h, computed } from 'vue'
 
@@ -93,6 +93,7 @@ const priorityIds = computed(() => props.priorities.map((priority) => priority.i
         "
       />
       <span class="ml-2">{{ task?.assignee.displayName }} </span>
+      <Lock class="h-3 w-3 ml-1" />
     </SelectOption>
     <SelectOption
       :value="member.id"
@@ -202,6 +203,7 @@ const priorityIds = computed(() => props.priorities.map((priority) => priority.i
         <div class="flex items-center">
           <CalendarClock class="h-3 w-3 text-primary" />
           <div class="ml-1">{{ sprint.name }}</div>
+          <CircleDashed class="h-3 w-3 text-primary ml-1" v-if="sprint.isActive" />
         </div>
       </SelectOption>
     </Select>
