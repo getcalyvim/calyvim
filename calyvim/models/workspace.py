@@ -18,15 +18,20 @@ class Workspace(UUIDTimestampModel):
         max_length=124,
         help_text="This is the name of your company, team or organization.",
     )
+    code = models.CharField(
+        max_length=10, blank=True, null=True, unique=True, editable=False
+    )
     slug = models.SlugField(max_length=124, blank=True, unique=True)
     description = models.TextField(blank=True, null=True)
     created_by = models.ForeignKey(
         "User", on_delete=models.SET_NULL, null=True, related_name="created_workspaces"
     )
-    logo = models.ImageField(blank=True, null=True, upload_to="workspaces/logos/")
+    logo = models.ImageField(blank=True, null=True, upload_to="logos/")
     org_size = models.CharField(max_length=20, default="1")
-    
-    auto_assign_domain = models.CharField(max_length=120, blank=True, null=True, unique=True)
+
+    auto_assign_domain = models.CharField(
+        max_length=120, blank=True, null=True, unique=True
+    )
     auto_assign_membership = models.BooleanField(default=False)
 
     members = models.ManyToManyField(
@@ -48,6 +53,8 @@ class Workspace(UUIDTimestampModel):
         if self._state.adding:
             if not self.slug:
                 self.slug = slugify(self.name)
+            if not self.code:
+                self.code = get_random_string(6).upper()
         return super().save(*args, **kwargs)
 
     @transaction.atomic

@@ -25,7 +25,8 @@ const getFileDataURI = (file) => {
 export const uploadRequestHandler = async (
   { file, onSuccess, onError },
   modelName = 'default',
-  modelField = 'default'
+  modelField = 'default',
+  workspaceCode = 'default'
 ) => {
   const loadingMessage = message.loading('Uploading ...', 0)
   try {
@@ -33,7 +34,8 @@ export const uploadRequestHandler = async (
       file.name,
       file.type,
       modelName,
-      modelField
+      modelField,
+      workspaceCode
     )
 
     // Convert file to data URI
@@ -71,7 +73,8 @@ export const handleResponseError = (error) => {
     const { status, data } = error.response
 
     if (status === 500) {
-      errorMessage = 'A server error occurred. Please try again later or contact support at hey@calyvim.com.'
+      errorMessage =
+        'A server error occurred. Please try again later or contact support at hey@calyvim.com.'
     } else if (status === 429) {
       errorMessage = 'Too many requests. Please try again later.'
     } else if (data) {

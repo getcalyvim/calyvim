@@ -7,6 +7,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.utils.text import slugify
+from django.apps import apps
 
 from calyvim.models.base import UUIDTimestampModel
 
@@ -43,7 +44,7 @@ class User(UUIDTimestampModel, AbstractBaseUser):
     first_name = models.CharField(max_length=64)
     last_name = models.CharField(max_length=64, blank=True, null=True)
     display_name = models.CharField(max_length=124, blank=True)
-    avatar = models.ImageField(blank=True, null=True, upload_to="users/avatars/")
+    avatar = models.ImageField(blank=True, null=True, upload_to="user-avatars/")
     bio = models.TextField(blank=True, null=True)
     phone = models.CharField(max_length=30, blank=True, null=True)
 
@@ -187,3 +188,16 @@ class User(UUIDTimestampModel, AbstractBaseUser):
             settings.SECRET_KEY,
             algorithm="HS256",
         )
+
+    def assign_membership_via_domain(self):
+        if not self.is_generic_email:
+            Workspace = apps.get_model("calyvim", "Workspace")
+            WorkspaceMembership = apps.get_model("calyvim", "WorkspaceMembership")
+            domain = self.email.split("@")[1]
+            workspace = Workspace.objects.filter(auto_assign_domain=domain).first()
+            if workspace and workspace.auto_assign_membership:
+                WorkspaceMembership.objects.create(
+                    user=self,
+                    workspace=workspace,
+                    role=WorkspaceMembership.Role.COLLABORATOR,
+                )

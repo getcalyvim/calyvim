@@ -57,7 +57,8 @@ const handleCoverUpload = async (options) => {
   const { fileKey, fileSrc } = await uploadRequestHandler(
     options,
     'Board',
-    'cover'
+    'cover',
+    localStorage.getItem('workspaceCode'),
   )
   boardForm.value.cover = fileKey
   boardForm.value.coverSrc = fileSrc
@@ -67,7 +68,8 @@ const handleLogoUpload = async (options) => {
   const { fileKey, fileSrc } = await uploadRequestHandler(
     options,
     'Board',
-    'logo'
+    'logo',
+    localStorage.getItem('workspaceCode'),
   )
   boardForm.value.logo = fileKey
   boardForm.value.logoSrc = fileSrc

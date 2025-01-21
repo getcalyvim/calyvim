@@ -27,7 +27,8 @@ from calyvim.models import (
     NewslinePermission,
     Estimate,
     Sprint,
-    Document
+    Document,
+    TaskSnapshot,
 )
 
 
@@ -93,7 +94,7 @@ class UserAdmin(BaseUserAdmin):
             "Personal info",
             {"fields": ["username", "first_name", "last_name", "avatar"]},
         ),
-        ("Permissions", {"fields": ["is_admin", "verified_at", "verification_id"]}),
+        ("Permissions", {"fields": ["is_admin", "verified_at", "verification_id", "is_generic_email"]}),
     ]
     # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
     # overrides get_fieldsets to use this attribute when creating a user.
@@ -163,7 +164,7 @@ class BoardAdmin(admin.ModelAdmin):
         BoardTeamPermissionInlineAdmin,
         BoardPermissionInlineAdmin,
         EstimateInlineAdmin,
-        SprintInlineAdmin
+        SprintInlineAdmin,
     ]
 
 
@@ -219,10 +220,16 @@ class NewslineAdmin(admin.ModelAdmin):
     list_display = ["title", "author", "created_at"]
     inlines = [NewslinePermissionInline]
 
+
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
     list_display = ["name", "author", "created_at"]
     raw_id_fields = ["author"]
+
+
+@admin.register(TaskSnapshot)
+class TaskSnapshotAdmin(admin.ModelAdmin):
+    list_display = ["task", "state", "date"]
 
 
 # Now register the new UserAdmin...

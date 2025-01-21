@@ -56,6 +56,7 @@ class Task(UUIDTimestampModel):
     name = models.CharField(max_length=10, blank=True, editable=False)
     summary = models.CharField(max_length=225)
     description = models.TextField(blank=True, null=True)
+    description_raw = models.TextField(blank=True, null=True)
     sequence = models.FloatField(default=50000, blank=True)
     start_date = models.DateField(blank=True, null=True)
     end_date = models.DateField(blank=True, null=True)
@@ -192,7 +193,7 @@ class TaskAttachment(UUIDTimestampModel):
     task = models.ForeignKey(
         "Task", on_delete=models.CASCADE, related_name="attachments"
     )
-    attachment = models.FileField(upload_to="tasks/attachments/")
+    attachment = models.FileField(upload_to="task-attachments/")
     filename = models.CharField()
     mime_type = models.CharField(max_length=121)
 
@@ -201,3 +202,14 @@ class TaskAttachment(UUIDTimestampModel):
 
     def __str__(self) -> str:
         return str(self.id)
+
+
+class TaskSnapshot(UUIDTimestampModel):
+    task = models.ForeignKey("Task", on_delete=models.CASCADE, related_name="snapshots")
+    state = models.ForeignKey("State", on_delete=models.CASCADE)
+    date = models.DateField()
+
+    class Meta:
+        db_table = "task_snapshots"
+        unique_together = ["task", "date"]
+        ordering = ["date"]

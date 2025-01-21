@@ -148,7 +148,8 @@ const createAttachment = async (options) => {
   const { fileKey, fileSrc } = await uploadRequestHandler(
     options,
     'TaskAttachment',
-    'attachment'
+    'attachment',
+    localStorage.getItem('workspaceCode')
   )
 
   try {

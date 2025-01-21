@@ -24,6 +24,7 @@ class WorkspaceSerializer(NameAndSourceSerializerMixin, serializers.ModelSeriali
         fields = [
             "id",
             "name",
+            "code",
             "slug",
             "logo",
             "description",

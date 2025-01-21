@@ -7,9 +7,7 @@ import {
   FormItem,
   Input,
   InputPassword,
-  message,
 } from 'ant-design-vue'
-import { GithubOutlined, GoogleOutlined } from '@ant-design/icons-vue'
 import { accountsLoginAPI, accountsAuthenticateAPI } from '@/utils/api'
 import GoogleOauthButton from './google-oauth-button.vue'
 import BaseSpinner from '../base/base-spinner.vue'

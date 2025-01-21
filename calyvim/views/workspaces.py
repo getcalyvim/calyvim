@@ -16,7 +16,21 @@ from calyvim.mixins import PermissionCheckMixin, WorkspacePermissionMixin
 
 class WorkspaceCreateView(LoginRequiredMixin, View):
     def get(self, request):
-        context = {"props": {"base_url": settings.BASE_URL}}
+        available_domain = None
+        if not request.user.is_generic_email:
+            email_domain = request.user.email.split("@")[-1]
+            available_workspace_queryset = Workspace.objects.filter(
+                auto_assign_domain=email_domain
+            )
+            if not available_workspace_queryset.exists():
+                available_domain = email_domain
+
+        context = {
+            "props": {
+                "base_url": settings.BASE_URL,
+                "available_domain": available_domain,
+            }
+        }
         return render(request, "workspaces/create.html", context)
 
 
@@ -184,7 +198,7 @@ class WorkspaceSettingsGeneralView(LoginRequiredMixin, View):
         ).first()
         if not workspace_membership:
             raise Http404
-        
+
         context = {
             "props": {
                 "workspace": WorkspaceSerializer(workspace).data,
@@ -315,7 +329,7 @@ class WorkspaceTodosView(LoginRequiredMixin, PermissionCheckMixin, View):
             }
         }
         return render(request, "workspaces/todos.html", context)
-    
+
 
 class WorkspaceDocumentsView(LoginRequiredMixin, PermissionCheckMixin, View):
     def get(self, request, workspace_slug):

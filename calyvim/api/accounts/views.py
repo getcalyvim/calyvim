@@ -16,7 +16,7 @@ from calyvim.api.accounts.serializers import (
     PasswordResetConfirmSerializer,
     PasswordChangeSerializer,
 )
-from calyvim.models import User, WorkspaceInvite, WorkspaceMembership
+from calyvim.models import User, WorkspaceInvite, WorkspaceMembership, Workspace
 from calyvim.exceptions import InvalidInputException
 from calyvim.tasks import send_verification_email, send_password_reset_email
 from calyvim.throttles import ResendEmailThrottle
@@ -127,7 +127,6 @@ class AccountsViewSet(ViewSet):
             new_user.verify()
         else:
             send_verification_email.delay(new_user.email)
-
         login(request, new_user)
         user_serializer = UserSerializer(new_user)
         return Response(
@@ -275,7 +274,7 @@ class AccountsViewSet(ViewSet):
 
         request.user.set_password(data.get("new_password"))
         request.user.save()
-        
+
         return Response(
             data={"detail": "Password changed successfull!"}, status=status.HTTP_200_OK
         )
@@ -288,7 +287,7 @@ class AccountsViewSet(ViewSet):
                 data={"detail": "Session not found, please login again."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         try:
             decoded = jwt.decode(session, settings.SECRET_KEY, algorithms=["HS256"])
         except Exception as e:
@@ -297,16 +296,16 @@ class AccountsViewSet(ViewSet):
                 data={"detail": "Invalid session, please login again."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         user = User.objects.filter(id=decoded.get("user_id")).first()
         if not user:
             return Response(
                 data={"detail": "User not found, please login again."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         login(request, user)
-        
+
         response_data = {
             "detail": "User authenticated successfully!",
             "user": UserSerializer(user).data,

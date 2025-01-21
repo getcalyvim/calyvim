@@ -56,6 +56,10 @@ const props = defineProps({
     type: String,
     default: 'kanban',
   },
+  subPage: {
+    type: String,
+    default: 'kanban',
+  }
 })
 
 const openFilterDropdown = ref(false)
@@ -243,7 +247,7 @@ const addNewTask = (task) => {
       :workspace="props.workspace"
       :board="props.board"
       page="boards"
-      subPage="kanban"
+      :subPage="props.subPage"
     >
       <template #actions>
         <div class="flex items-center gap-3 mx-2">

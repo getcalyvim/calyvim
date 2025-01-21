@@ -215,6 +215,8 @@ onMounted(() => {
       openSubmenu.value = props.dynamicSubmenuKey
     }
   }
+
+  localStorage.setItem('workspaceCode', props.workspace.code)
 })
 
 const toggleSubmenu = (menu) => {
@@ -380,7 +382,7 @@ const showProfileMenu = () => {
                   v-for="subItem in item.submenu"
                   :key="subItem.key"
                   @click="handleNavigation(subItem.redirectPath)"
-                  class="pl-9 pr-3 py-[5px] text-sm flex flex-col gap-2"
+                  class="pl-9 pr-3 py-[6px] text-sm flex flex-col gap-2"
                   :class="{
                     'text-primary bg-gray-50': props.subPage === subItem.key,
                   }"

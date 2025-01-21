@@ -1,7 +1,6 @@
 from django.conf import settings
-import os
+import os, uuid, boto3
 from botocore.exceptions import ClientError
-import boto3
 from django.utils.crypto import get_random_string
 from django.utils import timezone
 from django.apps import apps
@@ -23,7 +22,9 @@ class UploadsViewSet(ViewSet):
         field = model._meta.get_field(model_field)
         return field.upload_to
 
-    def generate_unique_file_key(self, model_name, model_field, original_filename):
+    def generate_unique_file_key(
+        self, model_name, model_field, original_filename, workspace_code
+    ):
         self.get_model_field_upload_path(model_name, model_field)
 
         # Get the file extension
@@ -33,15 +34,13 @@ class UploadsViewSet(ViewSet):
         timestamp = timezone.now().strftime("%Y%m%d")
 
         # Combine all parts to create a unique filename
-        unique_filename = (
-            f"{timestamp}_{get_random_string(8)}_{get_random_string(8)}{file_extension}"
-        )
+        unique_filename = f"{str(uuid.uuid4())}-{timestamp}{file_extension}"
 
         # path prefix
         path_prefix = self.get_model_field_upload_path(model_name, model_field)
 
         # Prepend the base 'uploads' folder
-        file_key = os.path.join(path_prefix, unique_filename)
+        file_key = os.path.join(workspace_code, path_prefix, unique_filename)
 
         return file_key
 
@@ -84,7 +83,10 @@ class UploadsViewSet(ViewSet):
         data = serializer.validated_data
 
         file_key = self.generate_unique_file_key(
-            data.get("model_name"), data.get("model_field"), data.get("file_name")
+            data.get("model_name"),
+            data.get("model_field"),
+            data.get("file_name"),
+            data.get("workspace_code", "default"),
         )
 
         if settings.USE_S3:
