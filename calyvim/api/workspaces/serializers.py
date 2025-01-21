@@ -29,6 +29,8 @@ class WorkspaceCreateSerializer(serializers.Serializer):
     description = serializers.CharField(
         required=False, allow_blank=True, allow_null=True
     )
+    auto_assign_membership = serializers.BooleanField(default=False)
+    auto_assign_domain = serializers.CharField(required=False)
 
 
 class WorkspaceMembershipSerializer(serializers.ModelSerializer):

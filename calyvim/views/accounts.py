@@ -95,6 +95,7 @@ class VerifyConfirmView(View):
             raise Http404
 
         user.verify_confirm()
+        user.assign_membership_via_domain()
 
         # Generate access token and redirect to login page
         redirect_url = reverse("accounts-login") + f"?session={user.session}"
@@ -196,6 +197,7 @@ class OAuthGoogleCallbackView(View):
         if not user.google_id:
             user.google_id = str(user_data["id"])
             user.save(update_fields=["google_id"])
+            user.assign_membership_via_domain()
 
         # Generate access token and redirect to login page
         redirect_url = reverse("accounts-login") + f"?session={user.session}"

@@ -26,6 +26,21 @@ class WorkspaceViewSet(ViewSet):
         if not create_serializer.is_valid():
             raise InvalidInputException()
 
+        data = create_serializer.validated_data
+        if (
+            data.get("auto_assign_membership")
+            and data.get("auto_assign_domain")
+            and not request.user.is_generic_email
+        ):
+            existing_workspace = Workspace.objects.filter(
+                auto_assign_domain=data.get("auto_assign_domain")
+            ).first()
+            if existing_workspace:
+                return Response(
+                    data={"detail": "Workspace with this domain already exists."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
         workspace = Workspace(**create_serializer.validated_data)
         workspace.created_by = request.user
         workspace.save()
