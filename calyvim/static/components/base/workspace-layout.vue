@@ -215,6 +215,8 @@ onMounted(() => {
       openSubmenu.value = props.dynamicSubmenuKey
     }
   }
+
+  localStorage.setItem('workspaceCode', props.workspace.code)
 })
 
 const toggleSubmenu = (menu) => {

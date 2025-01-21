@@ -193,7 +193,7 @@ class TaskAttachment(UUIDTimestampModel):
     task = models.ForeignKey(
         "Task", on_delete=models.CASCADE, related_name="attachments"
     )
-    attachment = models.FileField(upload_to="tasks/attachments/")
+    attachment = models.FileField(upload_to="task-attachments/")
     filename = models.CharField()
     mime_type = models.CharField(max_length=121)
 

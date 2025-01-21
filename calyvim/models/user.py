@@ -43,7 +43,7 @@ class User(UUIDTimestampModel, AbstractBaseUser):
     first_name = models.CharField(max_length=64)
     last_name = models.CharField(max_length=64, blank=True, null=True)
     display_name = models.CharField(max_length=124, blank=True)
-    avatar = models.ImageField(blank=True, null=True, upload_to="users/avatars/")
+    avatar = models.ImageField(blank=True, null=True, upload_to="user-avatars/")
     bio = models.TextField(blank=True, null=True)
     phone = models.CharField(max_length=30, blank=True, null=True)
 
