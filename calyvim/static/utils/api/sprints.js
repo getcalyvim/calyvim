@@ -14,3 +14,7 @@ export const sprintDeleteAPI = (boardId, sprintId) =>
 
 export const sprintArchiveAPI = (boardId, sprintId) =>
   client.patch(`/boards/${boardId}/sprints/${sprintId}/archive`)
+
+export const sprintBurndownAPI = (boardId, sprintId) => {
+  return client.get(`/boards/${boardId}/sprints/${sprintId}/burndown`)
+}

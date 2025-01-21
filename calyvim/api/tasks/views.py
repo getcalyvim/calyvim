@@ -20,6 +20,7 @@ from calyvim.models import (
     BoardPermissionRole,
     Estimate,
     Sprint,
+    TaskSnapshot,
 )
 from calyvim.mixins import BoardMixin
 from calyvim.api.tasks.serializers import (
@@ -117,7 +118,7 @@ class TasksViewSet(BoardMixin, ViewSet):
                             BoardPermissionRole.ADMIN,
                             BoardPermissionRole.MAINTAINER,
                             BoardPermissionRole.COLLABORATOR,
-                            BoardPermissionRole.GUEST
+                            BoardPermissionRole.GUEST,
                         ]
                     ),
                 ]
@@ -491,6 +492,13 @@ class TasksViewSet(BoardMixin, ViewSet):
                 task_updates.append(
                     f"changed state from {task.state.name} to {state.name}."
                 )
+                today = timezone.now().date()
+                snapshot, created = TaskSnapshot.objects.get_or_create(
+                    task=task, date=today, defaults={"state": state}
+                )
+                if not created:
+                    snapshot.state = state
+                    snapshot.save(update_fields=["state"])
 
             if key == "sprint_id":
                 if value:
@@ -518,7 +526,7 @@ class TasksViewSet(BoardMixin, ViewSet):
 
             setattr(task, key, value)
         task.save(update_fields=data.keys())
-        
+
         if "description" in data:
             task.description_raw = strip_tags(data["description"])
             task.save(update_fields=["description_raw"])
@@ -571,6 +579,7 @@ class TasksViewSet(BoardMixin, ViewSet):
         task = get_object_or_raise_api_404(
             Task, board=request.board, id=kwargs.get("pk")
         )
+        old_state = task.state
         data = update_serializer.validated_data
 
         if data.get("previous_task") and data.get("next_task"):
@@ -593,6 +602,20 @@ class TasksViewSet(BoardMixin, ViewSet):
                 Task, board=request.board, id=data.get("next_task")
             )
             task.sequence = next_task.sequence / 2
+
+        # Check for valid state Id and Update State Task Log
+        if data.get("state_id"):
+            state = get_object_or_raise_api_404(
+                State, board=request.board, id=data.get("state_id")
+            )
+            if old_state != state:
+                today = timezone.now().date()
+                snapshot, created = TaskSnapshot.objects.get_or_create(
+                    task=task, date=today, defaults={"state": state}
+                )
+                if not created:
+                    snapshot.state = state
+                    snapshot.save(update_fields=["state"])
 
         task.state_id = data.get("state_id")
         task.save(update_fields=["state_id", "sequence"])

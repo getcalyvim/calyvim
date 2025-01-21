@@ -81,7 +81,7 @@ const priorityIds = computed(() => props.priorities.map((priority) => priority.i
     <SelectOption :value="null">None</SelectOption>
     <SelectOption
       :value="task.assigneeId"
-      v-if="!memberIds.includes(task.assigneeId)"
+      v-if="!!task.assigneeId && !memberIds.includes(task.assigneeId)"
       disabled
     >
       <Avatar
@@ -89,10 +89,10 @@ const priorityIds = computed(() => props.priorities.map((priority) => priority.i
         :src="
           !!task?.assignee?.avatar
             ? task.assignee.avatar
-            : generateAvatar(task?.assignee.displayName)
+            : generateAvatar(task?.assignee?.displayName)
         "
       />
-      <span class="ml-2">{{ task?.assignee.displayName }} </span>
+      <span class="ml-2">{{ task?.assignee?.displayName }} </span>
       <Lock class="h-3 w-3 ml-1" />
     </SelectOption>
     <SelectOption

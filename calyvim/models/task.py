@@ -202,3 +202,14 @@ class TaskAttachment(UUIDTimestampModel):
 
     def __str__(self) -> str:
         return str(self.id)
+
+
+class TaskSnapshot(UUIDTimestampModel):
+    task = models.ForeignKey("Task", on_delete=models.CASCADE, related_name="snapshots")
+    state = models.ForeignKey("State", on_delete=models.CASCADE)
+    date = models.DateField()
+
+    class Meta:
+        db_table = "task_snapshots"
+        unique_together = ["task", "date"]
+        ordering = ["date"]

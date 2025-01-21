@@ -11,7 +11,8 @@ import { handleResponseError, notify } from '@/utils/helpers'
 import { onMounted, ref, h, computed } from 'vue'
 import BaseSpinner from '../../../base/base-spinner.vue'
 import SprintAddForm from './sprint-add-form.vue'
-import { CalendarCog } from 'lucide-vue-next'
+import SprintAnalytics from './sprint-analytics.vue'
+import { CalendarCog, CircleDashed, ChartLine } from 'lucide-vue-next'
 import { useNProgress } from '@vueuse/integrations/useNProgress'
 
 import {
@@ -22,6 +23,7 @@ import {
   Dropdown,
   Menu,
   MenuItem,
+  Drawer,
 } from 'ant-design-vue'
 import {
   ArrowRightOutlined,
@@ -117,6 +119,17 @@ const archiveSprint = async (sprintId) => {
 onMounted(() => {
   fetchSprint()
 })
+
+const selectedSprintAnalytics = ref(null)
+const openSprintAnalytics = ref(false)
+const showSprintAnalytics = (sprintId) => {
+  selectedSprintAnalytics.value = sprintId
+  openSprintAnalytics.value = true
+}
+const closeSprintAnanlytics = () => {
+  selectedSprintAnalytics.value = null
+  openSprintAnalytics.value = false
+}
 </script>
 
 <template>
@@ -155,11 +168,7 @@ onMounted(() => {
         <div v-else>
           <List :dataSource="sprints">
             <template #renderItem="{ item }">
-              <ListItem
-                @mouseover="setHoveredItem(item)"
-                @mouseleave="clearHoveredItem"
-                class="px-2"
-              >
+              <ListItem :key="item.id" class="px-2">
                 <div class="flex justify-between w-full">
                   <div>
                     <SyncOutlined class="mr-2" />
@@ -168,18 +177,9 @@ onMounted(() => {
                       v-if="item.isActive"
                       class="ml-2 text-primary"
                       :bordered="false"
-                      >Active</Tag
                     >
-
-                    <Button
-                      type="text"
-                      size="small"
-                      v-show="hoveredItem === item.id && !item.isActive"
-                      class="ml-2 text-primary"
-                      @click="setActiveSprint(item.id)"
-                      v-else
-                      >Set as active</Button
-                    >
+                      Active
+                    </Tag>
                   </div>
 
                   <div class="flex items-center gap-2">
@@ -200,15 +200,19 @@ onMounted(() => {
                         <Menu>
                           <MenuItem @click="openSprintTasks(item.id)">
                             <UnorderedListOutlined />
-                            <span class="ml-2">View tasks</span>
+                            <span class="ml-2">View more info</span>
                           </MenuItem>
-                          <MenuItem disabled>
-                            <LineChartOutlined />
-                            <span class="ml-2">View burndown chart</span>
+                          <MenuItem @click="showSprintAnalytics(item.id)">
+                            <div class="flex items-center">
+                              <ChartLine class="w-3 h-3" />
+                              <div class="ml-2">View analytics</div>
+                            </div>
                           </MenuItem>
-                          <MenuItem disabled>
-                            <BarChartOutlined />
-                            <span class="ml-2">View velocity chart</span>
+                          <MenuItem @click="setActiveSprint(item.id)">
+                            <div class="flex items-center">
+                              <CircleDashed class="w-3 h-3" />
+                              <div class="ml-2">Set as active</div>
+                            </div>
                           </MenuItem>
                           <MenuItem @click="archiveSprint(item.id)">
                             <InboxOutlined />
@@ -224,10 +228,24 @@ onMounted(() => {
                   </div>
                 </div>
               </ListItem>
-            </template></List
-          >
+            </template>
+          </List>
         </div>
       </div>
+
+      <!-- Analytics Drawer -->
+      <Drawer
+        v-model:open="openSprintAnalytics"
+        placement="right"
+        title="Sprint Ananlytics"
+        destroyOnClose
+        @close="closeSprintAnanlytics"
+      >
+        <SprintAnalytics
+          :sprintId="selectedSprintAnalytics"
+          :boardId="props.board.id"
+        />
+      </Drawer>
     </template>
 
     <template #actions>
