@@ -11,7 +11,12 @@ import { useNProgress } from '@vueuse/integrations/useNProgress'
 import { CalendarCog } from 'lucide-vue-next'
 
 const props = defineProps(['workspace', 'currentUser'])
-const { isLoading } = useNProgress(null, { minimum: '0.5' })
+const { isLoading } = useNProgress(
+  {
+    loading: true,
+  },
+  { minimum: '0.5' }
+)
 
 const boards = ref([])
 const fetchBoards = async () => {
@@ -21,6 +26,7 @@ const fetchBoards = async () => {
   } catch (err) {
     handleResponseError(err)
   } finally {
+    isLoading.value = false
   }
 }
 
