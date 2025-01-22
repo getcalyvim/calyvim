@@ -293,6 +293,7 @@ const addLabel = async (labelId) => {
     )
     notify('ADDED', data.detail)
     await emit('update', currentTaskId.value, { labels: task.value.labels })
+    logComment(data.log)
   } catch (error) {
     handleResponseError(error)
   }
@@ -310,6 +311,7 @@ const deleteLabel = async (labelId) => {
     )
     notify('REMOVED', data.detail)
     await emit('update', currentTaskId.value, { labels: task.value.labels })
+    logComment(data.log)
   } catch (error) {
     handleResponseError(error)
   }
