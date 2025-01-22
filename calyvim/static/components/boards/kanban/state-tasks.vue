@@ -91,26 +91,26 @@ const createTask = async (stateId, title) => {
       taskType: 'issue',
     }
 
-    if(!!props.currentSprint) {
+    if (!!props.currentSprint) {
       newData['sprintId'] = props.currentSprint.id
     }
 
-    if(!!props.groupKey && !!store.groupBy) {
+    if (!!props.groupKey && !!store.groupBy) {
       switch (store.groupBy) {
         case 'priority':
           newData['priorityId'] = props.groupKey
-          break;
+          break
         case 'assignee':
           newData['assigneeId'] = props.groupKey
-          break;
+          break
         case 'sprint':
           newData['sprintId'] = props.groupKey
-          break;
+          break
         case 'task_type':
           newData['taskType'] = props.groupKey
-          break;
+          break
         default:
-          break;
+          break
       }
     }
 
@@ -135,7 +135,7 @@ const createTask = async (stateId, title) => {
       <VueDraggable
         v-model="state.tasks"
         :group="!!props.groupKey ? props.groupKey : 'default'"
-        class=""
+        animation="150"
         @update="(event) => updateTaskSequence(event, state.id)"
         @add="(event) => updateTaskSequence(event, state.id)"
       >
@@ -160,7 +160,9 @@ const createTask = async (stateId, title) => {
           @keyup.enter="(event) => createTask(state.id, event.target.value)"
         />
         <div class="flex justify-end">
-          <Button size="small" type="text" @click="closeTaskAddForm">Cancel</Button>
+          <Button size="small" type="text" @click="closeTaskAddForm"
+            >Cancel</Button
+          >
         </div>
       </Card>
       <div

@@ -196,8 +196,13 @@ class User(UUIDTimestampModel, AbstractBaseUser):
             domain = self.email.split("@")[1]
             workspace = Workspace.objects.filter(auto_assign_domain=domain).first()
             if workspace and workspace.auto_assign_membership:
-                WorkspaceMembership.objects.create(
-                    user=self,
-                    workspace=workspace,
-                    role=WorkspaceMembership.Role.COLLABORATOR,
-                )
+                # Check for membership
+                membership = WorkspaceMembership.objects.filter(
+                    user=self, workspace=workspace
+                ).first()
+                if not membership:
+                    WorkspaceMembership.objects.create(
+                        user=self,
+                        workspace=workspace,
+                        role=WorkspaceMembership.Role.COLLABORATOR,
+                    )
