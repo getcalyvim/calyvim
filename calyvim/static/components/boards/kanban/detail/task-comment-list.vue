@@ -1,8 +1,8 @@
 <script setup>
 import { Divider, Timeline, TimelineItem } from 'ant-design-vue'
-import { MessageOutlined, PushpinOutlined } from '@ant-design/icons-vue'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import { Activity, MessageSquare } from 'lucide-vue-next'
 
 dayjs.extend(relativeTime)
 
@@ -14,10 +14,10 @@ const props = defineProps(['boardId', 'taskId', 'comments'])
     <TimelineItem v-for="comment in props.comments" :key="comment.id">
       <template #dot>
         <template v-if="comment.commentType === 'update'">
-          <MessageOutlined />
+          <MessageSquare class="h-3 w-3 align-center" />
         </template>
         <template v-else>
-          <PushpinOutlined />
+          <Activity class="h-3 w-3 align-center" />
         </template>
       </template>
 

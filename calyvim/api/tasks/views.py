@@ -21,6 +21,7 @@ from calyvim.models import (
     Estimate,
     Sprint,
     TaskSnapshot,
+    Label,
 )
 from calyvim.mixins import BoardMixin
 from calyvim.api.tasks.serializers import (
@@ -556,7 +557,7 @@ class TasksViewSet(BoardMixin, ViewSet):
                     task_updates.append(f"removed assignees: {removed_names}")
 
         if task_updates:
-            TaskComment.objects.create(
+            comment = TaskComment.objects.create(
                 task=task,
                 content=", ".join(task_updates),
                 author=request.user,
@@ -564,7 +565,7 @@ class TasksViewSet(BoardMixin, ViewSet):
             )
         response_data = {
             "detail": "Task updated successfully.",
-            "log": ", ".join(task_updates),
+            "log": TaskCommentSerializer(comment).data,
         }
         return Response(
             data=response_data,
@@ -701,6 +702,54 @@ class TasksViewSet(BoardMixin, ViewSet):
         response_data = {
             "detail": f"Shareable link for {task.name} generated successfully.",
             "share_link": shareable_link,
+        }
+        return Response(
+            data=response_data,
+            status=status.HTTP_200_OK,
+        )
+
+    @action(methods=["PATCH"], detail=True, url_path="add-label")
+    def add_label(self, request, *args, **kwargs):
+        label_id = request.query_params.get("label_id")
+        task = get_object_or_raise_api_404(
+            Task, board=request.board, id=kwargs.get("pk")
+        )
+        label = get_object_or_raise_api_404(Label, board=request.board, id=label_id)
+        task.labels.add(label)
+        comment = TaskComment.objects.create(
+            task=task,
+            content=f"added label {label.name}",
+            author=request.user,
+            comment_type=TaskComment.CommentType.ACTIVITY,
+        )
+
+        response_data = {
+            "detail": f"Label '{label.name}' added to task '{task.name}'",
+            "log": TaskCommentSerializer(comment).data,
+        }
+
+        return Response(
+            data=response_data,
+            status=status.HTTP_200_OK,
+        )
+
+    @action(methods=["PATCH"], detail=True, url_path="remove-label")
+    def remove_label(self, request, *args, **kwargs):
+        label_id = request.query_params.get("label_id")
+        task = get_object_or_raise_api_404(
+            Task, board=request.board, id=kwargs.get("pk")
+        )
+        label = get_object_or_raise_api_404(Label, board=request.board, id=label_id)
+        task.labels.remove(label)
+        comment = TaskComment.objects.create(
+            task=task,
+            content=f"removed label {label.name}",
+            author=request.user,
+            comment_type=TaskComment.CommentType.ACTIVITY,
+        )
+        response_data = {
+            "detail": f"Label '{label.name}' removed from task '{task.name}'",
+            "log": TaskCommentSerializer(comment).data,
         }
         return Response(
             data=response_data,

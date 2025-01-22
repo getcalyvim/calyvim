@@ -62,3 +62,25 @@ export const taskUpdateSequenceAPI = (boardId, taskId, data) =>
 
 export const taskShareLinkAPI = (boardId, taskId) =>
   client.get(`/boards/${boardId}/tasks/${taskId}/share-link`)
+
+export const taskAddLabelAPI = (boardId, taskId, labelId) =>
+  client.patch(
+    `/boards/${boardId}/tasks/${taskId}/add-label`,
+    {},
+    {
+      params: {
+        labelId,
+      },
+    }
+  )
+
+export const taskRemoveLabelAPI = (boardId, taskId, labelId) =>
+  client.patch(
+    `/boards/${boardId}/tasks/${taskId}/remove-label`,
+    {},
+    {
+      params: {
+        labelId,
+      },
+    }
+  )

@@ -1,5 +1,5 @@
 <script setup>
-import { Avatar, AvatarGroup, Tag } from 'ant-design-vue'
+import { Avatar, AvatarGroup, Tag, Badge } from 'ant-design-vue'
 import { generateAvatar } from '@/utils/helpers'
 import TaskTypeIcon from '@/components/icons/task-type-icon.vue'
 import {
@@ -8,7 +8,7 @@ import {
   MinusCircleOutlined,
   SyncOutlined,
 } from '@ant-design/icons-vue'
-import { CalendarClock } from 'lucide-vue-next'
+import { CalendarClock, Dot } from 'lucide-vue-next'
 import { useBoardStore } from '@/stores/board'
 
 
@@ -79,5 +79,12 @@ const store = useBoardStore()
           : generateAvatar(props.task.assignee.displayName)
       "
     />
+  </div>
+
+  <div class="flex gap-2 items-center mt-2">
+    <div v-for="label in props.task.labels" :key="label.id" class="flex items-center">
+      <Badge :color="label.color" />
+      <div class="text-xs">{{ label.name }}</div> 
+    </div>
   </div>
 </template>

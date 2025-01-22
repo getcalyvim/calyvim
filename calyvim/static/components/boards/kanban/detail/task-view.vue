@@ -55,6 +55,8 @@ import {
   taskListAPI,
   taskArchiveApi,
   taskShareLinkAPI,
+  taskAddLabelAPI,
+  taskRemoveLabelAPI,
 } from '@/utils/api'
 import TaskTypeIcon from '../../../icons/task-type-icon.vue'
 
@@ -84,6 +86,10 @@ const props = defineProps({
     default: () => [],
   },
   sprints: {
+    type: Array,
+    default: () => [],
+  },
+  labels: {
     type: Array,
     default: () => [],
   },
@@ -275,6 +281,41 @@ const shareCopyToClipboard = async () => {
     handleResponseError(error)
   }
 }
+
+const addLabel = async (labelId) => {
+  try {
+    const label = props.labels.find((label) => label.id === labelId)
+    task.value.labels.push(label)
+    const { data } = await taskAddLabelAPI(
+      props.board.id,
+      currentTaskId.value,
+      labelId
+    )
+    notify('ADDED', data.detail)
+    await emit('update', currentTaskId.value, { labels: task.value.labels })
+    logComment(data.log)
+  } catch (error) {
+    handleResponseError(error)
+  }
+}
+
+const deleteLabel = async (labelId) => {
+  try {
+    task.value.labels = task.value.labels.filter(
+      (label) => label.id !== labelId
+    )
+    const { data } = await taskRemoveLabelAPI(
+      props.board.id,
+      currentTaskId.value,
+      labelId
+    )
+    notify('REMOVED', data.detail)
+    await emit('update', currentTaskId.value, { labels: task.value.labels })
+    logComment(data.log)
+  } catch (error) {
+    handleResponseError(error)
+  }
+}
 </script>
 
 <template>
@@ -444,7 +485,10 @@ const shareCopyToClipboard = async () => {
             :priorities="props.priorities"
             :states="props.states"
             :sprints="props.sprints"
+            :labels="props.labels"
             @update="updateTaskItem"
+            @addLabel="addLabel"
+            @deleteLabel="deleteLabel"
           />
         </div>
       </div>
