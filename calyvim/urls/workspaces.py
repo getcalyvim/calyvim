@@ -1,6 +1,6 @@
 from django.urls import path
 from calyvim.views.workspaces import (
-    WorkspaceDashboardView,
+    WorkspaceInboxView,
     WorkspaceMembersView,
     WorkspaceTeamsView,
     WorkspaceTeamsEditView,
@@ -20,7 +20,7 @@ from calyvim.views.workspaces import (
 # fmt: off
 urlpatterns = [
     path("create/", WorkspaceCreateView.as_view(), name="workspace-create"),
-    path("<str:workspace_slug>/", WorkspaceDashboardView.as_view(), name="workspaces-dashboard"),
+    path("<str:workspace_slug>/inbox/", WorkspaceInboxView.as_view(), name="workspace-inbox"),
     path("<str:workspace_slug>/boards/", WorkspaceBoardsView.as_view(), name="workspace-boards"),
     path("<str:workspace_slug>/newslines/", WorkspaceNewslinesView.as_view(), name="workspace-newslines"),
     path("<str:workspace_slug>/todos/", WorkspaceTodosView.as_view(), name="workspace-todos"),

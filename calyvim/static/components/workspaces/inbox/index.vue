@@ -9,24 +9,6 @@ import TasksHeatmap from './tasks-heatmap.vue';
 
 const props = defineProps(['workspace', 'currentUser'])
 
-const currentDateTime = ref(new Date())
-
-const greeting = computed(() => {
-    const hour = currentDateTime.value.getHours()
-    if (hour < 12) return 'Good morning'
-    if (hour < 18) return 'Good afternoon'
-    return 'Good evening'
-})
-
-const formattedDateTime = computed(() => {
-    const options = { weekday: 'long', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
-    return currentDateTime.value.toLocaleDateString('en-US', options)
-})
-
-const updateDateTime = () => {
-    currentDateTime.value = new Date()
-}
-
 const stats = ref({
     assignedTasksCount: 0,
     createdTasksCount: 0,
@@ -78,26 +60,18 @@ const taskData = {
 };
 
 onMounted(() => {
-    updateDateTime()
-    // Update time every minute
-    setInterval(updateDateTime, 60000)
-
     loadStats()
 })
 </script>
 
 <template>
-    <WorkspaceLayout :workspace="props.workspace" page="dashboard" :currentUser="props.currentUser">
+    <WorkspaceLayout :workspace="props.workspace" page="inbox" :currentUser="props.currentUser">
         <div class="p-4">
             <div class="flex justify-between">
                 <div>
                     <div class="text-lg font-bold">
-                        {{ greeting }},
-                        {{ props.currentUser.firstName }} {{ props.currentUser?.lastName }}
-                    </div>
-                    <div class="text-gray-500">
-                        <span>{{ greeting === 'Good morning' ? '☀️' : '🌤️' }}</span>
-                        {{ formattedDateTime }}
+                        Hey,
+                        {{ props.currentUser.displayName }}
                     </div>
                 </div>
             </div>

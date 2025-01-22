@@ -45,7 +45,7 @@ class WorkspaceIndexView(LoginRequiredMixin, View):
             and request.user.current_workspace.deleted_at == None
         ):
             return redirect(
-                "workspaces-dashboard",
+                "workspace-inbox",
                 workspace_slug=request.user.current_workspace.slug,
             )
 
@@ -53,10 +53,10 @@ class WorkspaceIndexView(LoginRequiredMixin, View):
         if not workspace:
             return redirect("workspace-create")
 
-        return redirect("workspaces-dashboard", workspace_slug=workspace.slug)
+        return redirect("workspace-inbox", workspace_slug=workspace.slug)
 
 
-class WorkspaceDashboardView(LoginRequiredMixin, View):
+class WorkspaceInboxView(LoginRequiredMixin, View):
     def get(self, request, workspace_slug):
         workspace = Workspace.objects.filter(slug=workspace_slug).first()
         if not workspace:
@@ -83,7 +83,7 @@ class WorkspaceDashboardView(LoginRequiredMixin, View):
                 "current_user": ProfileSerializer(request.user).data,
             }
         }
-        return render(request, "workspaces/dashboard.html", context)
+        return render(request, "workspaces/inbox.html", context)
 
 
 class WorkspaceBoardsView(LoginRequiredMixin, PermissionCheckMixin, View):
@@ -264,7 +264,7 @@ class WorkspaceMemberConfirmationView(View):
             print(e)
 
         # login(request, user)
-        # return redirect("workspaces-dashboard", workspace_slug=invite.workspace.slug)
+        # return redirect("workspace-inbox", workspace_slug=invite.workspace.slug)
         # Generate access token and redirect to login page
         redirect_url = reverse("accounts-login") + f"?session={user.session}"
         return redirect(redirect_url)
@@ -285,7 +285,7 @@ class WorkspaceLeaveView(LoginRequiredMixin, View):
         if workspace.created_by == request.user:
             # Don't allow to leave org to workspace owners
             messages.warning(request, "Workspace owners can't leave workspace.")
-            return redirect("workspaces-dashboard", workspace_slug=workspace.slug)
+            return redirect("workspace-inbox", workspace_slug=workspace.slug)
 
         workspace_membership.delete()
         return redirect("workspace-index")

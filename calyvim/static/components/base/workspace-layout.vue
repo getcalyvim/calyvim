@@ -1,10 +1,9 @@
-# WorkspaceLayout.vue
 <script setup>
 import { Layout, Avatar, Dropdown, Card } from 'ant-design-vue'
 import { ref, onMounted } from 'vue'
 import {
   LayoutDashboard,
-  Kanban,
+  Inbox,
   Newspaper,
   ListTodo,
   Settings,
@@ -58,10 +57,10 @@ const openSubmenu = ref('')
 const currentUser = ref(null)
 const baseMenuItems = ref([
   {
-    key: 'dashboard',
-    label: 'Dashboard',
-    icon: LayoutDashboard,
-    redirectPath: `/${props.workspace.slug}/`,
+    key: 'inbox',
+    label: 'Inbox',
+    icon: Inbox,
+    redirectPath: `/${props.workspace.slug}/inbox`,
   },
   {
     key: 'boards',
