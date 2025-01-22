@@ -571,6 +571,7 @@ const addNewTask = (task) => {
             :priorities="store.priorities"
             :states="store.states"
             :sprints="store.sprints"
+            :labels="store.labels"
             @update="updateTask"
           />
         </Drawer>

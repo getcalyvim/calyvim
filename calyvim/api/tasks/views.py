@@ -21,6 +21,7 @@ from calyvim.models import (
     Estimate,
     Sprint,
     TaskSnapshot,
+    Label,
 )
 from calyvim.mixins import BoardMixin
 from calyvim.api.tasks.serializers import (
@@ -704,5 +705,31 @@ class TasksViewSet(BoardMixin, ViewSet):
         }
         return Response(
             data=response_data,
+            status=status.HTTP_200_OK,
+        )
+
+    @action(methods=["PATCH"], detail=True, url_path="add-label")
+    def add_label(self, request, *args, **kwargs):
+        label_id = request.query_params.get("label_id")
+        task = get_object_or_raise_api_404(
+            Task, board=request.board, id=kwargs.get("pk")
+        )
+        label = get_object_or_raise_api_404(Label, board=request.board, id=label_id)
+        task.labels.add(label)
+        return Response(
+            data={"detail": f"Label '{label.name}' added to task '{task.name}'"},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(methods=["PATCH"], detail=True, url_path="remove-label")
+    def remove_label(self, request, *args, **kwargs):
+        label_id = request.query_params.get("label_id")
+        task = get_object_or_raise_api_404(
+            Task, board=request.board, id=kwargs.get("pk")
+        )
+        label = get_object_or_raise_api_404(Label, board=request.board, id=label_id)
+        task.labels.remove(label)
+        return Response(
+            data={"detail": f"Label '{label.name}' removed from task '{task.name}'"},
             status=status.HTTP_200_OK,
         )
