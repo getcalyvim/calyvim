@@ -48,7 +48,7 @@ const store = useBoardStore()
 
   <div>{{ props.task.summary }}</div>
 
-  <div class="flex gap-3 items-center mt-2">
+  <div class="flex gap-3 items-center mt-1 mb-2">
     <div
       v-for="label in props.task.labels"
       :key="label.id"

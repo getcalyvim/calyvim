@@ -253,7 +253,7 @@ const updateTaskv2 = async (updatedData) => {
       currentTaskId.value,
       updatedData
     )
-    notify('UPDATED', data.log)
+    notify('UPDATED', data.detail)
     logComment(data.log)
   } catch (error) {
     handleResponseError(error)

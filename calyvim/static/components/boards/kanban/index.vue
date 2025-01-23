@@ -203,6 +203,12 @@ const updateTask = async (taskId, updatedData) => {
         const sprint = store.sprints.find((s) => s.id === value)
         updatedData['sprint'] = sprint
 
+        if(!!props.currentSprint && value !== props.currentSprint.id) {
+          store.removeTask(taskId)
+
+          break
+        }
+
         store.updateTask(
           taskId,
           updatedData,
@@ -252,6 +258,7 @@ const removeTask = (taskId) => {
       :board="props.board"
       page="boards"
       :subPage="props.subPage"
+      :currentSprint="props.currentSprint"
     >
       <template #actions>
         <div class="flex items-center gap-3 mx-2">

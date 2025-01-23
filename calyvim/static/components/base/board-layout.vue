@@ -3,12 +3,14 @@ import { Tabs, Avatar } from 'ant-design-vue'
 import { ref, h } from 'vue'
 import WorkspaceLayout from './workspace-layout.vue'
 import { generateAvatar } from '@/utils/helpers'
-import {
-  Kanban,
-  CalendarClock,
-  Settings2,
-} from 'lucide-vue-next'
-const props = defineProps(['board', 'workspace', 'page', 'subPage'])
+import { Kanban, CalendarClock, Settings2, FastForward } from 'lucide-vue-next'
+const props = defineProps([
+  'board',
+  'workspace',
+  'page',
+  'subPage',
+  'currentSprint',
+])
 
 const activeKey = ref(props.page)
 
@@ -18,26 +20,32 @@ const subMenuItems = [
     label: 'Kanban',
     icon: Kanban,
     key: 'kanban',
-    redirectPath: `/boards/${props.board.id}`
+    redirectPath: `/boards/${props.board.id}`,
   },
   {
     label: 'Sprint',
     icon: CalendarClock,
     key: 'sprints',
-    redirectPath: `/boards/${props.board.id}/sprints`
+    redirectPath: `/boards/${props.board.id}/sprints`,
   },
-   
+
   {
     label: 'Settings',
     icon: Settings2,
     key: 'settings',
-    redirectPath: `/boards/${props.board.id}/settings`
-  }
+    redirectPath: `/boards/${props.board.id}/settings`,
+  },
 ]
 </script>
 
 <template>
-  <WorkspaceLayout :workspace="props.workspace" :page="props.page" :dynamicSubmenu="subMenuItems" dynamicSubmenuKey="boards" :subPage="props.subPage">
+  <WorkspaceLayout
+    :workspace="props.workspace"
+    :page="props.page"
+    :dynamicSubmenu="subMenuItems"
+    dynamicSubmenuKey="boards"
+    :subPage="props.subPage"
+  >
     <Tabs v-model:active-key="activeKey" class="pl-1">
       <template #leftExtra>
         <div class="flex items-center ml-2 mr-5 my-3 gap-1">
@@ -51,12 +59,16 @@ const subMenuItems = [
                 : generateAvatar(props.board.name, 10)
             "
           />
-          <div class="font-semibold">{{ props.board.name }}</div>
+          <div class="font-bold">{{ props.board.name }}</div>
+          <div v-if="!!props.currentSprint" class="ml-2 flex items-center gap-1">
+            <FastForward class="h-4 w-4 text-primary mr-1" />
+            <div class="text-xs font-semibold">{{ props.currentSprint.name }}</div>
+          </div>
         </div>
       </template>
 
       <template #rightExtra>
-          <slot name="actions"></slot>
+        <slot name="actions"></slot>
       </template>
     </Tabs>
     <div class="pl-2">
