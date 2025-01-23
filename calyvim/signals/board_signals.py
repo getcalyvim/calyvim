@@ -1,6 +1,7 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.cache import cache
 from calyvim.models import (
     Board,
     BoardPermission,
@@ -8,6 +9,8 @@ from calyvim.models import (
     State,
     Priority,
     Estimate,
+    Label,
+    Sprint,
 )
 
 
@@ -93,3 +96,17 @@ def setup_initial_project(sender, instance, created, **kwargs):
         else:
             template_board = instance.template
             print("Template Board --> ", template_board)
+
+
+@receiver([post_save, post_delete], sender=State)
+@receiver([post_save, post_delete], sender=Priority)
+@receiver([post_save, post_delete], sender=Estimate)
+@receiver([post_save, post_delete], sender=Label)
+@receiver([post_save, post_delete], sender=Sprint)
+def invalidate_board_metadata_cache(sender, instance, **kwargs):
+    if hasattr(instance, "board"):
+        board = instance.board
+    else:
+        board = instance
+
+    cache.delete(board.metadata_cache_key)

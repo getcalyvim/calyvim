@@ -121,6 +121,10 @@ class Board(UUIDTimestampModel):
             .distinct()
             .order_by("first_name")
         )
+    
+    @property
+    def metadata_cache_key(self):
+        return f"board:{self.id}:metadata"
 
 
 class BoardTeamPermission(UUIDTimestampModel):

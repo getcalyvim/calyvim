@@ -1,5 +1,6 @@
 from django.db.models import F, Value
 from django.db.models.functions import Concat
+from django.core.cache import cache
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import status
@@ -207,6 +208,27 @@ class BoardViewSet(ViewSet):
         labels = LabelSerializer(board.labels.all(), many=True)
         members = MemberSerializer(board.members.all(), many=True)
         sprints = SprintSerializer(board.sprints.all().order_by("-created_at"), many=True)
+
+        # Check if metadata is already cached
+        cached_metadata = cache.get(board.metadata_cache_key)
+
+        if cached_metadata:
+            return Response(cached_metadata, status=status.HTTP_200_OK)
+
+        # If not cached, proceed to serialize the data
+        response_data = {
+            "metadata": {
+                "states": states.data,
+                "priorities": priorities.data,
+                "labels": labels.data,
+                "members": members.data,
+                "sprints": sprints.data,
+            },
+            "detail": "Metadata for the board",
+        }
+
+        # Cache the metadata for future requests
+        cache.set(board.metadata_cache_key, response_data, timeout=60 * 60 * 24)  # Cache for 1 day
 
         response_data = {
             "metadata": {
