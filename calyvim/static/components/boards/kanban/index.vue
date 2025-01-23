@@ -239,6 +239,10 @@ const addNewTask = (task) => {
   openTaskAddDropdown.value = false
   store.addTask(task)
 }
+
+const removeTask = (taskId) => {
+  store.removeTask(taskId)
+}
 </script>
 
 <template>
@@ -573,6 +577,7 @@ const addNewTask = (task) => {
             :sprints="store.sprints"
             :labels="store.labels"
             @update="updateTask"
+            @remove="removeTask"
           />
         </Drawer>
       </template>

@@ -11,7 +11,6 @@ import {
 import { CalendarClock, Dot } from 'lucide-vue-next'
 import { useBoardStore } from '@/stores/board'
 
-
 // const props = defineProps(['board', 'task'])
 const props = defineProps({
   board: {
@@ -49,12 +48,29 @@ const store = useBoardStore()
 
   <div>{{ props.task.summary }}</div>
 
+  <div class="flex gap-3 items-center mt-2">
+    <div
+      v-for="label in props.task.labels"
+      :key="label.id"
+      class="flex items-center gap-1"
+    >
+      <div
+        class="h-1 w-1 rounded-full"
+        :style="{ backgroundColor: label.color }"
+      ></div>
+      <div class="text-xs leading-none font-semibold">{{ label.name }}</div>
+    </div>
+  </div>
+
   <div class="mt-2 flex justify-between items-center">
     <div class="flex items-start gap-1">
       <Tag
         :bordered="false"
         class="text-xs font-semibold"
-        v-if="!!props.task.priority && (!store.groupBy || store.groupBy !== 'priority')"
+        v-if="
+          !!props.task.priority &&
+          (!store.groupBy || store.groupBy !== 'priority')
+        "
       >
         <FlagOutlined class="text-primary" />
         <span class="text-primary">{{ props.task?.priority.name }}</span>
@@ -63,14 +79,18 @@ const store = useBoardStore()
       <Tag
         :bordered="false"
         class="text-xs font-semibold flex items-center gap-1"
-        v-if="!!props.task.sprint && (!store.groupBy || store.groupBy !== 'sprint')"
+        v-if="
+          !!props.task.sprint && (!store.groupBy || store.groupBy !== 'sprint')
+        "
       >
         <CalendarClock class="h-3 w-3" />
         <div>{{ props.task?.sprint.name }}</div>
       </Tag>
     </div>
     <Avatar
-      v-if="props.task.assignee && (!store.groupBy || store.groupBy !== 'assignee')"
+      v-if="
+        props.task.assignee && (!store.groupBy || store.groupBy !== 'assignee')
+      "
       :size="22"
       class="mr-1"
       :src="
@@ -79,12 +99,5 @@ const store = useBoardStore()
           : generateAvatar(props.task.assignee.displayName)
       "
     />
-  </div>
-
-  <div class="flex gap-2 items-center mt-2">
-    <div v-for="label in props.task.labels" :key="label.id" class="flex items-center">
-      <Badge :color="label.color" />
-      <div class="text-xs">{{ label.name }}</div> 
-    </div>
   </div>
 </template>

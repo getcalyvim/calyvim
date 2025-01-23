@@ -96,7 +96,7 @@ const props = defineProps({
 })
 
 const currentTaskId = ref(props.taskId)
-const emit = defineEmits(['update', 'selected'])
+const emit = defineEmits(['update', 'selected', 'remove'])
 
 // State
 const loading = ref(false)
@@ -107,7 +107,6 @@ const comments = ref([])
 const attachments = ref([])
 const subtasks = ref([])
 const showSubtaskAddForm = ref(false)
-const openDescriptionActionButton = ref(false)
 const isArchived = ref(false)
 
 // Comments Management
@@ -316,6 +315,18 @@ const deleteLabel = async (labelId) => {
     handleResponseError(error)
   }
 }
+
+const archive = async () => {
+  try {
+    const { data } = await taskArchiveApi(props.board.id, currentTaskId.value)
+    notify('ARCHIVED', data.detail)
+    isArchived.value = true
+    logComment(data.log)
+    emit('remove', currentTaskId.value)
+  } catch (error) {
+    handleResponseError(error)
+  }
+}
 </script>
 
 <template>
@@ -489,6 +500,7 @@ const deleteLabel = async (labelId) => {
             @update="updateTaskItem"
             @addLabel="addLabel"
             @deleteLabel="deleteLabel"
+            @archive="archive"
           />
         </div>
       </div>

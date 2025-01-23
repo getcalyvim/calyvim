@@ -631,9 +631,17 @@ class TasksViewSet(BoardMixin, ViewSet):
             Task, board=request.board, id=kwargs.get("pk")
         )
         task.archive()
-        return Response(
-            data={"detail": "Task archived successfully"}, status=status.HTTP_200_OK
+        comment = TaskComment.objects.create(
+            task=task,
+            content=f"task has been archived",
+            author=request.user,
+            comment_type=TaskComment.CommentType.ACTIVITY,
         )
+        response_data = {
+            "detail": f"Task '{task.name}' archived successfully",
+            "log": TaskCommentSerializer(comment).data,
+        }
+        return Response(data=response_data, status=status.HTTP_200_OK)
 
     @transaction.atomic
     @action(methods=["PATCH"], detail=False)

@@ -214,6 +214,26 @@ export const useBoardStore = defineStore('board', () => {
     }
   }
 
+  const removeTask = (taskId) => {
+    if (!groupBy.value) {
+      kanban.value.forEach((state) => {
+        const taskIndex = state.tasks.findIndex((task) => task.id === taskId)
+        if (taskIndex !== -1) {
+          state.tasks.splice(taskIndex, 1)
+        }
+      })
+    } else {
+      kanban.value.forEach((item) => {
+        item.states.forEach((state) => {
+          const taskIndex = state.tasks.findIndex((task) => task.id === taskId)
+          if (taskIndex !== -1) {
+            state.tasks.splice(taskIndex, 1)
+          }
+        })
+      })
+    }
+  }
+
   const setActiveSprint = (sprintId) => {
     sprintFilters.value = [sprintId]
   }
@@ -259,5 +279,6 @@ export const useBoardStore = defineStore('board', () => {
     clearFilters,
     setActiveSprint,
     addTask,
+    removeTask
   }
 })

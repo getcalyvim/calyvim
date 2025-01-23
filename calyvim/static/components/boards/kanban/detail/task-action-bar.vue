@@ -64,7 +64,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update', 'addLabel', 'deleteLabel'])
+const emit = defineEmits(['update', 'addLabel', 'deleteLabel', 'archive'])
 
 const memberIds = computed(() => props.members.map((member) => member.id))
 const availableTags = computed(() =>
