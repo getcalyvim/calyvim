@@ -32,7 +32,7 @@ import {
 import { useNProgress } from '@vueuse/integrations/useNProgress'
 import FilterList from '@/components/boards/kanban/filters/filter-list.vue'
 import TaskAddForm from '@/components/boards/kanban/task-add-form.vue'
-import TaskView from '@/components/boards/kanban/detail/task-view.vue'
+import TaskView from '@/components/boards/task-detail/task-view.vue'
 import StateMenu from './state-menu.vue'
 import StateTaskSkeletonLoader from './state-task-skeleton-loader.vue'
 import StateList from './state-list.vue'

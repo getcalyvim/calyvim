@@ -13,7 +13,7 @@ import { h, ref } from 'vue'
 import { generateAvatar, handleResponseError, notify } from '@/utils/helpers'
 import { FlagOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import { taskCreateAPI } from '@/utils/api'
-import TaskTypeIcon from '../../../icons/task-type-icon.vue'
+import TaskTypeIcon from '@/components/icons/task-type-icon.vue'
 
 const props = defineProps([
   'task',

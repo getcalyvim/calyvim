@@ -58,7 +58,7 @@ import {
   taskAddLabelAPI,
   taskRemoveLabelAPI,
 } from '@/utils/api'
-import TaskTypeIcon from '../../../icons/task-type-icon.vue'
+import TaskTypeIcon from '@/components/icons/task-type-icon.vue'
 
 // Setup dayjs
 dayjs.extend(relativeTime)

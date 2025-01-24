@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue'
 import { stateListAPI, boardMembersListAPI, priorityListAPI } from '@/utils/api'
 import { handleResponseError } from '@/utils/helpers'
 import { useNProgress } from '@vueuse/integrations/useNProgress'
-import TaskView from '@/components/boards/kanban/detail/task-view.vue'
+import TaskView from '@/components/boards/task-detail/task-view.vue'
 import BoardLayout from '@/components/base/board-layout.vue'
 
 const { isLoading } = useNProgress(null, { minimum: '0.5', initial: true })

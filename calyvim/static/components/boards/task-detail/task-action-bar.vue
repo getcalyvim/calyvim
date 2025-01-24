@@ -13,7 +13,7 @@ import {
 } from 'ant-design-vue'
 import { generateAvatar } from '@/utils/helpers'
 
-import TaskTypeIcon from '../../../icons/task-type-icon.vue'
+import TaskTypeIcon from '@/components/icons/task-type-icon.vue'
 import {
   ClockCircleOutlined,
   FlagOutlined,
