@@ -1,25 +1,51 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, h } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
+import Placeholder from '@tiptap/extension-placeholder'
 import { Button } from 'ant-design-vue'
-import { Check, X } from 'lucide-vue-next'
+import {
+  Bold,
+  Italic,
+  Strikethrough,
+  List,
+  ListOrdered,
+  Quote,
+  Heading1,
+  Heading2,
+  Heading3,
+  Code,
+  Minus,
+  Trash2,
+  Check,
+  X,
+  Save,
+} from 'lucide-vue-next'
 
 const props = defineProps({
   modelValue: {
     type: String,
     default: '',
   },
+  placeholder: {
+    type: String,
+    default: 'Type something...',
+  },
 })
 
 const emit = defineEmits(['update:modelValue', 'saved'])
 
 const isEditorFocused = ref(false)
-const isEditMode = ref(false) // New state to track edit mode
+const isEditMode = ref(false)
 
 const editor = useEditor({
   content: props.modelValue,
-  extensions: [StarterKit],
+  extensions: [
+    StarterKit,
+    Placeholder.configure({
+      placeholder: props.placeholder, // Set the placeholder from props
+    }),
+  ],
   editorProps: {
     attributes: {
       class:
@@ -37,7 +63,6 @@ const handleFocus = () => {
 }
 
 const handleBlur = (event) => {
-  // Only update focus state, but keep edit mode active
   const isActionButton = event.relatedTarget?.closest('.editor-actions')
   const isEditorContainer = event.relatedTarget?.closest('.editor-container')
 
@@ -49,12 +74,12 @@ const handleBlur = (event) => {
 const saveContent = () => {
   emit('saved', editor.value.getHTML())
   isEditorFocused.value = false
-  isEditMode.value = false // Exit edit mode on save
+  isEditMode.value = false
 }
 
 const cancelEdit = () => {
   isEditorFocused.value = false
-  isEditMode.value = false // Exit edit mode on cancel
+  isEditMode.value = false
 }
 
 onMounted(() => {
@@ -67,59 +92,64 @@ onBeforeUnmount(() => {
   editor.value.off('blur', handleBlur)
 })
 
-const toggleBold = () => editor.value.chain().focus().toggleBold().run()
-const toggleItalic = () => editor.value.chain().focus().toggleItalic().run()
-const toggleStrike = () => editor.value.chain().focus().toggleStrike().run()
-const toggleCode = () => editor.value.chain().focus().toggleCode().run()
-const toggleBulletList = () =>
-  editor.value.chain().focus().toggleBulletList().run()
-const toggleOrderedList = () =>
-  editor.value.chain().focus().toggleOrderedList().run()
-const toggleCodeBlock = () =>
-  editor.value.chain().focus().toggleCodeBlock().run()
-const toggleBlockquote = () =>
-  editor.value.chain().focus().toggleBlockquote().run()
-
 const actionButtons = [
   {
-    icon: 'B',
-    action: toggleBold,
+    icon: Bold,
+    action: () => editor.value.chain().focus().toggleBold().run(),
     isActive: () => editor.value?.isActive('bold'),
   },
   {
-    icon: 'I',
-    action: toggleItalic,
+    icon: Italic,
+    action: () => editor.value.chain().focus().toggleItalic().run(),
     isActive: () => editor.value?.isActive('italic'),
   },
   {
-    icon: 'S',
-    action: toggleStrike,
+    icon: Strikethrough,
+    action: () => editor.value.chain().focus().toggleStrike().run(),
     isActive: () => editor.value?.isActive('strike'),
   },
   {
-    icon: '<>',
-    action: toggleCode,
-    isActive: () => editor.value?.isActive('code'),
-  },
-  {
-    icon: '•',
-    action: toggleBulletList,
+    icon: List,
+    action: () => editor.value.chain().focus().toggleBulletList().run(),
     isActive: () => editor.value?.isActive('bulletList'),
   },
   {
-    icon: '1.',
-    action: toggleOrderedList,
+    icon: ListOrdered,
+    action: () => editor.value.chain().focus().toggleOrderedList().run(),
     isActive: () => editor.value?.isActive('orderedList'),
   },
   {
-    icon: '{ }',
-    action: toggleCodeBlock,
-    isActive: () => editor.value?.isActive('codeBlock'),
+    icon: Quote,
+    action: () => editor.value.chain().focus().toggleBlockquote().run(),
+    isActive: () => editor.value?.isActive('blockquote'),
   },
   {
-    icon: '"',
-    action: toggleBlockquote,
-    isActive: () => editor.value?.isActive('blockquote'),
+    icon: Heading1,
+    action: () =>
+      editor.value.chain().focus().toggleHeading({ level: 1 }).run(),
+    isActive: () => editor.value?.isActive('heading', { level: 1 }),
+  },
+  {
+    icon: Heading2,
+    action: () =>
+      editor.value.chain().focus().toggleHeading({ level: 2 }).run(),
+    isActive: () => editor.value?.isActive('heading', { level: 2 }),
+  },
+  {
+    icon: Heading3,
+    action: () =>
+      editor.value.chain().focus().toggleHeading({ level: 3 }).run(),
+    isActive: () => editor.value?.isActive('heading', { level: 3 }),
+  },
+  {
+    icon: Code,
+    action: () => editor.value.chain().focus().toggleCode().run(),
+    isActive: () => editor.value?.isActive('code'),
+  },
+  {
+    icon: Minus,
+    action: () => editor.value.chain().focus().setHorizontalRule().run(),
+    isActive: () => false,
   },
 ]
 </script>
@@ -139,12 +169,15 @@ const actionButtons = [
         @mousedown.prevent="() => action.action()"
         :class="{ 'bg-gray-200': action.isActive() }"
       >
-        {{ action.icon }}
+        <component :is="action.icon" class="w-4 h-4 align-middle" />
       </Button>
     </div>
 
     <!-- Editor Content -->
-    <div class="editor-content-wrapper" style="height: 200px; overflow-y: auto" :class="{ 'border-solid border-gray-200 rounded-sm mb-1': isEditMode }">
+    <div
+      class="editor-content-wrapper border-solid border-gray-200 rounded mb-1"
+      style="height: 200px; overflow-y: auto"
+    >
       <editor-content :editor="editor" />
     </div>
 
@@ -159,10 +192,14 @@ const actionButtons = [
         </template>
       </Button>
 
-      <Button type="primary" @click="saveContent" size="small">
-        <template #icon>
-          <Check class="w-4 h-4 align-middle" />
-        </template>
+      <Button
+        type="primary"
+        @click="saveContent"
+        size="small"
+        class="flex items-center gap-1"
+      >
+        <Save class="w-3 h-3" />
+        <span>Save</span>
       </Button>
     </div>
   </div>
@@ -217,5 +254,13 @@ const actionButtons = [
   right: 0;
   bottom: 0;
   overflow-y: auto;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
 }
 </style>
