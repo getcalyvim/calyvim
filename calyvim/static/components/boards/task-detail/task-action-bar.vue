@@ -5,11 +5,6 @@ import {
   Select,
   SelectOption,
   Button,
-  Tag,
-  Badge,
-  Dropdown,
-  Menu,
-  MenuItem,
 } from 'ant-design-vue'
 import { generateAvatar } from '@/utils/helpers'
 
@@ -18,10 +13,8 @@ import {
   ClockCircleOutlined,
   FlagOutlined,
   InboxOutlined,
-  PlusOutlined,
-  SyncOutlined,
 } from '@ant-design/icons-vue'
-import { CalendarClock, CircleDashed, Lock, X } from 'lucide-vue-next'
+import { CalendarClock, CircleDashed, Lock } from 'lucide-vue-next'
 
 import { h, computed } from 'vue'
 
@@ -231,43 +224,6 @@ const availableTags = computed(() =>
       </SelectOption>
     </Select>
   </template>
-
-  <Divider class="p-0 my-3" />
-  <div class="mb-2 font-semibold flex justify-between items-center">
-    <div>Labels</div>
-    <Dropdown :trigger="['click']">
-      <Button type="text" size="small" :icon="h(PlusOutlined)" />
-      <template #overlay>
-        <Menu>
-          <MenuItem
-            v-for="tag in availableTags"
-            :key="tag.id"
-            @click="emit('addLabel', tag.id)"
-          >
-            <Badge :color="tag.color" />
-            <span>{{ tag.name }}</span>
-          </MenuItem>
-        </Menu>
-      </template>
-    </Dropdown>
-  </div>
-  <div class="flex flex-wrap gap-2 mb-2">
-    <Tag
-      v-for="label in props.task.labels"
-      :key="label.id"
-      :bordered="false"
-      :color="label.color"
-      class="flex items-center"
-    >
-      <X
-        class="h-3 w-3 cursor-pointer"
-        @click="emit('deleteLabel', label.id)"
-      />
-      <div class="ml-2">
-        {{ label.name }}
-      </div>
-    </Tag>
-  </div>
 
   <div class="text-base font-semibold mt-4 mb-2">Actions</div>
   <div class="flex flex-col gap-2" v-if="!props.isArchived">

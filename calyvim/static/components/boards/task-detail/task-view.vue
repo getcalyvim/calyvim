@@ -1,5 +1,5 @@
 <script setup>
-import { h, onMounted, ref, watch } from 'vue'
+import { h, onMounted, ref } from 'vue'
 import {
   Skeleton,
   Avatar,
@@ -25,6 +25,7 @@ import {
   FileOutlined,
   ArrowLeftOutlined,
 } from '@ant-design/icons-vue'
+import { Package, Undo2 } from 'lucide-vue-next'
 import {
   handleResponseError,
   generateAvatar,
@@ -43,6 +44,7 @@ import TaskCommentAddForm from './task-comment-add-form.vue'
 import TaskAttachmentList from './task-attachment-list.vue'
 import SubTaskList from './sub-task-list.vue'
 import TipTapEditor from '@/components/base/tip-tap-editor.vue'
+import TaskLabels from './task-labels.vue'
 
 // API imports
 import {
@@ -53,7 +55,8 @@ import {
   taskAttachmentsCreateAPI,
   taskAttachmentsListAPI,
   taskListAPI,
-  taskArchiveApi,
+  taskArchiveAPI,
+  taskRestoreAPI,
   taskShareLinkAPI,
   taskAddLabelAPI,
   taskRemoveLabelAPI,
@@ -318,7 +321,7 @@ const deleteLabel = async (labelId) => {
 
 const archive = async () => {
   try {
-    const { data } = await taskArchiveApi(props.board.id, currentTaskId.value)
+    const { data } = await taskArchiveAPI(props.board.id, currentTaskId.value)
     notify('ARCHIVED', data.detail)
     isArchived.value = true
     logComment(data.log)
@@ -327,10 +330,39 @@ const archive = async () => {
     handleResponseError(error)
   }
 }
+
+const restore = async () => {
+  try {
+    const { data } = await taskRestoreAPI(props.board.id, currentTaskId.value)
+    notify('RESTORED', data.detail)
+    isArchived.value = false
+    logComment(data.log)
+
+    // TODO: Emit event to restore task in parent component
+  } catch (error) {
+    handleResponseError(error)
+  }
+}
 </script>
 
 <template>
   <div v-if="!!task && !loading" class="flex flex-col h-full">
+    <!-- Info Banner -->
+    <div
+      class="bg-gray-200 p-2 rounded font-semibold flex justify-between"
+      v-if="isArchived"
+    >
+      <div class="flex items-center gap-2">
+        <Package class="w-4 h-4" />
+        <div>This task has been archived.</div>
+      </div>
+
+      <Button type="text" size="small" class="flex gap-1 items-center" @click="restore">
+        <Undo2 class="w-4 h-4" />
+        <div>Undo</div>
+      </Button>
+    </div>
+
     <!-- Fixed Header Section -->
     <div class="flex-none px-1 pt-4 mb-2">
       <div
@@ -391,7 +423,7 @@ const archive = async () => {
     <div class="flex-1 overflow-y-auto px-1">
       <div class="grid grid-cols-12 gap-4">
         <div class="col-span-9">
-          <div class="mb-5">
+          <div class="mb-3">
             <Dropdown :trigger="['click']" placement="rightTop">
               <Button :icon="h(PlusOutlined)" type="primary"
                 ><span class="font-semibold">Add</span></Button
@@ -430,6 +462,14 @@ const archive = async () => {
               </template>
             </Dropdown>
           </div>
+
+          <!-- Label -->
+          <TaskLabels
+            :task="task"
+            :labels="props.labels"
+            @addLabel="addLabel"
+            @deleteLabel="deleteLabel"
+          />
 
           <div class="text-lg font-semibold">Description</div>
           <div>
@@ -498,8 +538,6 @@ const archive = async () => {
             :sprints="props.sprints"
             :labels="props.labels"
             @update="updateTaskItem"
-            @addLabel="addLabel"
-            @deleteLabel="deleteLabel"
             @archive="archive"
           />
         </div>

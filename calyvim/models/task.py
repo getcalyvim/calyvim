@@ -128,6 +128,12 @@ class Task(UUIDTimestampModel):
         self.archived_at = timezone.now()
         self.save(update_fields=["is_archived", "archived_at"])
 
+    @transaction.atomic
+    def restore(self):
+        self.is_archived = False
+        self.archived_at = None
+        self.save(update_fields=["is_archived", "archived_at"])
+
 
 class TaskAssignee(UUIDTimestampModel):
     task = models.ForeignKey(

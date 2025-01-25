@@ -19,8 +19,11 @@ export const taskListKanbanAPI = (boardId, filters = {}) =>
     params: filters,
   })
 
-export const taskArchiveApi = (boardId, taskId) =>
+export const taskArchiveAPI = (boardId, taskId) =>
   client.patch(`/boards/${boardId}/tasks/${taskId}/archive`)
+
+export const taskRestoreAPI = (boardId, taskId) =>
+  client.patch(`/boards/${boardId}/tasks/${taskId}/restore`)
 
 export const taskCommentsAPI = (boardId, taskId, commentType = 'all') =>
   client.get(`/boards/${boardId}/tasks/${taskId}/comments`, {

@@ -1,12 +1,10 @@
 <script setup>
-import { Avatar, AvatarGroup, Tag, Badge } from 'ant-design-vue'
+import { Avatar, Tag } from 'ant-design-vue'
 import { generateAvatar } from '@/utils/helpers'
 import TaskTypeIcon from '@/components/icons/task-type-icon.vue'
 import {
   ClockCircleOutlined,
   FlagOutlined,
-  MinusCircleOutlined,
-  SyncOutlined,
 } from '@ant-design/icons-vue'
 import { CalendarClock, Dot } from 'lucide-vue-next'
 import { useBoardStore } from '@/stores/board'

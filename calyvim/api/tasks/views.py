@@ -123,6 +123,39 @@ class TasksViewSet(BoardMixin, ViewSet):
                         ]
                     ),
                 ]
+            case "add_label":
+                return [
+                    IsAuthenticated(),
+                    BoardGenericPermission(
+                        allowed_roles=[
+                            BoardPermissionRole.ADMIN,
+                            BoardPermissionRole.MAINTAINER,
+                            BoardPermissionRole.COLLABORATOR,
+                        ]
+                    ),
+                ]
+            case "remove_label":
+                return [
+                    IsAuthenticated(),
+                    BoardGenericPermission(
+                        allowed_roles=[
+                            BoardPermissionRole.ADMIN,
+                            BoardPermissionRole.MAINTAINER,
+                            BoardPermissionRole.COLLABORATOR,
+                        ]
+                    ),
+                ]
+            case "restore":
+                return [
+                    IsAuthenticated(),
+                    BoardGenericPermission(
+                        allowed_roles=[
+                            BoardPermissionRole.ADMIN,
+                            BoardPermissionRole.MAINTAINER,
+                            BoardPermissionRole.COLLABORATOR,
+                        ]
+                    ),
+                ]
             case _:
                 return super().get_permissions()
 
@@ -639,6 +672,27 @@ class TasksViewSet(BoardMixin, ViewSet):
         )
         response_data = {
             "detail": f"Task '{task.name}' archived successfully",
+            "log": TaskCommentSerializer(comment).data,
+        }
+        return Response(data=response_data, status=status.HTTP_200_OK)
+
+    @action(methods=["PATCH"], detail=True, url_path="restore")
+    def restore(self, request, *args, **kwargs):
+        task = Task.archived_objects.filter(
+            board=request.board, id=kwargs.get("pk")
+        ).first()
+        if not task:
+            raise TaskNotFoundException
+
+        task.restore()
+        comment = TaskComment.objects.create(
+            task=task,
+            content=f"task has been restored",
+            author=request.user,
+            comment_type=TaskComment.CommentType.ACTIVITY,
+        )
+        response_data = {
+            "detail": f"Task '{task.name}' restored successfully",
             "log": TaskCommentSerializer(comment).data,
         }
         return Response(data=response_data, status=status.HTTP_200_OK)
