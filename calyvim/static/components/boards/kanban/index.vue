@@ -203,6 +203,13 @@ const updateTask = async (taskId, updatedData) => {
         store.updateTask(taskId, updatedData, 'task_type', value)
         break
 
+      case 'sprintId':
+        const sprint = store.sprints.find((s) => s.id === value)
+        updatedData['sprint'] = sprint
+
+        store.updateTask(taskId, updatedData)
+        break
+
       default:
         store.updateTask(taskId, updatedData)
         break
