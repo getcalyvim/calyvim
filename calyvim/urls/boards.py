@@ -1,6 +1,6 @@
 from django.urls import path
 from calyvim.views.boards import (
-    BoardKanbanView,
+    BoardTasksListView,
     BoardTableView,
     BoardSettingsGeneralView,
     BoardSettingsCollaboratorsView,
@@ -26,6 +26,6 @@ urlpatterns = [
     path("settings/labels/", BoardSettingsLabelsView.as_view(), name="board-settings-labels"),
     path("leave/", BoardLeaveView.as_view(), name="board-leave"),
     path("delete/", BoardDeleteView.as_view(), name="board-delete"),
+    path("tasks/", BoardTasksListView.as_view(), name="board-tasks"),
     path("tasks/<str:task_name>/", BoardTasksDetailView.as_view(), name="board-tasks-detail"),
-    path("", BoardKanbanView.as_view(), name="board-kanban"),
 ]

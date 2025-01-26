@@ -31,7 +31,7 @@ const fetchBoards = async () => {
 }
 
 const redirectToBoard = (board) => {
-  window.location.href = `/boards/${board.id}/`
+  window.location.href = `/boards/${board.id}/tasks/`
 }
 
 const openNewBoardModal = ref(false)

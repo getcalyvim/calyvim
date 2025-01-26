@@ -3,7 +3,7 @@ import { Tabs, Avatar } from 'ant-design-vue'
 import { ref, h } from 'vue'
 import WorkspaceLayout from './workspace-layout.vue'
 import { generateAvatar } from '@/utils/helpers'
-import { Kanban, CalendarClock, Settings2, FastForward } from 'lucide-vue-next'
+import { CalendarClock, Settings2, FastForward, Grid } from 'lucide-vue-next'
 const props = defineProps([
   'board',
   'workspace',
@@ -18,21 +18,21 @@ const subMenuItems = [
   {
     heading: `${props.board.name}`,
     label: 'Board Tasks',
-    icon: Kanban,
-    key: 'kanban',
-    redirectPath: `/boards/${props.board.id}`,
+    icon: Grid,
+    key: 'tasks',
+    redirectPath: `/boards/${props.board.id}/tasks/`,
   },
   {
     label: 'Active Sprints',
     icon: CalendarClock,
     key: 'sprints',
-    redirectPath: `/boards/${props.board.id}/sprints`,
+    redirectPath: `/boards/${props.board.id}/sprints/`,
   },
   {
     label: 'Settings',
     icon: Settings2,
     key: 'settings',
-    redirectPath: `/boards/${props.board.id}/settings`,
+    redirectPath: `/boards/${props.board.id}/settings/`,
   },
 ]
 </script>

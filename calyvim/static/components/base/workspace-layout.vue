@@ -23,6 +23,7 @@ import {
   Grid,
   FileCheck2,
   FileStack,
+  Kanban
 } from 'lucide-vue-next'
 
 import BaseLayout from '@/components/base/base-layout.vue'
@@ -65,7 +66,7 @@ const baseMenuItems = ref([
   {
     key: 'boards',
     label: 'Boards',
-    icon: Grid,
+    icon: Kanban,
     redirectPath: `/${props.workspace.slug}/boards`,
     submenu: [
       {

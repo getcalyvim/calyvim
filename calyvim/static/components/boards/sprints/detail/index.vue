@@ -1,7 +1,7 @@
 <script setup>
 const props = defineProps(['workspace', 'board', 'sprint'])
 
-import KanbanBoard from '@/components/boards/kanban/index.vue'
+import KanbanBoard from '@/components/boards/tasks/list/index.vue'
 </script>
 
 <template>

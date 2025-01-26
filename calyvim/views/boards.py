@@ -17,7 +17,7 @@ from calyvim.mixins import BoardPermissionMixin
 
 
 # @method_decorator(cache_page(60 * 15, key_prefix="boards"), name="dispatch")
-class BoardKanbanView(LoginRequiredMixin, BoardPermissionMixin, View):
+class BoardTasksListView(LoginRequiredMixin, BoardPermissionMixin, View):
     def get(self, request, *args, **kwargs):
         board = get_object_or_404(Board, id=kwargs.get("board_id"))
 
@@ -31,7 +31,7 @@ class BoardKanbanView(LoginRequiredMixin, BoardPermissionMixin, View):
                 "current_user": ProfileSerializer(request.user).data,
             }
         }
-        return render(request, "boards/kanban.html", context)
+        return render(request, "boards/tasks/list.html", context)
 
 
 class BoardTableView(LoginRequiredMixin, BoardPermissionMixin, View):
