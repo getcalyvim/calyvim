@@ -33,7 +33,7 @@ const props = defineProps({
     </div>
 
     <div
-      v-if="props.board.isEstimateEnabled && !!props.task.estimate"
+      v-if="!!props.task.estimate"
       class="flex gap-1"
     >
       <ClockCircleOutlined class="text-xs" />

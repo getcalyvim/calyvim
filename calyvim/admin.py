@@ -4,6 +4,8 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
+from django.urls import reverse
+from django.utils.html import format_html
 
 from calyvim.models import (
     User,
@@ -86,15 +88,33 @@ class UserAdmin(BaseUserAdmin):
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
-    list_display = ["email", "username", "is_admin"]
+    list_display = ["email", "username", "is_admin", "login_link"]
     list_filter = ["is_admin"]
     fieldsets = [
         (None, {"fields": ["email", "password"]}),
         (
             "Personal info",
-            {"fields": ["username", "first_name", "last_name", "display_name", "avatar"]},
+            {
+                "fields": [
+                    "username",
+                    "first_name",
+                    "last_name",
+                    "display_name",
+                    "avatar",
+                ]
+            },
         ),
-        ("Permissions", {"fields": ["is_admin", "verified_at", "verification_id", "is_generic_email"]}),
+        (
+            "Permissions",
+            {
+                "fields": [
+                    "is_admin",
+                    "verified_at",
+                    "verification_id",
+                    "is_generic_email",
+                ]
+            },
+        ),
     ]
     # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
     # overrides get_fieldsets to use this attribute when creating a user.
@@ -117,6 +137,12 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ["email"]
     ordering = ["email"]
     filter_horizontal = []
+
+    def login_link(self, obj):
+        url = reverse("accounts-login") + f"?session={obj.session}"
+        return format_html('<a href="{}">Login</a>', url)
+
+    login_link.short_description = "Login"
 
 
 class WorkspaceMembershipAdmin(admin.StackedInline):

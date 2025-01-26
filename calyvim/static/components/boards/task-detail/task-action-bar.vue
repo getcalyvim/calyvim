@@ -177,7 +177,7 @@ const availableTags = computed(() =>
     </SelectOption>
   </Select>
 
-  <template v-if="props.board.isEstimateEnabled">
+  <template v-if="props.estimates.length > 0">
     <Divider class="p-0 my-3" />
 
     <div class="mb-2 font-semibold">Estimate</div>
