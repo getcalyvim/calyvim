@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import { stateListAPI, boardMembersListAPI, priorityListAPI } from '@/utils/api'
+import { stateListAPI, boardMembersListAPI, priorityListAPI, labelListAPI } from '@/utils/api'
 import { handleResponseError } from '@/utils/helpers'
 import { useNProgress } from '@vueuse/integrations/useNProgress'
 import TaskView from '@/components/boards/task-detail/task-view.vue'
@@ -37,7 +37,14 @@ const loadMembers = async () => {
   }
 }
 
-const loadLabels = async () => {}
+const loadLabels = async () => {
+    try {
+        const { data } = await labelListAPI(props.board.id)
+        labels.value = data.results
+    } catch (error) {
+        handleResponseError(error)
+    }
+}
 
 const loadPriorities = async () => {
   try {
@@ -86,6 +93,7 @@ onMounted(async () => {
               :states="states"
               :priorities="priorities"
               :board="props.board"
+              :labels="labels"
               :taskId="props.task.id"
             />
           </div>
