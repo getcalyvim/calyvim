@@ -14,7 +14,7 @@ import {
   FlagOutlined,
   InboxOutlined,
 } from '@ant-design/icons-vue'
-import { CalendarClock, CircleDashed, Lock } from 'lucide-vue-next'
+import { CalendarClock, Lock } from 'lucide-vue-next'
 
 import { h, computed } from 'vue'
 
@@ -216,10 +216,6 @@ const availableTags = computed(() =>
         <div class="flex items-center">
           <CalendarClock class="h-3 w-3 text-primary" />
           <div class="ml-1">{{ sprint.name }}</div>
-          <CircleDashed
-            class="h-3 w-3 text-primary ml-1"
-            v-if="sprint.isActive"
-          />
         </div>
       </SelectOption>
     </Select>
