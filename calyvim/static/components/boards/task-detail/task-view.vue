@@ -96,6 +96,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  estimates: {
+    type: Array,
+    default: () => [], 
+  }
 })
 
 const currentTaskId = ref(props.taskId)
@@ -494,6 +498,7 @@ const restore = async () => {
               :boardId="props.board.id"
               :states="props.states"
               :members="props.members"
+              :estimates="props.estimates"
               @selected="openTask"
             />
           </div>
@@ -537,6 +542,7 @@ const restore = async () => {
             :states="props.states"
             :sprints="props.sprints"
             :labels="props.labels"
+            :estimates="props.estimates"
             @update="updateTaskItem"
             @archive="archive"
           />

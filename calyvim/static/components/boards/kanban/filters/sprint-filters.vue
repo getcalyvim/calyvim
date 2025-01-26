@@ -1,5 +1,5 @@
 <script setup>
-import { Checkbox, CheckboxGroup, Tag } from 'ant-design-vue'
+import { Checkbox, CheckboxGroup } from 'ant-design-vue'
 import { useBoardStore } from '@/stores/board'
 import { SyncOutlined } from '@ant-design/icons-vue'
 
@@ -19,13 +19,6 @@ const store = useBoardStore()
         <div>
           <SyncOutlined class="text-xs" />
           <span class="ml-1">{{ sprint.name }}</span>
-          <Tag
-            v-if="!!store.activeSprint && store?.activeSprint.id === sprint.id"
-            :bordered="false"
-            size="small"
-            class="ml-1 text-xs font-semibold text-primary"
-            >Active</Tag
-          >
         </div>
       </div>
     </div>

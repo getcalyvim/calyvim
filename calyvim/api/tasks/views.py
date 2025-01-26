@@ -37,6 +37,7 @@ from calyvim.api.tasks.serializers import (
     SprintSerializer,
     AttachmentSerializer,
     CommentSerializer,
+    EstimateSerializer
 )
 from calyvim.permissions import BoardGenericPermission
 from calyvim.exceptions import (
@@ -408,6 +409,51 @@ class TasksViewSet(BoardMixin, ViewSet):
                         "task_type": dict(Task.TaskType.choices).get(task_type),
                     }
                 )
+
+        elif group_by == "estimate":
+            estimates = request.board.estimates.all()
+            for estimate in estimates:
+                estimate_tasks = [task for task in tasks if task.estimate_id == estimate.id]
+                states_data = []
+                for state in states:
+                    state_tasks = [
+                        task for task in estimate_tasks if task.state_id == state.id
+                    ]
+                    states_data.append(
+                        {
+                            **StateSerializer(state).data,
+                            "tasks": TaskSerializer(state_tasks, many=True).data,
+                        }
+                    )
+                results.append(
+                    {
+                        "group_key": estimate.id,
+                        "states": states_data,
+                        "group_by": group_by,
+                        "estimate": EstimateSerializer(estimate).data,
+                    }
+                )
+            unestimated_tasks = [task for task in tasks if task.estimate_id is None]
+            states_data = []
+            for state in states:
+                state_tasks = [
+                    task for task in unestimated_tasks if task.state_id == state.id
+                ]
+                states_data.append(
+                    {
+                        **StateSerializer(state).data,
+                        "tasks": TaskSerializer(state_tasks, many=True).data,
+                    }
+                )
+            results.append(
+                {
+                    "group_key": "no_estimate",
+                    "states": states_data,
+                    "group_by": group_by,
+                    "estimate": None,
+                }
+            )
+
 
         response_data = {
             "results": results,

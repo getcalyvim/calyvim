@@ -112,6 +112,7 @@ const loadMetadata = async () => {
     store.initializePriorities(metadata.priorities)
     store.initializeLabels(metadata.labels)
     store.initializeSprints(metadata.sprints)
+    store.initializeEstimates(metadata.estimates)
   } catch (error) {
     handleResponseError(error)
   }
@@ -207,6 +208,18 @@ const updateTask = async (taskId, updatedData) => {
         updatedData['sprint'] = sprint
 
         store.updateTask(taskId, updatedData)
+        break
+
+      case 'estimateId':
+        const estimate = store.estimates.find((e) => e.id === value)
+        updatedData['estimate'] = estimate
+
+        store.updateTask(
+          taskId,
+          updatedData,
+          'estimate',
+          value === null ? 'no_estimate' : value
+        )
         break
 
       default:
@@ -515,12 +528,53 @@ const removeTask = (taskId) => {
                         {{ item.sprint.name }}
                       </div>
                       <div v-else class="font-semibold ml-2">No Sprint</div>
-                      <Tag
-                        v-if="!!item.sprint && item.sprint.isActive"
-                        :bordered="false"
-                        class="ml-1 text-primary"
-                        >Active</Tag
+                    </div>
+
+                    <StateTasks
+                      v-if="openedGroups.has(item.groupKey)"
+                      :states="item.states"
+                      :board="props.board"
+                      :groupKey="item.groupKey"
+                      @open="openTaskView"
+                      @created="(newTask) => store.addTask(newTask)"
+                      :currentSprint="props.currentSprint"
+                    />
+                  </template>
+                </div>
+              </div>
+
+              <!-- Group By - Estimate -->
+              <div
+                v-else-if="!!store.groupBy && store.groupBy === 'estimate'"
+                class="task-list"
+              >
+                <div
+                  class="w-full mb-1"
+                  v-for="item in store.kanban"
+                  :key="item.id"
+                >
+                  <template v-if="item.groupBy === 'estimate'">
+                    <div class="bg-gray-100 px-2 py-1 rounded">
+                      <Button
+                        type="text"
+                        size="small"
+                        class="mr-1"
+                        @click="toggleGroup(item.groupKey)"
                       >
+                        <ArrowRightOutlined
+                          v-if="!openedGroups.has(item.groupKey)"
+                          class="text-xs text-gray-500"
+                        />
+                        <ArrowDownOutlined
+                          v-else
+                          class="text-xs text-gray-500"
+                        />
+                      </Button>
+                      <CarryOutOutlined class="text-primary" />
+                      <span class="ml-2 font-semibold" v-if="!!item.estimate">
+                        {{ item.estimate.value }}
+                      </span>
+                      <span v-else class="font-semibold ml-2">No Estimate</span>
                     </div>
 
                     <StateTasks
@@ -567,6 +621,7 @@ const removeTask = (taskId) => {
             :states="store.states"
             :sprints="store.sprints"
             :labels="store.labels"
+            :estimates="store.estimates"
             @update="updateTask"
             @remove="removeTask"
           />

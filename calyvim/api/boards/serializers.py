@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from calyvim.mixins import NameAndSourceSerializerMixin
-from calyvim.models import User, Board, Task, Label, Priority, State, Sprint
+from calyvim.models import User, Board, Task, Label, Priority, State, Sprint, Estimate
 
 
 class BoardCreateSerializer(serializers.Serializer):
@@ -124,3 +124,9 @@ class SprintSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sprint
         fields = ["id", "name", "start_date", "end_date", "is_active", "created_at"]
+
+
+class EstimateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Estimate
+        fields = ["id", "key", "value", "description", "created_at"]

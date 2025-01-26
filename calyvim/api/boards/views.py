@@ -32,6 +32,7 @@ from calyvim.api.boards.serializers import (
     StateSerializer,
     MemberSerializer,
     SprintSerializer,
+    EstimateSerializer,
 )
 from calyvim.exceptions import (
     InvalidInputException,
@@ -210,6 +211,7 @@ class BoardViewSet(ViewSet):
         sprints = SprintSerializer(
             board.sprints.all().order_by("-start_date"), many=True
         )
+        estimate = EstimateSerializer(board.estimates.all(), many=True)
 
         response_data = {
             "metadata": {
@@ -218,6 +220,7 @@ class BoardViewSet(ViewSet):
                 "labels": labels.data,
                 "members": members.data,
                 "sprints": sprints.data,
+                "estimates": estimate.data,
             },
             "detail": "Metadata for the board",
         }
