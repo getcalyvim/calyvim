@@ -9,7 +9,7 @@ from calyvim.models import (
     Estimate,
     Sprint,
     State,
-    TaskAttachment
+    TaskAttachment,
 )
 
 
@@ -103,6 +103,7 @@ class TaskCreateSerializer(serializers.Serializer):
     assignee_id = serializers.UUIDField(required=False, allow_null=True)
     parent_id = serializers.UUIDField(required=False)
     sprint_id = serializers.UUIDField(required=False, allow_null=True)
+
 
 class TaskSerializer(serializers.ModelSerializer):
     assignees = AssigneeSerializer(many=True)
@@ -209,3 +210,9 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = TaskComment
         fields = ["id", "content", "author", "comment_type", "created_at"]
+
+
+class BulkUpdateSerializer(serializers.Serializer):
+    ids = serializers.ListField(child=serializers.UUIDField())
+    property = serializers.CharField()
+    value = serializers.UUIDField()

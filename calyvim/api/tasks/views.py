@@ -37,7 +37,8 @@ from calyvim.api.tasks.serializers import (
     SprintSerializer,
     AttachmentSerializer,
     CommentSerializer,
-    EstimateSerializer
+    EstimateSerializer,
+    BulkUpdateSerializer,
 )
 from calyvim.permissions import BoardGenericPermission
 from calyvim.exceptions import (
@@ -147,6 +148,18 @@ class TasksViewSet(BoardMixin, ViewSet):
                     ),
                 ]
             case "restore":
+                return [
+                    IsAuthenticated(),
+                    BoardGenericPermission(
+                        allowed_roles=[
+                            BoardPermissionRole.ADMIN,
+                            BoardPermissionRole.MAINTAINER,
+                            BoardPermissionRole.COLLABORATOR,
+                        ]
+                    ),
+                ]
+            
+            case "bulk_update":
                 return [
                     IsAuthenticated(),
                     BoardGenericPermission(
@@ -413,7 +426,9 @@ class TasksViewSet(BoardMixin, ViewSet):
         elif group_by == "estimate":
             estimates = request.board.estimates.all()
             for estimate in estimates:
-                estimate_tasks = [task for task in tasks if task.estimate_id == estimate.id]
+                estimate_tasks = [
+                    task for task in tasks if task.estimate_id == estimate.id
+                ]
                 states_data = []
                 for state in states:
                     state_tasks = [
@@ -453,7 +468,6 @@ class TasksViewSet(BoardMixin, ViewSet):
                     "estimate": None,
                 }
             )
-
 
         response_data = {
             "results": results,
@@ -734,7 +748,7 @@ class TasksViewSet(BoardMixin, ViewSet):
             task_comments.append(
                 TaskComment(
                     task=task,
-                    content=f"State changed to {state.name}",
+                    content=f"state changed to {state.name}",
                     comment_type="activity",
                     author=request.user,
                 )
@@ -752,6 +766,73 @@ class TasksViewSet(BoardMixin, ViewSet):
             data={
                 "detail": f"Tasks ({task_names}) state changed to {state.name}",
                 "tasks": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @transaction.atomic
+    @action(methods=["PATCH"], detail=False, url_path="bulk-update")
+    def bulk_update(self, request, *args, **kwargs):
+        serializer = BulkUpdateSerializer(data=request.data)
+        if not serializer.is_valid():
+            raise InvalidInputException
+
+        data = serializer.validated_data
+        task_ids = data.get("ids")
+        tasks = Task.objects.filter(board=request.board, id__in=task_ids)
+        task_comments = []
+        match data.get("property"):
+            case "state":
+                state = get_object_or_raise_api_404(
+                    State, board=request.board, id=data.get("value")
+                )
+                last_task_in_state = (
+                    Task.objects.filter(board=request.board, state=state)
+                    .order_by("-sequence")
+                    .first()
+                )
+                new_sequence = (
+                    last_task_in_state.sequence + 10000 if last_task_in_state else 10000
+                )
+                for task in tasks:
+                    task.state_id = state.id
+                    task.sequence = new_sequence
+                    new_sequence += 10000
+
+                    # Create a TaskComment for each task
+                    task_comments.append(
+                        TaskComment(
+                            task=task,
+                            content=f"state changed to {state.name}",
+                            comment_type="activity",
+                            author=request.user,
+                        )
+                    )
+                Task.objects.bulk_update(tasks, ["state_id", "sequence"])
+
+            case "sprint":
+                sprint = get_object_or_raise_api_404(
+                    Sprint, board=request.board, id=data.get("value")
+                )
+                for task in tasks:
+                    task.sprint_id = sprint.id
+
+                    # Create a TaskComment for each task
+                    task_comments.append(
+                        TaskComment(
+                            task=task,
+                            content=f"added to sprint {sprint.name}",
+                            comment_type="activity",
+                            author=request.user,
+                        )
+                    )
+                Task.objects.bulk_update(tasks, ["sprint_id"])
+
+        TaskComment.objects.bulk_create(task_comments)
+        task_names = ", ".join(task.name for task in tasks)
+        return Response(
+            data={
+                "detail": f"Tasks ({task_names}) updated successfully. Please refresh the page to see the changes.",
             },
             status=status.HTTP_200_OK,
         )

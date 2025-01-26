@@ -335,7 +335,7 @@ const removeTask = (taskId) => {
       <template #default>
         <div class="w-full overflow-x-auto">
           <div class="min-w-max px-1">
-            <StateList :states="store.states" />
+            <StateList :states="store.states" :board="props.board" />
             <template v-if="taskLoading">
               <div class="task-list">
                 <StateTaskSkeletonLoader :states="store.states" />

@@ -87,3 +87,6 @@ export const taskRemoveLabelAPI = (boardId, taskId, labelId) =>
       },
     }
   )
+
+export const taskBulkUpdateAPI = (boardId, data) =>
+  client.patch(`/boards/${boardId}/tasks/bulk-update`, data)
