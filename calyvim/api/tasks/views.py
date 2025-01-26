@@ -241,8 +241,12 @@ class TasksViewSet(BoardMixin, ViewSet):
     @action(methods=["GET"], detail=False)
     def kanban(self, request, *args, **kwargs):
         parent_id = request.query_params.get("parent_id", None)
+        sprint_id = request.query_params.get("sprint_id", None)
         queryset = Task.objects.filter(
-            board=request.board, archived_at__isnull=True, parent_id=parent_id
+            board=request.board,
+            archived_at__isnull=True,
+            parent_id=parent_id,
+            sprint_id=sprint_id,
         )
         group_by = request.query_params.get("group_by", None)
         if request.query_params.getlist("assignees[]"):
@@ -269,11 +273,6 @@ class TasksViewSet(BoardMixin, ViewSet):
             # Filter for estimates
             estimates = request.query_params.getlist("estimates[]")
             queryset = queryset.filter(estimate__in=estimates)
-
-        if request.query_params.getlist("sprints[]"):
-            # Filter for sprints
-            sprints = request.query_params.getlist("sprints[]")
-            queryset = queryset.filter(sprint__in=sprints)
 
         tasks = queryset.select_related(
             "priority", "created_by", "estimate", "sprint", "assignee"
@@ -409,50 +408,6 @@ class TasksViewSet(BoardMixin, ViewSet):
                         "task_type": dict(Task.TaskType.choices).get(task_type),
                     }
                 )
-
-        elif group_by == "sprint":
-            sprints = request.board.sprints.all().order_by("-created_at")
-            for sprint in sprints:
-                sprint_tasks = [task for task in tasks if task.sprint_id == sprint.id]
-                states_data = []
-                for state in states:
-                    state_tasks = [
-                        task for task in sprint_tasks if task.state_id == state.id
-                    ]
-                    states_data.append(
-                        {
-                            **StateSerializer(state).data,
-                            "tasks": TaskSerializer(state_tasks, many=True).data,
-                        }
-                    )
-                results.append(
-                    {
-                        "group_key": sprint.id,
-                        "states": states_data,
-                        "group_by": group_by,
-                        "sprint": SprintSerializer(sprint).data,
-                    }
-                )
-            no_sprint_tasks = [task for task in tasks if task.sprint_id is None]
-            states_data = []
-            for state in states:
-                state_tasks = [
-                    task for task in no_sprint_tasks if task.state_id == state.id
-                ]
-                states_data.append(
-                    {
-                        **StateSerializer(state).data,
-                        "tasks": TaskSerializer(state_tasks, many=True).data,
-                    }
-                )
-            results.append(
-                {
-                    "group_key": "no_sprint",
-                    "states": states_data,
-                    "group_by": group_by,
-                    "sprint": None,
-                }
-            )
 
         response_data = {
             "results": results,

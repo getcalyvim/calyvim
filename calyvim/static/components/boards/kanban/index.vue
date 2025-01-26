@@ -59,7 +59,7 @@ const props = defineProps({
   subPage: {
     type: String,
     default: 'kanban',
-  }
+  },
 })
 
 const openFilterDropdown = ref(false)
@@ -67,7 +67,7 @@ const openTaskAddDropdown = ref(false)
 
 const openedGroups = ref(new Set())
 const defaultFilters = {
-  sprints: props.currentSprint ? [props.currentSprint.id] : [],
+  sprint_id: props.currentSprint ? props.currentSprint.id : null,
 }
 
 const toggleGroup = (groupKey) => {
@@ -199,24 +199,6 @@ const updateTask = async (taskId, updatedData) => {
         )
         break
 
-      case 'sprintId':
-        const sprint = store.sprints.find((s) => s.id === value)
-        updatedData['sprint'] = sprint
-
-        if(!!props.currentSprint && value !== props.currentSprint.id) {
-          store.removeTask(taskId)
-
-          break
-        }
-
-        store.updateTask(
-          taskId,
-          updatedData,
-          'sprint',
-          value === null ? 'no_sprint' : value
-        )
-        break
-
       case 'taskType':
         store.updateTask(taskId, updatedData, 'task_type', value)
         break
@@ -290,10 +272,6 @@ const removeTask = (taskId) => {
               <Select.Option value="priority">
                 <FlagOutlined class="text-primary" />
                 <span class="ml-2">Priority</span>
-              </Select.Option>
-              <Select.Option value="sprint" :disabled="!!props.currentSprint">
-                <CarryOutOutlined class="text-primary" />
-                <span class="ml-2">Sprint</span>
               </Select.Option>
               <Select.Option value="task_type">
                 <BlockOutlined class="text-primary" />

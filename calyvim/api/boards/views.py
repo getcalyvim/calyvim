@@ -218,15 +218,9 @@ class BoardViewSet(ViewSet):
                 "labels": labels.data,
                 "members": members.data,
                 "sprints": sprints.data,
-                "last_sprint": None,
             },
             "detail": "Metadata for the board",
         }
-        last_sprint = board.sprints.all().order_by("-start_date").first()
-        if last_sprint:
-            response_data["metadata"]["last_sprint"] = SprintSerializer(
-                last_sprint
-            ).data
 
         return Response(response_data, status=status.HTTP_200_OK)
 

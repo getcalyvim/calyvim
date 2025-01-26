@@ -57,21 +57,6 @@ const hasCurrentSprint = computed(() => props.currentSprint !== null)
       <Divider class="my-2 p-0" />
     </template>
 
-    <template
-      v-if="
-        !store.groupBy ||
-        (store.groupBy !== 'sprint' &&
-          (store.sprints.length > 0 || hasCurrentSprint) &&
-          !props.currentSprint)
-      "
-    >
-      <div>
-        <div class="font-semibold text-gray-600">Sprints</div>
-        <SprintFilters @reload="emit('reload')" />
-      </div>
-      <Divider class="my-2 p-0" />
-    </template>
-
     <div v-if="!store.groupBy || store.groupBy !== 'task_type'">
       <div class="font-semibold text-gray-600">Types</div>
       <TaskTypeFilters @reload="emit('reload')" />
