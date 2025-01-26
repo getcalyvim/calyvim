@@ -24,3 +24,4 @@ class StateCreateSerializer(serializers.Serializer):
 class StateUpdateSerializer(serializers.Serializer):
     name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
+    category = serializers.ChoiceField(required=False, choices=State.Category.choices)
