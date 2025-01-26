@@ -17,18 +17,17 @@ const activeKey = ref(props.page)
 const subMenuItems = [
   {
     heading: `${props.board.name}`,
-    label: 'Kanban',
+    label: 'Board Tasks',
     icon: Kanban,
     key: 'kanban',
     redirectPath: `/boards/${props.board.id}`,
   },
   {
-    label: 'Sprint',
+    label: 'Active Sprints',
     icon: CalendarClock,
     key: 'sprints',
     redirectPath: `/boards/${props.board.id}/sprints`,
   },
-
   {
     label: 'Settings',
     icon: Settings2,

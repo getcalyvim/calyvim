@@ -6,7 +6,7 @@ from calyvim.models.base import UUIDTimestampModel
 class Label(UUIDTimestampModel):
     board = models.ForeignKey("Board", on_delete=models.CASCADE, related_name="labels")
     name = models.CharField(max_length=124)
-    color = models.CharField(max_length=10)
+    color = models.CharField(max_length=10, default="#7D52E9")
 
     class Meta:
         db_table = "labels"
