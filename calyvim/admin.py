@@ -92,7 +92,7 @@ class UserAdmin(BaseUserAdmin):
         (None, {"fields": ["email", "password"]}),
         (
             "Personal info",
-            {"fields": ["username", "first_name", "last_name", "avatar"]},
+            {"fields": ["username", "first_name", "last_name", "display_name", "avatar"]},
         ),
         ("Permissions", {"fields": ["is_admin", "verified_at", "verification_id", "is_generic_email"]}),
     ]

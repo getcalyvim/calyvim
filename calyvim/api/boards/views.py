@@ -207,28 +207,9 @@ class BoardViewSet(ViewSet):
         priorities = PrioritySerializer(board.priorities.all(), many=True)
         labels = LabelSerializer(board.labels.all(), many=True)
         members = MemberSerializer(board.members.all(), many=True)
-        sprints = SprintSerializer(board.sprints.all().order_by("-created_at"), many=True)
-
-        # Check if metadata is already cached
-        cached_metadata = cache.get(board.metadata_cache_key)
-
-        if cached_metadata:
-            return Response(cached_metadata, status=status.HTTP_200_OK)
-
-        # If not cached, proceed to serialize the data
-        response_data = {
-            "metadata": {
-                "states": states.data,
-                "priorities": priorities.data,
-                "labels": labels.data,
-                "members": members.data,
-                "sprints": sprints.data,
-            },
-            "detail": "Metadata for the board",
-        }
-
-        # Cache the metadata for future requests
-        cache.set(board.metadata_cache_key, response_data, timeout=60 * 60 * 24)  # Cache for 1 day
+        sprints = SprintSerializer(
+            board.sprints.all().order_by("-start_date"), many=True
+        )
 
         response_data = {
             "metadata": {
@@ -237,9 +218,16 @@ class BoardViewSet(ViewSet):
                 "labels": labels.data,
                 "members": members.data,
                 "sprints": sprints.data,
+                "last_sprint": None,
             },
             "detail": "Metadata for the board",
         }
+        last_sprint = board.sprints.all().order_by("-start_date").first()
+        if last_sprint:
+            response_data["metadata"]["last_sprint"] = SprintSerializer(
+                last_sprint
+            ).data
+
         return Response(response_data, status=status.HTTP_200_OK)
 
     @action(methods=["GET"], detail=False, url_path="templates")

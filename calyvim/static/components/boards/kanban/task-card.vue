@@ -2,10 +2,7 @@
 import { Avatar, Tag } from 'ant-design-vue'
 import { generateAvatar } from '@/utils/helpers'
 import TaskTypeIcon from '@/components/icons/task-type-icon.vue'
-import {
-  ClockCircleOutlined,
-  FlagOutlined,
-} from '@ant-design/icons-vue'
+import { ClockCircleOutlined, FlagOutlined } from '@ant-design/icons-vue'
 import { CalendarClock, Dot } from 'lucide-vue-next'
 import { useBoardStore } from '@/stores/board'
 
@@ -25,7 +22,7 @@ const props = defineProps({
   },
 })
 
-const store = useBoardStore()
+// const store = useBoardStore()
 </script>
 
 <template>
@@ -65,10 +62,7 @@ const store = useBoardStore()
       <Tag
         :bordered="false"
         class="text-xs font-semibold"
-        v-if="
-          !!props.task.priority &&
-          (!store.groupBy || store.groupBy !== 'priority')
-        "
+        v-if="!!props.task.priority"
       >
         <FlagOutlined class="text-primary" />
         <span class="text-primary">{{ props.task?.priority.name }}</span>
@@ -77,18 +71,14 @@ const store = useBoardStore()
       <Tag
         :bordered="false"
         class="text-xs font-semibold flex items-center gap-1"
-        v-if="
-          !!props.task.sprint && (!store.groupBy || store.groupBy !== 'sprint')
-        "
+        v-if="!!props.task.sprint"
       >
         <CalendarClock class="h-3 w-3" />
         <div>{{ props.task?.sprint.name }}</div>
       </Tag>
     </div>
     <Avatar
-      v-if="
-        props.task.assignee && (!store.groupBy || store.groupBy !== 'assignee')
-      "
+      v-if="props.task.assignee"
       :size="22"
       class="mr-1"
       :src="

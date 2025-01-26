@@ -78,7 +78,7 @@ class SprintsViewSet(BoardMixin, ViewSet):
         return Response(response_data, status=status.HTTP_201_CREATED)
 
     def list(self, request, *args, **kwargs):
-        sprints = Sprint.objects.filter(board=request.board).order_by("-created_at")
+        sprints = Sprint.objects.filter(board=request.board).order_by("-start_date")
         serializer = SprintSerializer(sprints, many=True)
         response_data = {
             "results": serializer.data,
