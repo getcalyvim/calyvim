@@ -53,7 +53,7 @@ class Task(UUIDTimestampModel):
         "User", on_delete=models.SET_NULL, null=True, related_name="created_tasks"
     )
     number = models.IntegerField(blank=True, editable=False)
-    name = models.CharField(max_length=10, blank=True, editable=False)
+    name = models.CharField(max_length=20, blank=True, editable=False)
     summary = models.CharField(max_length=225)
     description = models.TextField(blank=True, null=True)
     description_raw = models.TextField(blank=True, null=True)
@@ -103,23 +103,24 @@ class Task(UUIDTimestampModel):
             board = self.board
             state = self.state
 
-            # Get the last task sequence in the state
-            last_task_in_state = (
-                Task.objects.filter(board=board, state=state)
-                .order_by("-sequence")
-                .first()
-            )
-            if last_task_in_state is not None:
-                self.sequence = last_task_in_state.sequence + 10000
+            if not self.name and not self.number:
+                # Get the last task sequence in the state
+                last_task_in_state = (
+                    Task.objects.filter(board=board, state=state)
+                    .order_by("-sequence")
+                    .first()
+                )
+                if last_task_in_state is not None:
+                    self.sequence = last_task_in_state.sequence + 10000
 
-            self.number = board.task_number_counter
-            self.name = f"{board.task_prefix}-{board.task_number_counter}"
+                self.number = board.task_number_counter
+                self.name = f"{board.task_prefix}-{board.task_number_counter}"
 
-            board.task_number_counter += 1
-            board.tasks_count += 1
-            board.save(
-                update_fields=["task_number_counter", "task_prefix", "tasks_count"]
-            )
+                board.task_number_counter += 1
+                board.tasks_count += 1
+                board.save(
+                    update_fields=["task_number_counter", "task_prefix", "tasks_count"]
+                )
         return super().save(*args, **kwargs)
 
     @transaction.atomic
