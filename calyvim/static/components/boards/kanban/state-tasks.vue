@@ -130,7 +130,7 @@ const createTask = async (stateId, title) => {
     <div
       v-for="state in props.states"
       :key="state.id"
-      class="rounded-lg w-[21rem] flex-shrink-0 flex flex-col"
+      class="rounded-lg w-[22rem] flex-shrink-0 flex flex-col"
     >
       <VueDraggable
         v-model="state.tasks"

@@ -12,7 +12,7 @@ const props = defineProps(['states', 'board'])
     <div
       v-for="state in states"
       :key="state.id"
-      class="rounded-lg w-[21rem] flex-shrink-0"
+      class="rounded-lg w-[22rem] flex-shrink-0"
     >
       <div
         class="font-bold mb-2 bg-gray-200 rounded px-2 py-1 flex justify-between items-center"
